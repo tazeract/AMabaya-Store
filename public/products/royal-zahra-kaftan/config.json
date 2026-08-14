@@ -1,0 +1,56 @@
+{
+  "slug": "royal-zahra-kaftan",
+  "title": "Royal Zahra Kaftan",
+  "subtitle": "Heritage Craft Meets Modern Grace",
+  "description": "An opulent full-length kaftan in rich burgundy with hand-embroidered zardozi borders and a flowing bell silhouette — a celebration of Pakistani artisanship.",
+  "longDescription": "The Royal Zahra Kaftan is a masterpiece of traditional Pakistani craftsmanship modernized for the contemporary woman. Hand-embroidered zardozi gold and silver threadwork frames the neckline, sleeves, and hem in intricate floral motifs. Crafted from luxurious Chiffon-Silk blend fabric that catches the light beautifully with every movement. The relaxed kaftan silhouette is universally flattering and breathable — ideal for summer weddings, mehndi ceremonies, and formal dinners.",
+  "price": 7200,
+  "originalPrice": 9000,
+  "category": "Kaftan",
+  "tags": ["new-arrival", "wedding", "zardozi", "premium"],
+  "sizes": [
+    { "label": "S", "measurements": "Bust: 34-36\" | Length: 58\"" },
+    { "label": "M", "measurements": "Bust: 36-38\" | Length: 59\"" },
+    { "label": "L", "measurements": "Bust: 38-40\" | Length: 60\"" },
+    { "label": "XL", "measurements": "Bust: 40-42\" | Length: 61\"" },
+    { "label": "Free Size", "measurements": "Fits Bust: 34-44\" | Length: 60\"" }
+  ],
+  "colors": [
+    { "name": "Royal Burgundy", "hex": "#6D1A36" },
+    { "name": "Emerald Green", "hex": "#1B4332" },
+    { "name": "Champagne Gold", "hex": "#C9A84C" }
+  ],
+  "images": [
+    "/products/royal-zahra-kaftan/image-1.jpg",
+    "/products/royal-zahra-kaftan/image-2.jpg",
+    "/products/royal-zahra-kaftan/image-3.jpg"
+  ],
+  "modelPath": "/products/royal-zahra-kaftan/model.glb",
+  "sku": "AMA-002-BRG",
+  "featured": true,
+  "isNew": true,
+  "isBestseller": false,
+  "stock": {
+    "S-Royal Burgundy": 3,
+    "M-Royal Burgundy": 5,
+    "L-Royal Burgundy": 4,
+    "XL-Royal Burgundy": 2,
+    "Free Size-Royal Burgundy": 8,
+    "Free Size-Emerald Green": 6,
+    "Free Size-Champagne Gold": 4,
+    "S-Emerald Green": 2,
+    "M-Emerald Green": 3,
+    "S-Champagne Gold": 1,
+    "M-Champagne Gold": 2
+  },
+  "material": "Chiffon-Silk Blend with Zardozi Embroidery",
+  "careInstructions": [
+    "Dry clean only",
+    "Handle embroidery with extreme care",
+    "Store flat or hanging in garment bag",
+    "Do not wring or machine wash"
+  ],
+  "rating": 4.8,
+  "reviewCount": 89,
+  "createdAt": "2024-03-01"
+}

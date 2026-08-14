@@ -1,0 +1,46 @@
+{
+  "slug": "pearl-embroidered-dupatta",
+  "title": "Pearl Embroidered Dupatta",
+  "subtitle": "The Crown of Every Ensemble",
+  "description": "Delicate hand-stitched pearl and sequin embroidery adorns this ethereal chiffon dupatta — the perfect finishing touch for any Pakistani outfit.",
+  "longDescription": "The Pearl Embroidered Dupatta is the jewel of AMabaya's accessories collection. Crafted from whisper-light imported chiffon, this dupatta features thousands of hand-applied freshwater pearl beads and gold sequins in a cascading floral pattern. The borders are finished with intricate kiran lace trim. It drapes effortlessly and adds an instant touch of bridal luxury to any abaya, kaftan, or formal shalwar kameez. Available in soft, versatile tones that complement any wardrobe.",
+  "price": 2800,
+  "originalPrice": 3500,
+  "category": "Dupatta",
+  "tags": ["bridal", "pearl", "chiffon", "accessory"],
+  "sizes": [
+    { "label": "Free Size", "measurements": "Width: 42\" | Length: 108\"" }
+  ],
+  "colors": [
+    { "name": "Ivory White", "hex": "#FFFFF0" },
+    { "name": "Blush Pink", "hex": "#FFB6C1" },
+    { "name": "Soft Sage", "hex": "#B2C9B2" },
+    { "name": "Sky Blue", "hex": "#87CEEB" }
+  ],
+  "images": [
+    "/products/pearl-embroidered-dupatta/image-1.jpg",
+    "/products/pearl-embroidered-dupatta/image-2.jpg",
+    "/products/pearl-embroidered-dupatta/image-3.jpg"
+  ],
+  "modelPath": null,
+  "sku": "AMA-003-IVR",
+  "featured": true,
+  "isNew": true,
+  "isBestseller": false,
+  "stock": {
+    "Free Size-Ivory White": 15,
+    "Free Size-Blush Pink": 12,
+    "Free Size-Soft Sage": 8,
+    "Free Size-Sky Blue": 7
+  },
+  "material": "Imported Chiffon with Hand-applied Pearl & Sequin Embroidery",
+  "careInstructions": [
+    "Hand wash gently in cold water",
+    "Do not scrub embroidery",
+    "Dry flat in shade",
+    "Iron on reverse side only"
+  ],
+  "rating": 4.7,
+  "reviewCount": 156,
+  "createdAt": "2024-02-10"
+}

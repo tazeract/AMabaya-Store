@@ -1,0 +1,15 @@
+{
+  "name": "AMabaya",
+  "short_name": "AMabaya",
+  "description": "Pakistan's premier luxury Abaya brand",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FAF8F4",
+  "theme_color": "#C9956C",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "any"
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "slug": "classic-noir-abaya",
+  "title": "Classic Noir Abaya",
+  "subtitle": "Timeless Elegance Redefined",
+  "description": "A stunning full-length abaya in the deepest shade of midnight black, tailored to perfection with subtle gold thread embroidery at the cuffs.",
+  "longDescription": "The Classic Noir Abaya is AMabaya's signature piece — a full-length, flowing silhouette crafted from premium Korean Nida fabric. The gentle drape falls beautifully across every body type. Exquisite hand-embroidered gold thread detailing adorns the cuffs and hemline, giving this classic a touch of royalty. The open-front design features hidden inner buttons for a secure, modest fit. Perfect for formal gatherings, Eid celebrations, or everyday elegance.",
+  "price": 4500,
+  "originalPrice": 5500,
+  "category": "Abaya",
+  "tags": ["bestseller", "eid", "formal", "gold-embroidery"],
+  "sizes": [
+    { "label": "S", "measurements": "Bust: 34-36\" | Length: 56\"" },
+    { "label": "M", "measurements": "Bust: 36-38\" | Length: 57\"" },
+    { "label": "L", "measurements": "Bust: 38-40\" | Length: 58\"" },
+    { "label": "XL", "measurements": "Bust: 40-42\" | Length: 59\"" },
+    { "label": "XXL", "measurements": "Bust: 42-44\" | Length: 60\"" }
+  ],
+  "colors": [
+    { "name": "Midnight Black", "hex": "#0A0A0A" },
+    { "name": "Charcoal Grey", "hex": "#36454F" },
+    { "name": "Deep Navy", "hex": "#1B2A4A" }
+  ],
+  "images": [
+    "/products/classic-noir-abaya/image-1.jpg",
+    "/products/classic-noir-abaya/image-2.jpg",
+    "/products/classic-noir-abaya/image-3.jpg"
+  ],
+  "modelPath": "/products/classic-noir-abaya/model.glb",
+  "sku": "AMA-001-BLK",
+  "featured": true,
+  "isNew": false,
+  "isBestseller": true,
+  "stock": {
+    "S-Midnight Black": 5,
+    "M-Midnight Black": 8,
+    "L-Midnight Black": 3,
+    "XL-Midnight Black": 2,
+    "XXL-Midnight Black": 1,
+    "S-Charcoal Grey": 4,
+    "M-Charcoal Grey": 6,
+    "L-Charcoal Grey": 5,
+    "XL-Charcoal Grey": 3,
+    "S-Deep Navy": 3,
+    "M-Deep Navy": 5,
+    "L-Deep Navy": 4
+  },
+  "material": "100% Premium Korean Nida Fabric",
+  "careInstructions": [
+    "Dry clean only",
+    "Do not bleach",
+    "Store hanging to preserve shape",
+    "Iron on low heat with cloth barrier"
+  ],
+  "rating": 4.9,
+  "reviewCount": 247,
+  "createdAt": "2024-01-15"
+}
