@@ -1,8 +1,15 @@
-/** @type {import('next').NextConfig} */
-const nextConfig = {
+import type { NextConfig } from "next";
+
+const nextConfig: NextConfig = {
+  // Static export for GitHub Pages / Vercel
+  output: "export",
+  trailingSlash: true,
+  // Required for static export — no image optimization
   images: {
     unoptimized: true,
   },
+  // Allow @google/model-viewer as external package
+  transpilePackages: [],
 };
 
-module.exports = nextConfig;
+export default nextConfig;

@@ -1,16 +1,13 @@
 "use client";
 
-import { useRef, useState, useEffect } from "react";
-import { motion, useAnimationControls } from "framer-motion";
-import { ChevronLeft, ChevronRight, Quote, BadgeCheck } from "lucide-react";
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { ChevronLeft, ChevronRight, Star, CheckCircle2 } from "lucide-react";
 import { testimonials } from "@/lib/testimonials";
-import { StarRating } from "@/components/ui/StarRating";
-import { AnimatedSection } from "@/components/ui/AnimatedSection";
 
 export function TestimonialsSlider() {
   const [current, setCurrent] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
-  const controls = useAnimationControls();
   const total = testimonials.length;
 
   const prev = () => setCurrent((c) => (c - 1 + total) % total);
@@ -19,160 +16,119 @@ export function TestimonialsSlider() {
   // Auto-advance
   useEffect(() => {
     if (isPaused) return;
-    const t = setInterval(next, 5000);
+    const t = setInterval(next, 6000);
     return () => clearInterval(t);
   }, [isPaused, current]);
 
+  const item = testimonials[current];
+
   return (
     <section
-      className="py-24 px-4 sm:px-6 relative overflow-hidden"
-      style={{
-        background: "linear-gradient(135deg in oklch, #0E0B09 0%, #1A1410 50%, #0E0B09 100%)",
-      }}
-      aria-label="Customer testimonials"
+      className="py-20 lg:py-28 px-4 sm:px-6 lg:px-8 bg-[#FBF9F6] border-b border-[#E5E7EB]"
+      aria-label="Customer Reviews and Testimonials"
+      onMouseEnter={() => setIsPaused(true)}
+      onMouseLeave={() => setIsPaused(false)}
     >
-      {/* Decorative */}
-      <div className="absolute top-0 left-1/4 w-64 h-64 rounded-full bg-[var(--color-gold)]/5 blur-3xl" />
-      <div className="absolute bottom-0 right-1/4 w-80 h-80 rounded-full bg-[var(--color-champagne)]/5 blur-3xl" />
+      <div className="max-w-4xl mx-auto text-center">
+        {/* Section Header */}
+        <p className="text-[11px] font-sans font-semibold tracking-[0.25em] text-[#A3845A] uppercase mb-2">
+          Customer Stories
+        </p>
+        <h2 className="font-serif text-3xl sm:text-4xl text-[#111827] font-normal tracking-tight mb-4">
+          Loved by Over 5,000+ Women
+        </h2>
+        <div className="w-12 h-[1px] bg-[#111827] mx-auto mb-12" />
 
-      <div className="max-w-7xl mx-auto relative z-10">
-        {/* Header */}
-        <AnimatedSection className="text-center mb-16">
-          <span className="text-[var(--color-gold)] text-xs font-sans uppercase tracking-[0.3em] font-medium mb-4 block">
-            ✦ Real Stories
-          </span>
-          <h2 className="font-display text-4xl sm:text-5xl font-semibold text-white mb-4">
-            What Our Customers Say
-          </h2>
-          <div className="divider-gold w-24 mx-auto" />
-        </AnimatedSection>
-
-        {/* Slider */}
-        <div
-          className="relative"
-          onMouseEnter={() => setIsPaused(true)}
-          onMouseLeave={() => setIsPaused(false)}
-        >
-          {/* Main card */}
-          <div className="max-w-3xl mx-auto">
+        {/* Testimonial Card */}
+        <div className="relative bg-white border border-[#E5E7EB] p-8 sm:p-14 shadow-sm min-h-[300px] flex flex-col justify-center">
+          <AnimatePresence mode="wait">
             <motion.div
               key={current}
-              initial={{ opacity: 0, y: 24, scale: 0.96 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, x: -32 }}
-              transition={{ duration: 0.5, ease: "easeOut" }}
-              className="glass-dark rounded-3xl p-8 sm:p-12 relative"
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -15 }}
+              transition={{ duration: 0.4 }}
+              className="space-y-6"
             >
-              {/* Quote icon */}
-              <div className="absolute -top-4 left-10">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[var(--color-gold-light)] to-[var(--color-gold-dark)] flex items-center justify-center shadow-lg">
-                  <Quote className="w-4 h-4 text-white" />
-                </div>
+              {/* Gold 5 Stars */}
+              <div className="flex justify-center gap-1 text-[var(--color-gold)]">
+                {[...Array(5)].map((_, i) => (
+                  <Star key={i} className="w-4 h-4 fill-current" />
+                ))}
               </div>
 
-              <div className="flex flex-col sm:flex-row gap-6 items-start">
-                {/* Avatar */}
-                <div className="flex-shrink-0">
-                  <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-[var(--color-gold)]/40 bg-gradient-to-br from-[var(--color-gold-light)]/20 to-[var(--color-gold)]/20 flex items-center justify-center">
-                    <span className="font-display text-2xl font-bold text-[var(--color-gold)]">
-                      {testimonials[current].name[0]}
-                    </span>
-                  </div>
-                </div>
+              {/* Quote */}
+              <blockquote className="font-serif text-lg sm:text-2xl text-[#111827] italic leading-relaxed max-w-2xl mx-auto font-light">
+                &ldquo;{item.text}&rdquo;
+              </blockquote>
 
-                {/* Content */}
-                <div className="flex-1">
-                  <StarRating
-                    rating={testimonials[current].rating}
-                    size="md"
-                    showCount={false}
-                  />
-                  <blockquote className="mt-3 font-display text-lg sm:text-xl text-white/80 leading-relaxed italic">
-                    &ldquo;{testimonials[current].text}&rdquo;
-                  </blockquote>
-                  <div className="mt-5 flex items-center gap-3">
-                    <div>
-                      <div className="flex items-center gap-1.5">
-                        <p className="font-sans font-semibold text-white text-sm">
-                          {testimonials[current].name}
-                        </p>
-                        {testimonials[current].verified && (
-                          <BadgeCheck className="w-4 h-4 text-[var(--color-gold)]" />
-                        )}
-                      </div>
-                      <p className="text-xs text-white/40">
-                        {testimonials[current].city} · Bought: {testimonials[current].productBought}
-                      </p>
-                    </div>
-                  </div>
+              {/* Author & Verification */}
+              <div className="pt-2">
+                <div className="flex items-center justify-center gap-1.5 font-sans font-medium text-sm text-[#111827]">
+                  <span>{item.name}</span>
+                  {item.verified && (
+                    <span className="inline-flex items-center gap-1 text-[11px] text-[#A3845A] font-normal">
+                      <CheckCircle2 className="w-3.5 h-3.5 fill-[var(--color-gold-light)] text-[#A3845A]" />
+                      Verified Buyer
+                    </span>
+                  )}
                 </div>
+                <p className="text-xs text-[#6B7280] font-sans mt-0.5">
+                  {item.city}, Pakistan · Purchased: <span className="font-medium text-[#374151]">{item.productBought}</span>
+                </p>
               </div>
             </motion.div>
-          </div>
+          </AnimatePresence>
 
-          {/* Navigation */}
-          <div className="flex items-center justify-center gap-4 mt-8">
+          {/* Navigation Controls */}
+          <div className="flex items-center justify-between absolute inset-x-4 top-1/2 -translate-y-1/2 pointer-events-none">
             <button
               onClick={prev}
               aria-label="Previous testimonial"
-              className="w-10 h-10 rounded-full border border-white/20 flex items-center justify-center text-white/60 hover:border-[var(--color-gold)] hover:text-[var(--color-gold)] transition-all"
+              className="pointer-events-auto w-10 h-10 rounded-full border border-[#E5E7EB] bg-white text-[#111827] flex items-center justify-center hover:bg-[#111827] hover:text-white transition-colors shadow-sm"
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
-
-            {/* Dots */}
-            <div className="flex gap-2">
-              {testimonials.map((_, i) => (
-                <button
-                  key={i}
-                  onClick={() => setCurrent(i)}
-                  aria-label={`Go to testimonial ${i + 1}`}
-                  className="relative transition-all"
-                >
-                  <div
-                    className={`h-1.5 rounded-full transition-all duration-300 ${
-                      i === current
-                        ? "w-8 bg-[var(--color-gold)]"
-                        : "w-1.5 bg-white/20 hover:bg-white/40"
-                    }`}
-                  />
-                  {i === current && (
-                    <motion.div
-                      layoutId="testimonial-dot"
-                      className="absolute inset-0 h-1.5 bg-[var(--color-gold)] rounded-full"
-                    />
-                  )}
-                </button>
-              ))}
-            </div>
-
             <button
               onClick={next}
               aria-label="Next testimonial"
-              className="w-10 h-10 rounded-full border border-white/20 flex items-center justify-center text-white/60 hover:border-[var(--color-gold)] hover:text-[var(--color-gold)] transition-all"
+              className="pointer-events-auto w-10 h-10 rounded-full border border-[#E5E7EB] bg-white text-[#111827] flex items-center justify-center hover:bg-[#111827] hover:text-white transition-colors shadow-sm"
             >
               <ChevronRight className="w-4 h-4" />
             </button>
           </div>
         </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-3 gap-6 mt-16 max-w-2xl mx-auto">
-          {[
-            { num: "5,000+", label: "Happy Customers" },
-            { num: "4.9★", label: "Average Rating" },
-            { num: "98%", label: "Repeat Buyers" },
-          ].map((stat) => (
-            <AnimatedSection key={stat.num} delay={0.1} className="text-center">
-              <p className="font-display text-3xl sm:text-4xl font-bold text-gradient mb-1">
-                {stat.num}
-              </p>
-              <p className="text-xs text-white/40 uppercase tracking-wider">
-                {stat.label}
-              </p>
-            </AnimatedSection>
+        {/* Indicators */}
+        <div className="flex justify-center gap-1.5 mt-6">
+          {testimonials.map((_, idx) => (
+            <button
+              key={idx}
+              onClick={() => setCurrent(idx)}
+              aria-label={`Go to review ${idx + 1}`}
+              className={`h-1 transition-all duration-300 ${
+                idx === current ? "w-6 bg-[#111827]" : "w-2 bg-[#D1D5DB]"
+              }`}
+            />
           ))}
         </div>
+
+        {/* Trust Stats Bar */}
+        <div className="grid grid-cols-3 gap-4 sm:gap-8 mt-16 pt-12 border-t border-[#E5E7EB] max-w-xl mx-auto">
+          <div>
+            <p className="font-serif text-2xl sm:text-3xl text-[#111827] font-medium">4.9 / 5.0</p>
+            <p className="text-[11px] font-sans text-[#6B7280] tracking-wider uppercase mt-1">Average Rating</p>
+          </div>
+          <div>
+            <p className="font-serif text-2xl sm:text-3xl text-[#111827] font-medium">5,000+</p>
+            <p className="text-[11px] font-sans text-[#6B7280] tracking-wider uppercase mt-1">Abayas Delivered</p>
+          </div>
+          <div>
+            <p className="font-serif text-2xl sm:text-3xl text-[#111827] font-medium">98%</p>
+            <p className="text-[11px] font-sans text-[#6B7280] tracking-wider uppercase mt-1">Repeat Clients</p>
+          </div>
+        </div>
+
       </div>
     </section>
   );

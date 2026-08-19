@@ -1,0 +1,40 @@
+{
+  "slug": "ivory-zari-kaftan",
+  "title": "Ivory Zari Silk Kaftan",
+  "subtitle": "Ethereal Raw Silk with Antique Gold Zari",
+  "description": "Flowing raw silk kaftan in pure ivory with shimmering antique gold tilla border and delicate pearl tassel neckline.",
+  "longDescription": "Designed for effortless elegance, the Ivory Zari Silk Kaftan combines comfortable airy drapes with royal Pakistani formal aesthetics. The neckline features delicate handmade dabka and pearl tassels, bordered by an intricate antique gold zari hem.",
+  "price": 6800,
+  "originalPrice": 8200,
+  "category": "Kaftan",
+  "tags": ["silk", "zari", "ivory", "festive", "new"],
+  "sizes": [
+    { "label": "Free Size", "measurements": "Bust: Up to 48\" | Length: 56\"" }
+  ],
+  "colors": [
+    { "name": "Pure Ivory", "hex": "#F9F6EE" },
+    { "name": "Champagne Gold", "hex": "#E5D3B3" },
+    { "name": "Rose Dust", "hex": "#D8A499" }
+  ],
+  "images": [
+    "/products/royal-zahra-kaftan/image-1.jpg"
+  ],
+  "sku": "AMA-005-IVR",
+  "featured": true,
+  "isNew": true,
+  "isBestseller": false,
+  "stock": {
+    "Free Size-Pure Ivory": 9,
+    "Free Size-Champagne Gold": 5,
+    "Free Size-Rose Dust": 4
+  },
+  "material": "Pure Korean Raw Silk with Zari Border",
+  "careInstructions": [
+    "Dry clean only",
+    "Do not spray perfume directly on embroidery",
+    "Iron on silk setting"
+  ],
+  "rating": 4.85,
+  "reviewCount": 112,
+  "createdAt": "2024-02-18"
+}

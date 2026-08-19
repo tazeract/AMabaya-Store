@@ -6,106 +6,98 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { getAllProducts } from "@/lib/products";
 import { ProductCard } from "@/components/products/ProductCard";
-import { AnimatedSection, StaggeredContainer, staggerItemVariants } from "@/components/ui/AnimatedSection";
 import type { Product } from "@/types";
 
-const TABS = ["All", "Abaya", "Kaftan", "Dupatta"] as const;
-type Tab = (typeof TABS)[number];
+const TABS = [
+  { label: "All Curations", value: "All" },
+  { label: "Abayas", value: "Abaya" },
+  { label: "Kaftans", value: "Kaftan" },
+  { label: "Dupattas", value: "Dupatta" },
+  { label: "Bestsellers", value: "Bestseller" },
+] as const;
 
 export function FeaturedCollection() {
-  const [activeTab, setActiveTab] = useState<Tab>("All");
+  const [activeTab, setActiveTab] = useState<string>("All");
   const [products, setProducts] = useState<Product[]>([]);
 
   useEffect(() => {
-    getAllProducts().then((all) =>
-      setProducts(all.filter((p) => p.featured))
-    );
+    getAllProducts().then(setProducts);
   }, []);
 
-  const filtered =
-    activeTab === "All"
-      ? products
-      : products.filter((p) => p.category === activeTab);
+  const filteredProducts = products.filter((p) => {
+    if (activeTab === "All") return true;
+    if (activeTab === "Bestseller") return p.isBestseller;
+    return p.category === activeTab;
+  });
 
   return (
-    <section className="py-24 px-4 sm:px-6" aria-label="Featured Collection">
+    <section className="py-20 lg:py-28 px-4 sm:px-6 lg:px-8 bg-[#FBF9F6] border-b border-[#E5E7EB]" aria-label="Featured Collection">
       <div className="max-w-7xl mx-auto">
+        
         {/* Header */}
-        <AnimatedSection className="text-center mb-12">
-          <span className="inline-block text-[var(--color-gold)] text-xs font-sans uppercase tracking-[0.3em] font-medium mb-4">
-            ✦ Curated For You
-          </span>
-          <h2 className="font-display text-4xl sm:text-5xl font-semibold text-[var(--color-text-primary)] mb-4">
-            Featured Collection
-          </h2>
-          <div className="divider-gold w-24 mx-auto mb-4" />
-          <p className="text-[var(--color-text-secondary)] max-w-xl mx-auto text-sm leading-relaxed">
-            Handpicked pieces that embody the essence of AMabaya — where tradition meets contemporary design.
+        <div className="text-center max-w-2xl mx-auto mb-12">
+          <p className="text-[11px] font-sans font-semibold tracking-[0.25em] text-[#A3845A] uppercase mb-2">
+            Haute Modesty
           </p>
-        </AnimatedSection>
+          <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl text-[#111827] font-normal tracking-tight">
+            Featured Masterpieces
+          </h2>
+          <div className="w-12 h-[1px] bg-[#111827] mx-auto mt-4 mb-4" />
+          <p className="text-sm text-[#4B5563] font-sans">
+            Hand-tailored in Lahore using imported Korean Nida, French Organza, and Pure Raw Silk.
+          </p>
+        </div>
 
-        {/* Tabs */}
-        <AnimatedSection delay={0.1} className="flex justify-center mb-12">
-          <div className="flex items-center gap-1 p-1.5 bg-white border border-[var(--color-border)] rounded-full shadow-sm">
+        {/* Minimal Tab Filter */}
+        <div className="flex justify-center mb-12">
+          <div className="inline-flex flex-wrap items-center justify-center gap-1 sm:gap-2 p-1 bg-white border border-[#E5E7EB]">
             {TABS.map((tab) => (
               <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                aria-pressed={activeTab === tab}
-                className={`relative px-6 py-2.5 rounded-full text-sm font-medium transition-all duration-300 ${
-                  activeTab === tab
-                    ? "text-white"
-                    : "text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]"
+                key={tab.value}
+                onClick={() => setActiveTab(tab.value)}
+                className={`px-4 sm:px-6 py-2 text-xs font-sans font-medium uppercase tracking-widest transition-all ${
+                  activeTab === tab.value
+                    ? "bg-[#111827] text-white"
+                    : "text-[#4B5563] hover:text-[#111827]"
                 }`}
               >
-                {activeTab === tab && (
-                  <motion.div
-                    layoutId="active-tab"
-                    className="absolute inset-0 bg-gradient-to-r from-[var(--color-gold)] to-[var(--color-gold-dark)] rounded-full"
-                    transition={{ type: "spring", damping: 25, stiffness: 280 }}
-                  />
-                )}
-                <span className="relative z-10">{tab}</span>
+                {tab.label}
               </button>
             ))}
           </div>
-        </AnimatedSection>
+        </div>
 
-        {/* Product Grid */}
+        {/* 4-Column (Desktop) / 2-Column (Mobile) Sapphire-Style Grid */}
         <AnimatePresence mode="wait">
           <motion.div
             key={activeTab}
-            initial={{ opacity: 0, y: 16 }}
+            initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.35 }}
+            transition={{ duration: 0.3 }}
+            className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8"
           >
-            {filtered.length === 0 ? (
-              <div className="text-center py-16 text-[var(--color-text-muted)]">
-                <p className="font-display text-xl">Coming soon...</p>
-              </div>
-            ) : (
-              <StaggeredContainer className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filtered.map((product) => (
-                  <motion.div key={product.slug} variants={staggerItemVariants}>
-                    <ProductCard product={product} />
-                  </motion.div>
-                ))}
-              </StaggeredContainer>
-            )}
+            {filteredProducts.map((product, idx) => (
+              <ProductCard
+                key={product.slug}
+                product={product}
+                priority={idx < 4}
+              />
+            ))}
           </motion.div>
         </AnimatePresence>
 
-        {/* View All CTA */}
-        <AnimatedSection delay={0.2} className="text-center mt-14">
+        {/* View All Collection CTA */}
+        <div className="text-center mt-16">
           <Link
             href="/products"
-            className="group inline-flex items-center gap-3 px-8 py-4 border-2 border-[var(--color-gold)] text-[var(--color-gold)] rounded-full font-medium text-sm hover:bg-[var(--color-gold)] hover:text-white transition-all duration-300"
+            className="luxury-btn-primary group"
           >
-            View Entire Collection
+            <span>View All Collections</span>
             <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
           </Link>
-        </AnimatedSection>
+        </div>
+
       </div>
     </section>
   );

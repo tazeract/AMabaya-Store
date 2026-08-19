@@ -12,7 +12,7 @@ import siteConfig from "@/lib/siteConfig";
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.siteUrl),
   title: {
-    default: `${siteConfig.storeName} — ${siteConfig.storeTagline}`,
+    default: `${siteConfig.storeName} — Luxury Modest Fashion & Designer Abayas`,
     template: `%s | ${siteConfig.storeName}`,
   },
   description: siteConfig.storeDescription,
@@ -27,6 +27,8 @@ export const metadata: Metadata = {
     "AMabaya",
     "eid collection",
     "online shopping Pakistan",
+    "Sapphire abaya",
+    "Asim Jofa modest",
   ],
   authors: [{ name: siteConfig.storeName, url: siteConfig.siteUrl }],
   creator: siteConfig.storeName,
@@ -35,7 +37,7 @@ export const metadata: Metadata = {
     locale: "en_PK",
     url: siteConfig.siteUrl,
     siteName: siteConfig.storeName,
-    title: `${siteConfig.storeName} — ${siteConfig.storeTagline}`,
+    title: `${siteConfig.storeName} — Luxury Pakistani Modest Fashion`,
     description: siteConfig.storeDescription,
     images: [
       {
@@ -48,7 +50,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: `${siteConfig.storeName} — ${siteConfig.storeTagline}`,
+    title: `${siteConfig.storeName} — Luxury Pakistani Modest Fashion`,
     description: siteConfig.storeDescription,
     creator: siteConfig.twitterHandle,
     images: [siteConfig.ogImage],
@@ -75,14 +77,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body className="grain-overlay">
+    <html lang="en" className="scroll-smooth">
+      <body className="bg-white text-[#111827] antialiased min-h-screen flex flex-col selection:bg-[#F3EAE1] selection:text-[#111827]">
         <AuthProvider>
           <WishlistProvider>
             <CartProvider>
               <Navbar />
               <CartDrawer />
-              <main>{children}</main>
+              <main className="flex-1">{children}</main>
               <Footer />
               <Toaster />
             </CartProvider>

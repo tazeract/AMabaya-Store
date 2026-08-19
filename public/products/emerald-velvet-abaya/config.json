@@ -1,0 +1,44 @@
+{
+  "slug": "emerald-velvet-abaya",
+  "title": "Emerald Velvet Handcrafted Abaya",
+  "subtitle": "Royal Winter Velvet & Handworked Zardozi",
+  "description": "Exquisite micro-velvet abaya in rich deep emerald green, accentuated with hand-embellished zardozi cuffs and a cascading drape.",
+  "longDescription": "A masterpiece from AMabaya's Winter Royalty Edition. Crafted from plush micro-velvet in a mesmerizing deep emerald hue, this abaya commands attention with its luxurious hand-stitched zardozi embroidery on the lapels and sleeve cuffs. Designed for winter festivities, weddings, and formal occasions.",
+  "price": 7950,
+  "originalPrice": 9500,
+  "category": "Abaya",
+  "tags": ["velvet", "festive", "winter", "luxury", "bestseller"],
+  "sizes": [
+    { "label": "S", "measurements": "Bust: 34-36\" | Length: 56\"" },
+    { "label": "M", "measurements": "Bust: 36-38\" | Length: 57\"" },
+    { "label": "L", "measurements": "Bust: 38-40\" | Length: 58\"" },
+    { "label": "XL", "measurements": "Bust: 40-42\" | Length: 59\"" }
+  ],
+  "colors": [
+    { "name": "Emerald Green", "hex": "#0F4D3A" },
+    { "name": "Midnight Noir", "hex": "#0D0D0D" },
+    { "name": "Royal Maroon", "hex": "#4A0E17" }
+  ],
+  "images": [
+    "/products/classic-noir-abaya/image-1.jpg"
+  ],
+  "sku": "AMA-004-EMR",
+  "featured": true,
+  "isNew": true,
+  "isBestseller": true,
+  "stock": {
+    "S-Emerald Green": 4,
+    "M-Emerald Green": 7,
+    "L-Emerald Green": 5,
+    "XL-Emerald Green": 2
+  },
+  "material": "Imported Micro-Velvet with Pure Silk Lining",
+  "careInstructions": [
+    "Dry clean only",
+    "Steam iron inside out",
+    "Keep away from direct sunlight"
+  ],
+  "rating": 5.0,
+  "reviewCount": 189,
+  "createdAt": "2024-02-10"
+}

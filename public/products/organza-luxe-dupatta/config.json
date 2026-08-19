@@ -1,0 +1,40 @@
+{
+  "slug": "organza-luxe-dupatta",
+  "title": "Regal Organza Scalloped Dupatta",
+  "subtitle": "Cutwork Scallop Border with Gota & Pearls",
+  "description": "Ultra-light crystalline organza dupatta featuring intricate 4-sided cutwork scalloped borders and hand-applied pearl spray.",
+  "longDescription": "The perfect crowning statement for your luxury abayas and formal kaftans. Made from feather-light Pakistani organza, bordered with signature laser-cut scallops and hand-attached iridescent pearls.",
+  "price": 3200,
+  "originalPrice": 4000,
+  "category": "Dupatta",
+  "tags": ["organza", "scallop", "pearls", "bestseller"],
+  "sizes": [
+    { "label": "Free Size", "measurements": "Length: 2.75 Yards | Width: 42\"" }
+  ],
+  "colors": [
+    { "name": "Pearl White", "hex": "#FFFFFF" },
+    { "name": "Midnight Black", "hex": "#111111" },
+    { "name": "Soft Sage", "hex": "#B2C2B2" }
+  ],
+  "images": [
+    "/products/pearl-embroidered-dupatta/image-1.jpg"
+  ],
+  "sku": "AMA-006-ORG",
+  "featured": true,
+  "isNew": false,
+  "isBestseller": true,
+  "stock": {
+    "Free Size-Pearl White": 15,
+    "Free Size-Midnight Black": 12,
+    "Free Size-Soft Sage": 8
+  },
+  "material": "100% Crystalline Organza Silk",
+  "careInstructions": [
+    "Dry clean recommended",
+    "Gentle handwash in cold water",
+    "Iron with press cloth"
+  ],
+  "rating": 4.95,
+  "reviewCount": 164,
+  "createdAt": "2024-01-28"
+}

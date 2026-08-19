@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Mail, Phone, MapPin, MessageCircle, Send, CheckCircle } from "lucide-react";
-import { AnimatedSection } from "@/components/ui/AnimatedSection";
 import { toast } from "@/components/ui/Toaster";
 import { sendContactMessage } from "@/lib/emailjs";
 import siteConfig from "@/lib/siteConfig";
@@ -21,7 +20,7 @@ export default function ContactPage() {
     const e: Record<string, string> = {};
     if (!form.name.trim()) e.name = "Name is required";
     if (!EMAIL_REGEX.test(form.email)) e.email = "Valid email is required";
-    if (form.phone && !PK_PHONE_REGEX.test(form.phone)) e.phone = "Enter a valid Pakistani number";
+    if (form.phone && !PK_PHONE_REGEX.test(form.phone)) e.phone = "Enter a valid Pakistani phone number (e.g., 03001234567)";
     if (!form.subject.trim()) e.subject = "Subject is required";
     if (form.message.trim().length < 10) e.message = "Message must be at least 10 characters";
     return e;
@@ -35,102 +34,124 @@ export default function ContactPage() {
     try {
       await sendContactMessage(form);
       setSubmitted(true);
-      toast.success("Message sent!", "We'll get back to you within 24 hours.");
+      toast.success("Message Sent", "Our concierge will respond within 24 hours.");
     } catch {
-      toast.error("Failed to send", "Please try WhatsApp instead.");
+      toast.error("Submission failed", "Please reach out directly via WhatsApp.");
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const contactItems = [
-    { icon: Phone, label: "Call / SMS", value: siteConfig.contactPhone, href: `tel:${siteConfig.contactPhone}` },
-    { icon: Mail, label: "Email", value: siteConfig.contactEmail, href: `mailto:${siteConfig.contactEmail}` },
-    { icon: MapPin, label: "Address", value: siteConfig.address, href: `https://maps.google.com/?q=${encodeURIComponent(siteConfig.address)}` },
+    { icon: Phone, label: "Direct Phone / SMS", value: siteConfig.contactPhone, href: `tel:${siteConfig.contactPhone}` },
+    { icon: Mail, label: "Official Inquiries", value: siteConfig.contactEmail, href: `mailto:${siteConfig.contactEmail}` },
+    { icon: MapPin, label: "Lahore Flagship", value: siteConfig.address, href: `https://maps.google.com/?q=${encodeURIComponent(siteConfig.address)}` },
   ];
 
   return (
-    <div className="min-h-screen pt-24">
+    <div className="min-h-screen bg-white">
       {/* Header */}
-      <div className="bg-white border-b border-[var(--color-border)] py-16 px-4 sm:px-6 text-center">
-        <AnimatedSection>
-          <span className="text-[var(--color-gold)] text-xs uppercase tracking-widest block mb-3">✦ Get In Touch</span>
-          <h1 className="font-display text-5xl font-semibold text-[var(--color-text-primary)] mb-4">Contact Us</h1>
-          <p className="text-[var(--color-text-secondary)] max-w-md mx-auto text-sm">
-            We&apos;re here to help. Whether it&apos;s a sizing question or a custom order — reach out!
+      <div className="bg-[#FBF9F6] border-b border-[#E5E7EB] py-14 lg:py-20 px-4 sm:px-6 lg:px-8 text-center">
+        <div className="max-w-2xl mx-auto space-y-2">
+          <p className="text-[11px] font-sans font-semibold tracking-[0.25em] text-[#A3845A] uppercase">
+            Client Concierge
           </p>
-        </AnimatedSection>
+          <h1 className="font-serif text-4xl sm:text-5xl text-[#111827] font-normal">
+            Get In Touch
+          </h1>
+          <p className="text-xs sm:text-sm text-[#4B5563] font-sans leading-relaxed pt-1">
+            Whether you have questions regarding sizing, custom stitching, or corporate gifting, our Lahore team is at your service.
+          </p>
+        </div>
       </div>
 
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-16">
-        <div className="grid lg:grid-cols-5 gap-12">
-          {/* Contact info */}
-          <div className="lg:col-span-2 space-y-6">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div className="grid lg:grid-cols-12 gap-10 lg:gap-14">
+          
+          {/* Left Column: Direct Contacts */}
+          <div className="lg:col-span-5 space-y-6">
             {contactItems.map((item) => (
-              <AnimatedSection key={item.label} direction="left">
-                <a href={item.href} target={item.icon === MapPin ? "_blank" : undefined} rel="noopener noreferrer"
-                  className="flex items-start gap-4 p-5 bg-white rounded-2xl border border-[var(--color-border)] hover:border-[var(--color-gold)] hover:shadow-md transition-all group"
-                >
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[var(--color-gold-light)] to-[var(--color-gold-dark)] flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform shadow-md">
-                    <item.icon className="w-5 h-5 text-white" />
-                  </div>
-                  <div>
-                    <p className="text-xs text-[var(--color-text-muted)] uppercase tracking-wider mb-1">{item.label}</p>
-                    <p className="text-sm font-medium text-[var(--color-text-primary)]">{item.value}</p>
-                  </div>
-                </a>
-              </AnimatedSection>
-            ))}
-
-            {/* WhatsApp CTA */}
-            <AnimatedSection delay={0.2} direction="left">
               <a
-                href={`https://wa.me/${siteConfig.whatsappNumber}`}
-                target="_blank"
+                key={item.label}
+                href={item.href}
+                target={item.icon === MapPin ? "_blank" : undefined}
                 rel="noopener noreferrer"
-                className="whatsapp-btn flex items-center gap-3 p-5 rounded-2xl text-white"
+                className="flex items-start gap-4 p-6 bg-[#FBF9F6] border border-[#E5E7EB] hover:border-[#111827] transition-all group"
               >
-                <MessageCircle className="w-6 h-6" />
+                <div className="w-10 h-10 border border-[#111827] flex items-center justify-center text-[#111827] bg-white group-hover:bg-[#111827] group-hover:text-white transition-colors shrink-0">
+                  <item.icon className="w-4 h-4 stroke-[1.5]" />
+                </div>
                 <div>
-                  <p className="font-semibold text-sm">Chat on WhatsApp</p>
-                  <p className="text-xs text-white/70">Usually replies within 1 hour</p>
+                  <p className="text-[10px] text-[#6B7280] font-sans uppercase tracking-widest font-semibold mb-1">
+                    {item.label}
+                  </p>
+                  <p className="text-sm font-sans font-medium text-[#111827]">
+                    {item.value}
+                  </p>
                 </div>
               </a>
-            </AnimatedSection>
+            ))}
+
+            {/* WhatsApp Priority Card */}
+            <a
+              href={`https://wa.me/${siteConfig.whatsappNumber}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-4 p-6 bg-emerald-900 text-white border border-emerald-950 hover:bg-emerald-950 transition-colors group"
+            >
+              <div className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center shrink-0">
+                <MessageCircle className="w-5 h-5 text-emerald-300" />
+              </div>
+              <div>
+                <p className="font-serif text-lg font-medium">WhatsApp Direct Line</p>
+                <p className="text-xs text-white/80 font-sans mt-0.5">
+                  Instant stylist responses (Mon – Sat, 11 AM – 9 PM)
+                </p>
+              </div>
+            </a>
           </div>
 
-          {/* Contact form */}
-          <AnimatedSection direction="right" className="lg:col-span-3">
+          {/* Right Column: Contact Form */}
+          <div className="lg:col-span-7">
             {submitted ? (
               <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="h-full flex flex-col items-center justify-center text-center py-16"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="h-full flex flex-col items-center justify-center text-center p-10 bg-[#FBF9F6] border border-[#E5E7EB]"
               >
-                <CheckCircle className="w-16 h-16 text-green-500 mb-4" />
-                <h2 className="font-display text-2xl font-semibold text-[var(--color-text-primary)] mb-2">Message Sent!</h2>
-                <p className="text-[var(--color-text-muted)] text-sm max-w-sm">
-                  Thank you for reaching out. We&apos;ll reply within 24 hours.
+                <CheckCircle className="w-12 h-12 text-emerald-700 mb-4" />
+                <h2 className="font-serif text-2xl text-[#111827] mb-2 font-normal">
+                  Thank You for Writing
+                </h2>
+                <p className="text-xs text-[#6B7280] font-sans max-w-sm">
+                  Your message has reached our team. A client consultant will reply within 24 business hours.
                 </p>
-                <button onClick={() => { setSubmitted(false); setForm({ name: "", email: "", phone: "", subject: "", message: "" }); }}
-                  className="mt-6 px-6 py-3 border border-[var(--color-gold)] text-[var(--color-gold)] rounded-full text-sm hover:bg-[var(--color-gold)] hover:text-white transition-all"
+                <button
+                  onClick={() => {
+                    setSubmitted(false);
+                    setForm({ name: "", email: "", phone: "", subject: "", message: "" });
+                  }}
+                  className="luxury-btn-outline mt-6"
                 >
-                  Send another message
+                  Send Another Inquiry
                 </button>
               </motion.div>
             ) : (
-              <form onSubmit={handleSubmit} className="bg-white rounded-3xl border border-[var(--color-border)] p-8 space-y-5">
-                <h2 className="font-display text-2xl font-semibold text-[var(--color-text-primary)] mb-2">Send Us a Message</h2>
+              <form onSubmit={handleSubmit} className="p-8 sm:p-10 bg-[#FBF9F6] border border-[#E5E7EB] space-y-5">
+                <div>
+                  <h2 className="font-serif text-2xl text-[#111827] font-normal">Send an Inquiry</h2>
+                  <p className="text-xs text-[#6B7280] font-sans mt-1">Please fill in your details below.</p>
+                </div>
 
-                <div className="grid sm:grid-cols-2 gap-5">
+                <div className="grid sm:grid-cols-2 gap-4">
                   {[
-                    { name: "name", label: "Your Name", placeholder: "Fatima Khan", type: "text" },
-                    { name: "email", label: "Email Address", placeholder: "your@email.com", type: "email" },
-                    { name: "phone", label: "Phone (optional)", placeholder: "03XX-XXXXXXX", type: "tel" },
-                    { name: "subject", label: "Subject", placeholder: "Size inquiry, custom order...", type: "text" },
+                    { name: "name", label: "Full Name", placeholder: "e.g. Ayesha Siddiqui", type: "text" },
+                    { name: "email", label: "Email Address", placeholder: "ayesha@example.com", type: "email" },
+                    { name: "phone", label: "Phone (Optional)", placeholder: "0300 1234567", type: "tel" },
+                    { name: "subject", label: "Subject", placeholder: "Custom size, delivery inquiry...", type: "text" },
                   ].map((field) => (
                     <div key={field.name} className={field.name === "subject" ? "sm:col-span-2" : ""}>
-                      <label htmlFor={`contact-${field.name}`} className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1.5">
+                      <label htmlFor={`contact-${field.name}`} className="block text-xs font-sans font-semibold text-[#111827] uppercase tracking-wider mb-1.5">
                         {field.label}
                       </label>
                       <input
@@ -142,47 +163,47 @@ export default function ContactPage() {
                           setErrors(p => ({ ...p, [field.name]: "" }));
                         }}
                         placeholder={field.placeholder}
-                        className={`w-full px-4 py-3 border rounded-xl text-sm outline-none transition-all ${
-                          errors[field.name] ? "border-red-400 bg-red-50" : "border-[var(--color-border)] focus:border-[var(--color-gold)] focus:ring-2 focus:ring-[var(--color-gold)]/20"
+                        className={`w-full px-4 py-3 bg-white border text-xs font-sans outline-none transition-colors ${
+                          errors[field.name] ? "border-red-400" : "border-[#D1D5DB] focus:border-[#111827]"
                         }`}
                       />
-                      {errors[field.name] && <p className="text-xs text-red-500 mt-1">{errors[field.name]}</p>}
+                      {errors[field.name] && <p className="text-[11px] text-red-600 font-sans mt-1">{errors[field.name]}</p>}
                     </div>
                   ))}
 
-                  {/* Message */}
                   <div className="sm:col-span-2">
-                    <label htmlFor="contact-message" className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1.5">Message</label>
+                    <label htmlFor="contact-message" className="block text-xs font-sans font-semibold text-[#111827] uppercase tracking-wider mb-1.5">
+                      Your Message
+                    </label>
                     <textarea
                       id="contact-message"
                       value={form.message}
-                      onChange={(e) => { setForm(p => ({ ...p, message: e.target.value })); setErrors(p => ({ ...p, message: "" })); }}
-                      placeholder="How can we help you?"
+                      onChange={(e) => {
+                        setForm(p => ({ ...p, message: e.target.value }));
+                        setErrors(p => ({ ...p, message: "" }));
+                      }}
+                      placeholder="Please tell us how we can assist you..."
                       rows={5}
-                      className={`w-full px-4 py-3 border rounded-xl text-sm outline-none transition-all resize-none ${
-                        errors.message ? "border-red-400 bg-red-50" : "border-[var(--color-border)] focus:border-[var(--color-gold)] focus:ring-2 focus:ring-[var(--color-gold)]/20"
+                      className={`w-full px-4 py-3 bg-white border text-xs font-sans outline-none transition-colors resize-none ${
+                        errors.message ? "border-red-400" : "border-[#D1D5DB] focus:border-[#111827]"
                       }`}
                     />
-                    {errors.message && <p className="text-xs text-red-500 mt-1">{errors.message}</p>}
+                    {errors.message && <p className="text-[11px] text-red-600 font-sans mt-1">{errors.message}</p>}
                   </div>
                 </div>
 
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  id="contact-submit-btn"
-                  className={`flex items-center justify-center gap-2 w-full py-4 rounded-2xl font-semibold text-sm transition-all ${
-                    isSubmitting
-                      ? "bg-[var(--color-gold)]/60 text-white cursor-wait"
-                      : "bg-gradient-to-r from-[var(--color-gold)] to-[var(--color-gold-dark)] text-white shadow-[var(--shadow-gold)] hover:-translate-y-0.5 hover:shadow-xl"
-                  }`}
+                  className="w-full luxury-btn-primary py-4 flex items-center justify-center gap-2"
                 >
                   <Send className="w-4 h-4" />
-                  {isSubmitting ? "Sending..." : "Send Message"}
+                  <span>{isSubmitting ? "Submitting Inquiry..." : "Submit Inquiry"}</span>
                 </button>
               </form>
             )}
-          </AnimatedSection>
+          </div>
+
         </div>
       </div>
     </div>

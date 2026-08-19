@@ -3,15 +3,15 @@
 import { useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
-import { Search, Package, Truck, CheckCircle, Clock, MapPin } from "lucide-react";
-import { AnimatedSection } from "@/components/ui/AnimatedSection";
+import { Search, Package, Truck, CheckCircle2, Clock, MapPin } from "lucide-react";
+import { formatPrice } from "@/lib/products";
 import type { Order, OrderStatus } from "@/types";
 
 const STEPS: { status: OrderStatus; label: string; icon: React.ElementType; desc: string }[] = [
-  { status: "placed", label: "Order Placed", icon: Package, desc: "We've received your order" },
-  { status: "processing", label: "Processing", icon: Clock, desc: "Preparing your package" },
-  { status: "shipped", label: "Shipped", icon: Truck, desc: "On its way to you" },
-  { status: "delivered", label: "Delivered", icon: CheckCircle, desc: "Package delivered" },
+  { status: "placed", label: "Order Received", icon: Package, desc: "Order confirmed at AMabaya Atelier" },
+  { status: "processing", label: "Tailoring & Quality Check", icon: Clock, desc: "Garment inspection & packaging" },
+  { status: "shipped", label: "With Courier (TCS / Leopard / Call Courier)", icon: Truck, desc: "In transit across Pakistan" },
+  { status: "delivered", label: "Delivered", icon: CheckCircle2, desc: "Delivered to your doorstep" },
 ];
 
 const STATUS_ORDER: OrderStatus[] = ["placed", "processing", "shipped", "delivered"];
@@ -43,181 +43,133 @@ function OrderTrackingContent() {
   const currentStep = order ? STATUS_ORDER.indexOf(order.status) : -1;
 
   return (
-    <div className="min-h-screen pt-24">
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 py-12">
-        <AnimatedSection className="text-center mb-12">
-          <span className="text-[var(--color-gold)] text-xs uppercase tracking-widest font-medium block mb-3">✦ Track</span>
-          <h1 className="font-display text-4xl sm:text-5xl font-semibold text-[var(--color-text-primary)] mb-4">
-            Order Tracking
-          </h1>
-          <p className="text-[var(--color-text-secondary)] max-w-md mx-auto text-sm">
-            Enter your Order ID or phone number to track your package.
-          </p>
-        </AnimatedSection>
+    <div className="min-h-screen bg-white">
+      {/* Header */}
+      <div className="bg-[#FBF9F6] border-b border-[#E5E7EB] py-12 px-4 sm:px-6 lg:px-8 text-center">
+        <p className="text-[11px] font-sans font-semibold tracking-[0.25em] text-[#A3845A] uppercase mb-1">
+          Delivery Status
+        </p>
+        <h1 className="font-serif text-3xl sm:text-4xl text-[#111827] font-normal">
+          Track Your Package
+        </h1>
+        <p className="text-xs text-[#6B7280] font-sans mt-1">
+          Enter your Order Reference ID or mobile number to track real-time delivery status.
+        </p>
+      </div>
 
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Search form */}
-        <AnimatedSection delay={0.1} className="bg-white rounded-3xl border border-[var(--color-border)] p-8 shadow-sm mb-8">
-          <form onSubmit={handleSearch} className="space-y-5">
+        <div className="bg-[#FBF9F6] border border-[#E5E7EB] p-6 sm:p-8 mb-10">
+          <form onSubmit={handleSearch} className="space-y-4">
             <div>
-              <label htmlFor="track-order-id" className="block text-sm font-medium text-[var(--color-text-secondary)] mb-2">
-                Order ID
+              <label htmlFor="track-order-id" className="block text-xs font-sans font-semibold text-[#111827] uppercase tracking-wider mb-1.5">
+                Order Reference ID
               </label>
               <input
                 id="track-order-id"
                 type="text"
                 value={orderId}
                 onChange={(e) => setOrderId(e.target.value)}
-                placeholder="e.g. ORD-1234567890"
-                className="w-full px-4 py-3 border border-[var(--color-border)] rounded-xl text-sm outline-none focus:border-[var(--color-gold)] transition-all"
+                placeholder="e.g. AMA-123456"
+                className="w-full px-4 py-3 bg-white border border-[#D1D5DB] focus:border-[#111827] text-xs font-sans outline-none"
               />
             </div>
+
             <div className="flex items-center gap-4">
-              <div className="flex-1 h-px bg-[var(--color-border)]" />
-              <span className="text-xs text-[var(--color-text-muted)]">OR</span>
-              <div className="flex-1 h-px bg-[var(--color-border)]" />
+              <div className="flex-1 h-px bg-[#E5E7EB]" />
+              <span className="text-[10px] uppercase font-sans tracking-widest text-[#9CA3AF]">OR</span>
+              <div className="flex-1 h-px bg-[#E5E7EB]" />
             </div>
+
             <div>
-              <label htmlFor="track-phone" className="block text-sm font-medium text-[var(--color-text-secondary)] mb-2">
-                Phone Number
+              <label htmlFor="track-phone" className="block text-xs font-sans font-semibold text-[#111827] uppercase tracking-wider mb-1.5">
+                Mobile Number Used in Order
               </label>
               <input
                 id="track-phone"
                 type="tel"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                placeholder="e.g. 0300-1234567"
-                className="w-full px-4 py-3 border border-[var(--color-border)] rounded-xl text-sm outline-none focus:border-[var(--color-gold)] transition-all"
+                placeholder="e.g. 0300 1234567"
+                className="w-full px-4 py-3 bg-white border border-[#D1D5DB] focus:border-[#111827] text-xs font-sans outline-none"
               />
             </div>
+
             <button
               type="submit"
-              className="flex items-center justify-center gap-2 w-full py-4 bg-gradient-to-r from-[var(--color-gold)] to-[var(--color-gold-dark)] text-white rounded-2xl font-medium shadow-[var(--shadow-gold)] hover:-translate-y-0.5 transition-all"
+              className="w-full luxury-btn-primary py-3.5 text-xs flex items-center justify-center gap-2"
             >
               <Search className="w-4 h-4" />
-              Track My Order
+              <span>Track Dispatch Status</span>
             </button>
           </form>
-        </AnimatedSection>
+        </div>
 
-        {/* Not found */}
+        {/* Not found message */}
         {notFound && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-center py-8 text-[var(--color-text-muted)]"
-          >
-            <p className="font-display text-xl text-[var(--color-text-secondary)] mb-2">Order not found</p>
-            <p className="text-sm">Please check your Order ID or phone number and try again.</p>
-          </motion.div>
+          <div className="p-6 bg-[#FBF9F6] border border-amber-300 text-center space-y-2 mb-8">
+            <p className="font-serif text-xl text-[#111827]">Order Not Found</p>
+            <p className="text-xs text-[#6B7280] font-sans">
+              We couldn&apos;t find an order matching that ID or phone number. Please check for typos or contact our WhatsApp helpline.
+            </p>
+          </div>
         )}
 
-        {/* Order found */}
+        {/* Order Details Display */}
         {order && (
-          <motion.div
-            initial={{ opacity: 0, y: 24 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="space-y-6"
-          >
-            {/* Order header */}
-            <div className="bg-white rounded-3xl border border-[var(--color-border)] p-6">
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <p className="text-xs text-[var(--color-text-muted)] uppercase tracking-wider">Order ID</p>
-                  <p className="font-mono font-bold text-[var(--color-text-primary)]">{order.id}</p>
-                </div>
-                <span className={`px-4 py-1.5 rounded-full text-xs font-bold capitalize ${
-                  order.status === "delivered"
-                    ? "bg-green-100 text-green-700"
-                    : order.status === "shipped"
-                    ? "bg-blue-100 text-blue-700"
-                    : order.status === "processing"
-                    ? "bg-amber-100 text-amber-700"
-                    : "bg-[var(--color-gold)]/10 text-[var(--color-gold)]"
-                }`}>
-                  {order.status}
+          <div className="bg-[#FBF9F6] border border-[#E5E7EB] p-6 sm:p-8 space-y-8">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 border-b border-[#E5E7EB]">
+              <div>
+                <span className="text-[10px] uppercase tracking-widest text-[#A3845A] font-semibold">
+                  Verified Booking
                 </span>
+                <h2 className="font-serif text-2xl text-[#111827]">Order #{order.id}</h2>
               </div>
-
-              {/* Progress steps */}
-              <div className="relative mt-8">
-                {/* Progress line */}
-                <div className="absolute top-5 left-5 right-5 h-0.5 bg-[var(--color-border)]">
-                  <motion.div
-                    className="h-full bg-[var(--color-gold)]"
-                    initial={{ width: 0 }}
-                    animate={{ width: `${(currentStep / (STEPS.length - 1)) * 100}%` }}
-                    transition={{ duration: 1, delay: 0.3 }}
-                  />
-                </div>
-
-                <div className="relative flex justify-between">
-                  {STEPS.map((step, i) => {
-                    const isComplete = i <= currentStep;
-                    const isCurrent = i === currentStep;
-                    const Icon = step.icon;
-                    return (
-                      <div key={step.status} className="flex flex-col items-center gap-2 w-20">
-                        <motion.div
-                          initial={{ scale: 0 }}
-                          animate={{ scale: 1 }}
-                          transition={{ delay: 0.3 + i * 0.15, type: "spring" }}
-                          className={`relative z-10 w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all ${
-                            isComplete
-                              ? "bg-[var(--color-gold)] border-[var(--color-gold)] text-white"
-                              : "bg-white border-[var(--color-border)] text-[var(--color-text-muted)]"
-                          } ${isCurrent ? "animate-pulse-gold" : ""}`}
-                        >
-                          <Icon className="w-4 h-4" />
-                        </motion.div>
-                        <p className={`text-[10px] font-medium text-center leading-tight ${
-                          isComplete ? "text-[var(--color-text-primary)]" : "text-[var(--color-text-muted)]"
-                        }`}>
-                          {step.label}
-                        </p>
-                        {isCurrent && (
-                          <p className="text-[9px] text-[var(--color-gold)] text-center">{step.desc}</p>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
+              <span className="px-3 py-1 bg-[#111827] text-white text-xs font-sans uppercase tracking-widest font-semibold w-fit">
+                {order.status}
+              </span>
             </div>
 
-            {/* Order details */}
-            <div className="bg-white rounded-3xl border border-[var(--color-border)] p-6">
-              <h2 className="font-display font-semibold text-[var(--color-text-primary)] mb-4">Order Details</h2>
-              <div className="space-y-3">
-                {order.items.map((item) => (
-                  <div key={item.id} className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-lg overflow-hidden bg-[var(--color-border)] shrink-0">
-                      {item.product.images[0] && <img src={item.product.images[0]} alt={item.product.title} className="w-full h-full object-cover" />}
+            {/* Step Progress Tracker */}
+            <div className="relative pl-6 sm:pl-8 space-y-8 before:absolute before:left-3 before:top-3 before:bottom-3 before:w-0.5 before:bg-[#E5E7EB]">
+              {STEPS.map((step, idx) => {
+                const isComplete = idx <= currentStep;
+                const isCurrent = idx === currentStep;
+                const Icon = step.icon;
+                return (
+                  <div key={step.status} className="relative flex items-start gap-4">
+                    <div
+                      className={`absolute -left-6 sm:-left-8 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold transition-colors ${
+                        isComplete ? "bg-[#111827] text-white" : "bg-white border border-[#D1D5DB] text-[#9CA3AF]"
+                      }`}
+                    >
+                      <Icon className="w-3.5 h-3.5" />
                     </div>
-                    <div className="flex-1">
-                      <p className="text-sm font-medium text-[var(--color-text-primary)]">{item.product.title}</p>
-                      <p className="text-xs text-[var(--color-text-muted)]">{item.selectedSize} · {item.selectedColor} · ×{item.quantity}</p>
+                    <div>
+                      <p className={`font-serif text-lg ${isCurrent ? "text-[#111827] font-semibold" : "text-[#4B5563]"}`}>
+                        {step.label}
+                      </p>
+                      <p className="text-xs text-[#6B7280] font-sans mt-0.5">{step.desc}</p>
                     </div>
                   </div>
-                ))}
-              </div>
+                );
+              })}
             </div>
 
-            {/* Shipping address */}
-            <div className="bg-white rounded-3xl border border-[var(--color-border)] p-6">
-              <div className="flex items-start gap-3">
-                <MapPin className="w-4 h-4 text-[var(--color-gold)] mt-0.5 shrink-0" />
-                <div>
-                  <h2 className="font-display font-semibold text-[var(--color-text-primary)] mb-1">Shipping Address</h2>
-                  <p className="text-sm text-[var(--color-text-secondary)]">{order.shippingAddress.fullName}</p>
-                  <p className="text-sm text-[var(--color-text-muted)]">
-                    {order.shippingAddress.address}, {order.shippingAddress.city}, {order.shippingAddress.province}
-                  </p>
-                  <p className="text-sm text-[var(--color-text-muted)]">{order.customerPhone}</p>
-                </div>
+            {/* Recipient Details */}
+            <div className="pt-6 border-t border-[#E5E7EB] grid sm:grid-cols-2 gap-4 text-xs font-sans">
+              <div>
+                <p className="text-[#9CA3AF] uppercase tracking-wider font-semibold">Recipient</p>
+                <p className="font-medium text-[#111827] mt-1">{order.customerName}</p>
+                <p className="text-[#6B7280]">{order.customerPhone}</p>
+              </div>
+              <div>
+                <p className="text-[#9CA3AF] uppercase tracking-wider font-semibold">Delivery Destination</p>
+                <p className="text-[#111827] mt-1">{order.shippingAddress.address}, {order.shippingAddress.city}</p>
+                <p className="text-[#6B7280]">{order.shippingAddress.province}</p>
               </div>
             </div>
-          </motion.div>
+          </div>
         )}
       </div>
     </div>
@@ -226,7 +178,7 @@ function OrderTrackingContent() {
 
 export default function OrderTrackingPage() {
   return (
-    <Suspense>
+    <Suspense fallback={<div className="min-h-screen bg-white py-20 text-center text-xs uppercase tracking-widest">Loading Tracker...</div>}>
       <OrderTrackingContent />
     </Suspense>
   );

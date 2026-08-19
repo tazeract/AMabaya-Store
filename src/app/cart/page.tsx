@@ -1,12 +1,10 @@
 "use client";
 
-import { useState } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { ShoppingBag, ArrowRight } from "lucide-react";
+import { ShoppingBag, ArrowRight, Trash2, Plus, Minus } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { formatPrice } from "@/lib/products";
-import { AnimatedSection } from "@/components/ui/AnimatedSection";
 import siteConfig from "@/lib/siteConfig";
 
 export default function CartPage() {
@@ -16,121 +14,140 @@ export default function CartPage() {
 
   if (items.length === 0) {
     return (
-      <div className="min-h-screen pt-32 flex flex-col items-center justify-center text-center px-4">
-        <div className="w-24 h-24 rounded-full bg-[var(--color-border)] flex items-center justify-center mb-6">
-          <ShoppingBag className="w-10 h-10 text-[var(--color-text-muted)]" />
+      <div className="min-h-screen bg-white flex flex-col items-center justify-center text-center px-4 py-24">
+        <div className="w-16 h-16 border border-[#D1D5DB] flex items-center justify-center mb-4">
+          <ShoppingBag className="w-8 h-8 text-[#9CA3AF] stroke-[1.2]" />
         </div>
-        <h1 className="font-display text-3xl font-semibold text-[var(--color-text-primary)] mb-3">
-          Your cart is empty
+        <h1 className="font-serif text-3xl text-[#111827] font-normal mb-2">
+          Your Shopping Bag Is Empty
         </h1>
-        <p className="text-[var(--color-text-muted)] mb-8 max-w-sm">
-          Discover our luxury collection and find your perfect abaya.
+        <p className="text-xs text-[#6B7280] font-sans mb-8 max-w-xs">
+          Explore our handcrafted Pakistani abayas, raw silk kaftans, and organza dupattas.
         </p>
         <Link
           href="/products"
-          className="flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-[var(--color-gold)] to-[var(--color-gold-dark)] text-white rounded-full font-medium"
+          className="luxury-btn-primary"
         >
-          Shop Now <ArrowRight className="w-4 h-4" />
+          Explore Collections
         </Link>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen pt-24">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-12">
-        <AnimatedSection>
-          <h1 className="font-display text-4xl font-semibold text-[var(--color-text-primary)] mb-8">
-            Shopping Cart ({itemCount} item{itemCount !== 1 ? "s" : ""})
-          </h1>
-        </AnimatedSection>
+    <div className="min-h-screen bg-white">
+      {/* Header */}
+      <div className="bg-[#FBF9F6] border-b border-[#E5E7EB] py-12 px-4 sm:px-6 lg:px-8 text-center">
+        <h1 className="font-serif text-3xl sm:text-4xl text-[#111827] font-normal">
+          Shopping Bag ({itemCount} Piece{itemCount !== 1 ? "s" : ""})
+        </h1>
+      </div>
 
-        <div className="grid lg:grid-cols-3 gap-10">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="grid lg:grid-cols-12 gap-10">
           {/* Items list */}
-          <div className="lg:col-span-2 space-y-4">
+          <div className="lg:col-span-8 space-y-4">
             {items.map((item) => (
               <motion.div
                 key={item.id}
                 layout
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                className="flex gap-5 p-5 bg-white rounded-2xl border border-[var(--color-border)] shadow-sm"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="flex gap-5 p-5 bg-[#FBF9F6] border border-[#E5E7EB]"
               >
-                <div className="w-24 h-28 rounded-xl overflow-hidden bg-[var(--color-border)] shrink-0">
+                <div className="w-24 aspect-[3/4] bg-white border border-[#E5E7EB] shrink-0 overflow-hidden">
                   {item.product.images[0] && (
                     <img src={item.product.images[0]} alt={item.product.title} className="w-full h-full object-cover" />
                   )}
                 </div>
-                <div className="flex-1">
-                  <Link href={`/products/${item.product.slug}`} className="font-display font-medium text-[var(--color-text-primary)] hover:text-[var(--color-gold)] transition-colors">
-                    {item.product.title}
-                  </Link>
-                  <p className="text-xs text-[var(--color-text-muted)] mt-1">
-                    {item.selectedSize} · {item.selectedColor}
-                  </p>
-                  <p className="font-sans font-semibold text-[var(--color-gold)] mt-2">
-                    {formatPrice(item.product.price)}
-                  </p>
-                  <div className="flex items-center justify-between mt-4">
-                    <div className="flex items-center gap-3 border border-[var(--color-border)] rounded-full px-3 py-1.5">
-                      <button onClick={() => updateQuantity(item.id, item.quantity - 1)} aria-label="Decrease">−</button>
-                      <span className="text-sm font-medium">{item.quantity}</span>
-                      <button onClick={() => updateQuantity(item.id, item.quantity + 1)} aria-label="Increase">+</button>
+                <div className="flex-1 flex flex-col justify-between">
+                  <div>
+                    <div className="flex justify-between items-start">
+                      <Link href={`/products/${item.product.slug}`} className="font-serif text-lg text-[#111827] font-medium hover:text-[var(--color-gold-dark)] transition-colors">
+                        {item.product.title}
+                      </Link>
+                      <button onClick={() => removeItem(item.id)} className="text-[#9CA3AF] hover:text-red-600 transition-colors p-1" aria-label="Remove item">
+                        <Trash2 className="w-4 h-4" />
+                      </button>
                     </div>
-                    <button onClick={() => removeItem(item.id)} className="text-xs text-red-400 hover:text-red-600 transition-colors">
-                      Remove
-                    </button>
+                    <p className="text-xs text-[#6B7280] font-sans mt-0.5">
+                      Size: <span className="font-semibold text-[#111827]">{item.selectedSize}</span> · Color: <span className="font-semibold text-[#111827]">{item.selectedColor}</span>
+                    </p>
+                    <p className="font-sans font-semibold text-[#111827] text-sm mt-2">
+                      {formatPrice(item.product.price)}
+                    </p>
                   </div>
-                </div>
-                <div className="text-right shrink-0">
-                  <p className="font-sans font-bold text-[var(--color-text-primary)]">
-                    {formatPrice(item.product.price * item.quantity)}
-                  </p>
+
+                  <div className="flex items-center justify-between mt-4 pt-2 border-t border-[#E5E7EB]">
+                    <div className="flex items-center border border-[#D1D5DB] bg-white">
+                      <button
+                        onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                        className="w-7 h-7 flex items-center justify-center text-[#4B5563] hover:bg-[#F3F4F6]"
+                        aria-label="Decrease"
+                      >
+                        <Minus className="w-3 h-3" />
+                      </button>
+                      <span className="text-xs font-sans font-bold w-7 text-center">{item.quantity}</span>
+                      <button
+                        onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                        className="w-7 h-7 flex items-center justify-center text-[#4B5563] hover:bg-[#F3F4F6]"
+                        aria-label="Increase"
+                      >
+                        <Plus className="w-3 h-3" />
+                      </button>
+                    </div>
+
+                    <p className="font-sans font-bold text-sm text-[#111827]">
+                      {formatPrice(item.product.price * item.quantity)}
+                    </p>
+                  </div>
                 </div>
               </motion.div>
             ))}
           </div>
 
           {/* Summary */}
-          <AnimatedSection direction="right">
-            <div className="bg-white rounded-3xl border border-[var(--color-border)] p-6 shadow-sm sticky top-24">
-              <h2 className="font-display text-xl font-semibold text-[var(--color-text-primary)] mb-6">
+          <div className="lg:col-span-4">
+            <div className="bg-[#FBF9F6] border border-[#E5E7EB] p-6 sticky top-28 space-y-4">
+              <h2 className="font-serif text-xl text-[#111827] font-medium pb-3 border-b border-[#E5E7EB]">
                 Order Summary
               </h2>
-              <div className="space-y-3 text-sm">
-                <div className="flex justify-between text-[var(--color-text-secondary)]">
-                  <span>Subtotal ({itemCount} items)</span>
-                  <span>{formatPrice(subtotal)}</span>
+
+              <div className="space-y-2.5 text-xs font-sans">
+                <div className="flex justify-between text-[#4B5563]">
+                  <span>Subtotal</span>
+                  <span className="font-semibold text-[#111827]">{formatPrice(subtotal)}</span>
                 </div>
-                <div className="flex justify-between text-[var(--color-text-secondary)]">
-                  <span>Shipping</span>
-                  <span className={shippingCost === 0 ? "text-green-600 font-medium" : ""}>
-                    {shippingCost === 0 ? "FREE" : formatPrice(shippingCost)}
+                <div className="flex justify-between text-[#4B5563]">
+                  <span>Nationwide Shipping</span>
+                  <span>
+                    {shippingCost === 0 ? (
+                      <span className="text-emerald-700 font-semibold uppercase">Free</span>
+                    ) : (
+                      formatPrice(shippingCost)
+                    )}
                   </span>
                 </div>
-                {subtotal < siteConfig.freeShippingThreshold && (
-                  <p className="text-[10px] text-[var(--color-text-muted)]">
-                    Add {formatPrice(siteConfig.freeShippingThreshold - subtotal)} more for free shipping
-                  </p>
-                )}
-                <div className="divider-gold my-2" />
-                <div className="flex justify-between font-display font-bold text-[var(--color-text-primary)] text-lg">
-                  <span>Total</span>
-                  <span className="text-[var(--color-gold)]">{formatPrice(total)}</span>
+                <div className="border-t border-[#E5E7EB] pt-3 flex justify-between font-serif text-lg text-[#111827] font-medium">
+                  <span>Total Amount</span>
+                  <span>{formatPrice(total)}</span>
                 </div>
               </div>
+
               <Link
                 href="/checkout"
-                className="flex items-center justify-center gap-2 w-full py-4 mt-6 bg-gradient-to-r from-[var(--color-gold)] to-[var(--color-gold-dark)] text-white rounded-2xl font-semibold shadow-[var(--shadow-gold)] hover:-translate-y-0.5 transition-all"
+                className="w-full luxury-btn-primary py-4 flex items-center justify-center gap-2 text-xs"
               >
-                Proceed to Checkout <ArrowRight className="w-4 h-4" />
+                <span>Proceed To Checkout</span>
+                <ArrowRight className="w-4 h-4" />
               </Link>
-              <Link href="/products" className="block text-center text-sm text-[var(--color-text-muted)] mt-4 hover:text-[var(--color-gold)] transition-colors">
-                Continue Shopping
-              </Link>
+
+              <p className="text-[10px] text-[#9CA3AF] text-center font-sans tracking-wider uppercase">
+                Cash on Delivery Available Across Pakistan
+              </p>
             </div>
-          </AnimatedSection>
+          </div>
         </div>
       </div>
     </div>

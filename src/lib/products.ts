@@ -5,6 +5,9 @@ const PRODUCT_SLUGS = [
   "classic-noir-abaya",
   "royal-zahra-kaftan",
   "pearl-embroidered-dupatta",
+  "emerald-velvet-abaya",
+  "ivory-zari-kaftan",
+  "organza-luxe-dupatta",
 ];
 
 /**
@@ -52,13 +55,13 @@ export function getProductSlugs(): string[] {
 }
 
 /**
- * Format price in PKR with locale formatting.
+ * Format price in PKR with standard Pakistani fashion e-commerce styling (e.g. Rs. 4,500).
  */
 export function formatPrice(
   price: number,
-  currencySymbol = "₨"
+  currencyPrefix = "Rs."
 ): string {
-  return `${currencySymbol} ${price.toLocaleString("en-PK")}`;
+  return `${currencyPrefix} ${price.toLocaleString("en-PK")}`;
 }
 
 /**

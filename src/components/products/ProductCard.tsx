@@ -3,19 +3,12 @@
 import { useState } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { Heart, ShoppingBag, Eye, Zap, Star } from "lucide-react";
+import { Heart, ShoppingBag, Eye, Check } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
 import { formatPrice, getDiscountPercent } from "@/lib/products";
-import { StarRating } from "@/components/ui/StarRating";
 import { toast } from "@/components/ui/Toaster";
 import type { Product } from "@/types";
-import dynamic from "next/dynamic";
-
-const ModelViewer = dynamic(
-  () => import("@/components/products/ModelViewer").then((m) => m.ModelViewer),
-  { ssr: false }
-);
 
 interface ProductCardProps {
   product: Product;
@@ -24,229 +17,205 @@ interface ProductCardProps {
 
 export function ProductCard({ product, priority = false }: ProductCardProps) {
   const [isHovered, setIsHovered] = useState(false);
-  const [show3D, setShow3D] = useState(false);
   const [selectedColor, setSelectedColor] = useState(product.colors[0]);
+  const [selectedSize, setSelectedSize] = useState(product.sizes[0]?.label ?? "Free Size");
+  const [isAdding, setIsAdding] = useState(false);
+
   const { addItem, isInCart } = useCart();
   const { toggle, isWishlisted } = useWishlist();
 
   const wishlisted = isWishlisted(product.slug);
-  const inCart = isInCart(product.slug, product.sizes[0]?.label, selectedColor.name);
+  const inCart = isInCart(product.slug, selectedSize, selectedColor.name);
   const discount = product.originalPrice
     ? getDiscountPercent(product.price, product.originalPrice)
     : null;
 
-  const handleAddToCart = (e: React.MouseEvent) => {
+  const handleQuickAdd = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    addItem(product, product.sizes[0]?.label ?? "Free Size", selectedColor.name);
-    toast.success("Added to cart!", `${product.title} has been added.`);
-    document.dispatchEvent(new CustomEvent("open-cart"));
+    setIsAdding(true);
+    addItem(product, selectedSize, selectedColor.name);
+    toast.success("Added to Cart", `${product.title} (${selectedSize})`);
+    
+    setTimeout(() => {
+      setIsAdding(false);
+      document.dispatchEvent(new CustomEvent("open-cart"));
+    }, 400);
   };
 
-  const handleWishlist = (e: React.MouseEvent) => {
+  const handleWishlistToggle = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     toggle(product.slug);
-    toast.info(
-      wishlisted ? "Removed from wishlist" : "Added to wishlist",
-      product.title
-    );
+    if (!wishlisted) {
+      toast.success("Added to Wishlist", product.title);
+    } else {
+      toast.info("Removed from Wishlist", product.title);
+    }
   };
 
   return (
-    <motion.article
-      className="product-card group relative luxury-card overflow-hidden cursor-pointer"
+    <article
+      className="group relative flex flex-col bg-white border border-[#E5E7EB] hover:border-[#D1D5DB] transition-all duration-300"
       onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => { setIsHovered(false); setShow3D(false); }}
-      whileHover={{ y: -4 }}
-      transition={{ duration: 0.3 }}
+      onMouseLeave={() => setIsHovered(false)}
     >
-      <Link href={`/products/${product.slug}`} aria-label={`View ${product.title}`}>
-        {/* Image / 3D area */}
-        <div className="relative h-72 overflow-hidden bg-[var(--color-border)] rounded-t-xl">
-          <AnimatePresence mode="wait">
-            {show3D && product.modelPath ? (
-              <motion.div
-                key="3d"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.3 }}
-                className="absolute inset-0"
-                onClick={(e) => e.preventDefault()}
-              >
-                <ModelViewer
-                  src={product.modelPath}
-                  alt={`3D view of ${product.title}`}
-                  className="w-full h-full"
-                  autoRotate
-                  cameraControls
-                  ar={false}
-                />
-              </motion.div>
-            ) : (
-              <motion.div
-                key="2d"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.3 }}
-                className="absolute inset-0"
-              >
-                {product.images[0] ? (
-                  <img
-                    src={product.images[0]}
-                    alt={product.title}
-                    className="product-card-img w-full h-full object-cover"
-                    loading={priority ? "eager" : "lazy"}
-                  />
-                ) : (
-                  <div className="w-full h-full flex flex-col items-center justify-center gap-2 bg-gradient-to-br from-[var(--color-gold-light)]/20 to-[var(--color-gold)]/10">
-                    <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[var(--color-gold-light)] to-[var(--color-gold)] opacity-40" />
-                    <span className="text-sm text-[var(--color-text-muted)] font-serif italic">
-                      {product.title}
-                    </span>
-                  </div>
-                )}
-              </motion.div>
-            )}
-          </AnimatePresence>
+      <Link href={`/products/${product.slug}`} className="block relative overflow-hidden">
+        {/* 3:4 Tall Image Container */}
+        <div className="relative aspect-[3/4] w-full overflow-hidden bg-[#F9FAFB]">
+          <img
+            src={product.images[0] || "/products/classic-noir-abaya/image-1.jpg"}
+            alt={product.title}
+            className="w-full h-full object-cover object-top transition-transform duration-700 ease-out group-hover:scale-105"
+            loading={priority ? "eager" : "lazy"}
+          />
 
-          {/* Badges */}
-          <div className="absolute top-3 left-3 flex flex-col gap-1.5">
-            {product.isBestseller && (
-              <span className="px-2.5 py-1 bg-[var(--color-champagne)] text-white text-[10px] font-bold uppercase tracking-wider rounded-full">
-                Bestseller
-              </span>
-            )}
-            {product.isNew && (
-              <span className="px-2.5 py-1 bg-[var(--color-gold)] text-white text-[10px] font-bold uppercase tracking-wider rounded-full">
-                New
-              </span>
-            )}
+          {/* Badges in Top Left */}
+          <div className="absolute top-2.5 left-2.5 flex flex-col gap-1 z-10">
             {discount && (
-              <span className="px-2.5 py-1 bg-red-500 text-white text-[10px] font-bold uppercase tracking-wider rounded-full">
+              <span className="bg-[#111827] text-white text-[10px] font-sans font-bold tracking-wider px-2 py-0.5 uppercase">
                 -{discount}%
               </span>
             )}
-          </div>
-
-          {/* 3D toggle */}
-          {product.modelPath && (
-            <button
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                setShow3D(!show3D);
-              }}
-              aria-label={show3D ? "View photos" : "View in 3D"}
-              className={`absolute top-3 right-3 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all border ${
-                show3D
-                  ? "bg-[var(--color-gold)] border-[var(--color-gold)] text-white"
-                  : "bg-white/80 border-white/60 text-[var(--color-text-secondary)] hover:bg-[var(--color-gold)] hover:text-white hover:border-[var(--color-gold)]"
-              }`}
-            >
-              {show3D ? "Photos" : "3D View"}
-            </button>
-          )}
-
-          {/* Hover actions */}
-          <AnimatePresence>
-            {isHovered && (
-              <motion.div
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 12 }}
-                transition={{ duration: 0.2 }}
-                className="absolute bottom-3 left-3 right-3 flex gap-2"
-              >
-                <button
-                  onClick={handleAddToCart}
-                  aria-label={inCart ? "In cart" : "Add to cart"}
-                  className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-medium transition-all ${
-                    inCart
-                      ? "bg-[var(--color-gold)] text-white"
-                      : "bg-white/90 text-[var(--color-text-primary)] hover:bg-[var(--color-gold)] hover:text-white"
-                  }`}
-                >
-                  <ShoppingBag className="w-3.5 h-3.5" />
-                  {inCart ? "In Cart" : "Quick Add"}
-                </button>
-                <Link
-                  href={`/products/${product.slug}`}
-                  onClick={(e) => e.stopPropagation()}
-                  aria-label="View details"
-                  className="w-10 h-10 flex items-center justify-center rounded-xl bg-white/90 text-[var(--color-text-secondary)] hover:bg-white transition-colors"
-                >
-                  <Eye className="w-4 h-4" />
-                </Link>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-
-        {/* Product info */}
-        <div className="p-4">
-          {/* Color swatches */}
-          <div className="flex items-center gap-1.5 mb-3">
-            {product.colors.map((color) => (
-              <button
-                key={color.name}
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  setSelectedColor(color);
-                }}
-                aria-label={color.name}
-                title={color.name}
-                className={`w-4 h-4 rounded-full border-2 transition-all ${
-                  selectedColor.name === color.name
-                    ? "border-[var(--color-gold)] scale-125"
-                    : "border-transparent hover:border-[var(--color-text-muted)] hover:scale-110"
-                }`}
-                style={{ backgroundColor: color.hex }}
-              />
-            ))}
-          </div>
-
-          <h3 className="font-display font-medium text-[var(--color-text-primary)] leading-snug line-clamp-1">
-            {product.title}
-          </h3>
-          <p className="text-xs text-[var(--color-text-muted)] mt-0.5 font-sans">
-            {product.category}
-          </p>
-
-          <div className="flex items-center justify-between mt-2">
-            <div className="flex items-baseline gap-2">
-              <span className="font-sans font-semibold text-[var(--color-gold)]">
-                {formatPrice(product.price)}
+            {product.isBestseller && !discount && (
+              <span className="bg-[var(--color-gold)] text-white text-[10px] font-sans font-bold tracking-wider px-2 py-0.5 uppercase">
+                Bestseller
               </span>
-              {product.originalPrice && (
-                <span className="text-xs text-[var(--color-text-muted)] line-through">
-                  {formatPrice(product.originalPrice)}
-                </span>
-              )}
-            </div>
-            <StarRating rating={product.rating} reviewCount={product.reviewCount} size="sm" />
+            )}
+            {product.isNew && !discount && !product.isBestseller && (
+              <span className="bg-[#111827] text-white text-[10px] font-sans font-semibold tracking-wider px-2 py-0.5 uppercase">
+                New
+              </span>
+            )}
           </div>
 
-          {/* Wishlist */}
+          {/* Minimal Wishlist Button in Top Right */}
           <button
-            onClick={handleWishlist}
+            onClick={handleWishlistToggle}
             aria-label={wishlisted ? "Remove from wishlist" : "Add to wishlist"}
-            className="absolute top-3 right-12 p-2 rounded-full bg-white/80 backdrop-blur-sm transition-all hover:scale-110"
-            style={{ top: "calc(100% - 72px - 3rem)", right: "1rem" }}
+            className="absolute top-2.5 right-2.5 z-10 w-8 h-8 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center text-[#111827] hover:bg-white transition-all shadow-sm"
           >
             <Heart
               className={`w-4 h-4 transition-colors ${
                 wishlisted
-                  ? "fill-[var(--color-gold)] text-[var(--color-gold)]"
-                  : "text-[var(--color-text-muted)]"
+                  ? "fill-red-600 text-red-600"
+                  : "text-[#374151] hover:text-red-600"
               }`}
             />
           </button>
+
+          {/* Slide-Up Quick Add on Desktop Hover */}
+          <div className="hidden lg:block absolute inset-x-0 bottom-0 p-3 z-10 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out bg-gradient-to-t from-black/60 to-transparent">
+            {/* Quick Size Select if multiple sizes */}
+            {product.sizes.length > 1 && (
+              <div className="flex justify-center gap-1.5 mb-2">
+                {product.sizes.map((size) => (
+                  <button
+                    key={size.label}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setSelectedSize(size.label);
+                    }}
+                    className={`w-6 h-6 text-[10px] font-bold uppercase transition-all ${
+                      selectedSize === size.label
+                        ? "bg-white text-[#111827]"
+                        : "bg-black/50 text-white hover:bg-white/80 hover:text-black"
+                    }`}
+                  >
+                    {size.label}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            <button
+              onClick={handleQuickAdd}
+              disabled={isAdding}
+              aria-label="Add to cart"
+              className="w-full bg-[#111827] text-white text-xs font-semibold uppercase tracking-widest py-2.5 flex items-center justify-center gap-2 hover:bg-black transition-colors"
+            >
+              {isAdding ? (
+                <>
+                  <Check className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>Added</span>
+                </>
+              ) : inCart ? (
+                <>
+                  <ShoppingBag className="w-3.5 h-3.5" />
+                  <span>In Cart (+1)</span>
+                </>
+              ) : (
+                <>
+                  <ShoppingBag className="w-3.5 h-3.5" />
+                  <span>Quick Add</span>
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+
+        {/* Product Details */}
+        <div className="p-3.5 sm:p-4 flex flex-col flex-1 bg-white">
+          {/* Category & Color Swatches */}
+          <div className="flex items-center justify-between mb-1.5">
+            <span className="text-[10px] font-sans uppercase tracking-widest text-[#6B7280]">
+              {product.category}
+            </span>
+
+            {/* Minimal Color Swatches */}
+            {product.colors && product.colors.length > 0 && (
+              <div className="flex items-center gap-1">
+                {product.colors.map((color) => (
+                  <button
+                    key={color.name}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setSelectedColor(color);
+                    }}
+                    title={color.name}
+                    aria-label={`Select color ${color.name}`}
+                    className={`w-2.5 h-2.5 rounded-full border transition-all ${
+                      selectedColor.name === color.name
+                        ? "border-[#111827] scale-125"
+                        : "border-transparent opacity-60 hover:opacity-100"
+                    }`}
+                    style={{ backgroundColor: color.hex }}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Product Title */}
+          <h3 className="font-serif text-[15px] sm:text-[16px] text-[#111827] font-medium leading-snug line-clamp-1 group-hover:text-[var(--color-gold-dark)] transition-colors">
+            {product.title}
+          </h3>
+
+          {/* Pricing in PKR format */}
+          <div className="mt-2 flex items-baseline gap-2">
+            <span className="font-sans font-semibold text-sm text-[#111827]">
+              {formatPrice(product.price)}
+            </span>
+            {product.originalPrice && (
+              <span className="font-sans text-xs text-[#9CA3AF] line-through">
+                {formatPrice(product.originalPrice)}
+              </span>
+            )}
+          </div>
+
+          {/* Mobile Quick Add Button */}
+          <button
+            onClick={handleQuickAdd}
+            aria-label="Add to cart"
+            className="mt-3 lg:hidden w-full border border-[#111827] text-[#111827] text-[11px] font-semibold uppercase tracking-wider py-1.5 flex items-center justify-center gap-1.5 hover:bg-[#111827] hover:text-white transition-colors"
+          >
+            <ShoppingBag className="w-3 h-3" />
+            <span>{inCart ? "In Cart" : "Add to Cart"}</span>
+          </button>
         </div>
       </Link>
-    </motion.article>
+    </article>
   );
 }
