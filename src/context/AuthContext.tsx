@@ -3,107 +3,183 @@
 import {
   createContext,
   useContext,
+  useEffect,
   useCallback,
   useMemo,
+  useState,
   type ReactNode,
 } from "react";
-import { useLocalStorage } from "@/hooks/useLocalStorage";
-import type { User, AuthState } from "@/types";
+import { createClient } from "@/lib/supabase/client";
+import type { User, AuthState, SavedAddress } from "@/types";
 
 interface AuthContextValue extends AuthState {
   login: (email: string, password: string) => Promise<void>;
   signup: (name: string, email: string, password: string, phone?: string) => Promise<void>;
-  logout: () => void;
+  logout: () => Promise<void>;
   updateUser: (updates: Partial<User>) => void;
+  resetPassword: (email: string) => Promise<void>;
+  updateProfile: (updates: { full_name?: string; phone?: string; addresses?: SavedAddress[] }) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
-export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useLocalStorage<User | null>("amabaya-user", null);
+/** Map a Supabase user + profile row → our app User shape */
+function mapUser(
+  supabaseUser: { id: string; email?: string; created_at: string },
+  profile?: {
+    full_name?: string | null;
+    phone?: string | null;
+    avatar_url?: string | null;
+    addresses?: SavedAddress[] | null;
+  } | null
+): User {
+  return {
+    id: supabaseUser.id,
+    name: profile?.full_name ?? supabaseUser.email?.split("@")[0] ?? "User",
+    email: supabaseUser.email ?? "",
+    phone: profile?.phone ?? undefined,
+    avatarUrl: profile?.avatar_url ?? undefined,
+    addresses: profile?.addresses ?? [],
+    createdAt: supabaseUser.created_at,
+  };
+}
 
-  /**
-   * Mock login — replace with Supabase: await supabase.auth.signInWithPassword({ email, password })
-   */
+export function AuthProvider({ children }: { children: ReactNode }) {
+  const supabase = createClient();
+  const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  /** Fetch profile from DB and update local state */
+  const loadProfile = useCallback(
+    async (supabaseUser: { id: string; email?: string; created_at: string }) => {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("full_name, phone, avatar_url, addresses")
+        .eq("id", supabaseUser.id)
+        .single();
+      setUser(mapUser(supabaseUser, profile));
+    },
+    [supabase]
+  );
+
+  /** Subscribe to auth state changes (handles refresh, signout across tabs, etc.) */
+  useEffect(() => {
+    // 1. Initial session check
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (session?.user) {
+        await loadProfile(session.user);
+      }
+      setIsLoading(false);
+    });
+
+    // 2. Listen for auth events
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      if (session?.user) {
+        await loadProfile(session.user);
+      } else {
+        setUser(null);
+      }
+      setIsLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
+  }, [supabase, loadProfile]);
+
+  /** Login with email + password */
   const login = useCallback(
     async (email: string, password: string) => {
-      // Simulate network delay
-      await new Promise((r) => setTimeout(r, 800));
-
-      // Check localStorage for registered users
-      const usersRaw = localStorage.getItem("amabaya-users");
-      const users: (User & { password: string })[] = usersRaw
-        ? JSON.parse(usersRaw)
-        : [];
-      const found = users.find(
-        (u) => u.email === email && u.password === password
-      );
-
-      if (!found) {
-        throw new Error("Invalid email or password.");
-      }
-
-      const { password: _pw, ...userWithoutPassword } = found;
-      setUser(userWithoutPassword);
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) throw new Error(error.message);
     },
-    [setUser]
+    [supabase]
   );
 
-  /**
-   * Mock signup — replace with Supabase: await supabase.auth.signUp({ email, password })
-   */
+  /** Sign up and store name/phone in profiles */
   const signup = useCallback(
     async (name: string, email: string, password: string, phone?: string) => {
-      await new Promise((r) => setTimeout(r, 800));
-
-      const usersRaw = localStorage.getItem("amabaya-users");
-      const users: (User & { password: string })[] = usersRaw
-        ? JSON.parse(usersRaw)
-        : [];
-
-      if (users.some((u) => u.email === email)) {
-        throw new Error("An account with this email already exists.");
-      }
-
-      const newUser: User & { password: string } = {
-        id: `user_${Date.now()}`,
-        name,
+      const { data, error } = await supabase.auth.signUp({
         email,
-        phone,
-        createdAt: new Date().toISOString(),
         password,
-      };
+        options: {
+          data: { full_name: name, phone: phone ?? null },
+        },
+      });
 
-      users.push(newUser);
-      localStorage.setItem("amabaya-users", JSON.stringify(users));
+      if (error) throw new Error(error.message);
 
-      const { password: _pw, ...userWithoutPassword } = newUser;
-      setUser(userWithoutPassword);
+      // If email confirmation is disabled the user is immediately available
+      if (data.user) {
+        await supabase.from("profiles").upsert({
+          id: data.user.id,
+          full_name: name,
+          phone: phone ?? null,
+        });
+      }
     },
-    [setUser]
+    [supabase]
   );
 
-  const logout = useCallback(() => {
+  /** Sign out */
+  const logout = useCallback(async () => {
+    await supabase.auth.signOut();
     setUser(null);
-  }, [setUser]);
+  }, [supabase]);
 
-  const updateUser = useCallback(
-    (updates: Partial<User>) => {
-      setUser((prev) => (prev ? { ...prev, ...updates } : prev));
+  /** Optimistically update local user state (e.g., after profile edit) */
+  const updateUser = useCallback((updates: Partial<User>) => {
+    setUser((prev) => (prev ? { ...prev, ...updates } : prev));
+  }, []);
+
+  /** Send password reset email */
+  const resetPassword = useCallback(
+    async (email: string) => {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/auth/reset-password`,
+      });
+      if (error) throw new Error(error.message);
     },
-    [setUser]
+    [supabase]
+  );
+
+  /** Persist profile changes to Supabase */
+  const updateProfile = useCallback(
+    async (updates: { full_name?: string; phone?: string; addresses?: SavedAddress[] }) => {
+      if (!user) return;
+      const { error } = await supabase
+        .from("profiles")
+        .update(updates)
+        .eq("id", user.id);
+      if (error) throw new Error(error.message);
+
+      // Sync local state
+      setUser((prev) =>
+        prev
+          ? {
+              ...prev,
+              name: updates.full_name ?? prev.name,
+              phone: updates.phone ?? prev.phone,
+              addresses: updates.addresses ?? prev.addresses,
+            }
+          : prev
+      );
+    },
+    [supabase, user]
   );
 
   const value = useMemo(
     () => ({
       user,
-      isLoading: false,
+      isLoading,
       login,
       signup,
       logout,
       updateUser,
+      resetPassword,
+      updateProfile,
     }),
-    [user, login, signup, logout, updateUser]
+    [user, isLoading, login, signup, logout, updateUser, resetPassword, updateProfile]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

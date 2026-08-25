@@ -14,7 +14,10 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const { login } = useAuth();
+  const [showForgot, setShowForgot] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState("");
+  const [isForgotLoading, setIsForgotLoading] = useState(false);
+  const { login, resetPassword } = useAuth();
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -28,6 +31,21 @@ export default function LoginPage() {
       toast.error("Sign in failed", err instanceof Error ? err.message : "Please try again.");
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!forgotEmail) return;
+    setIsForgotLoading(true);
+    try {
+      await resetPassword(forgotEmail);
+      toast.success("Reset email sent!", "Check your inbox for the password reset link.");
+      setShowForgot(false);
+    } catch (err: unknown) {
+      toast.error("Failed to send", err instanceof Error ? err.message : "Please try again.");
+    } finally {
+      setIsForgotLoading(false);
     }
   };
 
@@ -62,88 +80,143 @@ export default function LoginPage() {
 
         {/* Glass card */}
         <div className="glass rounded-3xl border border-white/50 shadow-xl p-8">
-          <form onSubmit={handleSubmit} className="space-y-5">
-            {/* Email */}
-            <div>
-              <label htmlFor="login-email" className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1.5">
-                Email Address
-              </label>
-              <div className="relative">
-                <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--color-text-muted)]" />
-                <input
-                  id="login-email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="your@email.com"
-                  required
-                  autoComplete="email"
-                  className="w-full pl-10 pr-4 py-3 border border-[var(--color-border)] rounded-xl text-sm outline-none focus:border-[var(--color-gold)] focus:ring-2 focus:ring-[var(--color-gold)]/20 transition-all"
-                />
-              </div>
-            </div>
-
-            {/* Password */}
-            <div>
-              <div className="flex items-center justify-between mb-1.5">
-                <label htmlFor="login-password" className="text-sm font-medium text-[var(--color-text-secondary)]">
-                  Password
-                </label>
-                <button type="button" className="text-xs text-[var(--color-gold)] hover:underline">
-                  Forgot password?
-                </button>
-              </div>
-              <div className="relative">
-                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--color-text-muted)]" />
-                <input
-                  id="login-password"
-                  type={showPassword ? "text" : "password"}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Your password"
-                  required
-                  autoComplete="current-password"
-                  className="w-full pl-10 pr-12 py-3 border border-[var(--color-border)] rounded-xl text-sm outline-none focus:border-[var(--color-gold)] focus:ring-2 focus:ring-[var(--color-gold)]/20 transition-all"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  aria-label="Toggle password visibility"
-                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)] transition-colors"
-                >
-                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
-              </div>
-            </div>
-
-            {/* Submit */}
-            <button
-              type="submit"
-              disabled={isLoading}
-              id="login-submit-btn"
-              className={`flex items-center justify-center gap-2 w-full py-4 rounded-2xl font-semibold text-sm transition-all ${
-                isLoading
-                  ? "bg-[var(--color-gold)]/60 text-white cursor-wait"
-                  : "bg-gradient-to-r from-[var(--color-gold)] to-[var(--color-gold-dark)] text-white shadow-[var(--shadow-gold)] hover:-translate-y-0.5 hover:shadow-xl"
-              }`}
+          {showForgot ? (
+            /* ── Forgot Password Form ── */
+            <motion.form
+              key="forgot"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              onSubmit={handleForgotPassword}
+              className="space-y-5"
             >
-              {isLoading ? "Signing in..." : <>Sign In <ArrowRight className="w-4 h-4" /></>}
-            </button>
-          </form>
+              <div>
+                <p className="text-sm text-[var(--color-text-secondary)] mb-4">
+                  Enter your email and we&apos;ll send you a password reset link.
+                </p>
+                <label htmlFor="forgot-email" className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1.5">
+                  Email Address
+                </label>
+                <div className="relative">
+                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--color-text-muted)]" />
+                  <input
+                    id="forgot-email"
+                    type="email"
+                    value={forgotEmail}
+                    onChange={(e) => setForgotEmail(e.target.value)}
+                    placeholder="your@email.com"
+                    required
+                    className="w-full pl-10 pr-4 py-3 border border-[var(--color-border)] rounded-xl text-sm outline-none focus:border-[var(--color-gold)] focus:ring-2 focus:ring-[var(--color-gold)]/20 transition-all"
+                  />
+                </div>
+              </div>
+              <button
+                type="submit"
+                disabled={isForgotLoading}
+                className="flex items-center justify-center gap-2 w-full py-4 rounded-2xl font-semibold text-sm transition-all bg-gradient-to-r from-[var(--color-gold)] to-[var(--color-gold-dark)] text-white shadow-[var(--shadow-gold)] hover:-translate-y-0.5 disabled:opacity-60 disabled:cursor-wait"
+              >
+                {isForgotLoading ? "Sending..." : <> Send Reset Link <ArrowRight className="w-4 h-4" /></>}
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowForgot(false)}
+                className="w-full text-sm text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)] text-center transition-colors"
+              >
+                ← Back to Sign In
+              </button>
+            </motion.form>
+          ) : (
+            /* ── Login Form ── */
+            <motion.form key="login" initial={{ opacity: 0 }} animate={{ opacity: 1 }} onSubmit={handleSubmit} className="space-y-5">
+              {/* Email */}
+              <div>
+                <label htmlFor="login-email" className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1.5">
+                  Email Address
+                </label>
+                <div className="relative">
+                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--color-text-muted)]" />
+                  <input
+                    id="login-email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="your@email.com"
+                    required
+                    autoComplete="email"
+                    className="w-full pl-10 pr-4 py-3 border border-[var(--color-border)] rounded-xl text-sm outline-none focus:border-[var(--color-gold)] focus:ring-2 focus:ring-[var(--color-gold)]/20 transition-all"
+                  />
+                </div>
+              </div>
+
+              {/* Password */}
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label htmlFor="login-password" className="text-sm font-medium text-[var(--color-text-secondary)]">
+                    Password
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setShowForgot(true)}
+                    className="text-xs text-[var(--color-gold)] hover:underline"
+                  >
+                    Forgot password?
+                  </button>
+                </div>
+                <div className="relative">
+                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--color-text-muted)]" />
+                  <input
+                    id="login-password"
+                    type={showPassword ? "text" : "password"}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Your password"
+                    required
+                    autoComplete="current-password"
+                    className="w-full pl-10 pr-12 py-3 border border-[var(--color-border)] rounded-xl text-sm outline-none focus:border-[var(--color-gold)] focus:ring-2 focus:ring-[var(--color-gold)]/20 transition-all"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    aria-label="Toggle password visibility"
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)] transition-colors"
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
+
+              {/* Submit */}
+              <button
+                type="submit"
+                disabled={isLoading}
+                id="login-submit-btn"
+                className={`flex items-center justify-center gap-2 w-full py-4 rounded-2xl font-semibold text-sm transition-all ${
+                  isLoading
+                    ? "bg-[var(--color-gold)]/60 text-white cursor-wait"
+                    : "bg-gradient-to-r from-[var(--color-gold)] to-[var(--color-gold-dark)] text-white shadow-[var(--shadow-gold)] hover:-translate-y-0.5 hover:shadow-xl"
+                }`}
+              >
+                {isLoading ? "Signing in..." : <>Sign In <ArrowRight className="w-4 h-4" /></>}
+              </button>
+            </motion.form>
+          )}
 
           {/* Divider */}
-          <div className="flex items-center gap-4 my-6">
-            <div className="flex-1 h-px bg-[var(--color-border)]" />
-            <span className="text-xs text-[var(--color-text-muted)]">Don&apos;t have an account?</span>
-            <div className="flex-1 h-px bg-[var(--color-border)]" />
-          </div>
+          {!showForgot && (
+            <>
+              <div className="flex items-center gap-4 my-6">
+                <div className="flex-1 h-px bg-[var(--color-border)]" />
+                <span className="text-xs text-[var(--color-text-muted)]">Don&apos;t have an account?</span>
+                <div className="flex-1 h-px bg-[var(--color-border)]" />
+              </div>
 
-          <Link
-            href="/auth/signup"
-            className="flex items-center justify-center gap-2 w-full py-3.5 border-2 border-[var(--color-gold)] text-[var(--color-gold)] rounded-2xl font-semibold text-sm hover:bg-[var(--color-gold)] hover:text-white transition-all duration-300"
-          >
-            Create Account
-          </Link>
+              <Link
+                href="/auth/signup"
+                className="flex items-center justify-center gap-2 w-full py-3.5 border-2 border-[var(--color-gold)] text-[var(--color-gold)] rounded-2xl font-semibold text-sm hover:bg-[var(--color-gold)] hover:text-white transition-all duration-300"
+              >
+                Create Account
+              </Link>
+            </>
+          )}
         </div>
       </motion.div>
     </div>

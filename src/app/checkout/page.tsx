@@ -1,14 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/context/CartContext";
+import { useAuth } from "@/context/AuthContext";
 import { formatPrice } from "@/lib/products";
 import { toast } from "@/components/ui/Toaster";
-import { Shield, Truck, Lock, CheckCircle2 } from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
+import { Lock } from "lucide-react";
 import siteConfig from "@/lib/siteConfig";
-import type { Order, ShippingAddress } from "@/types";
+import type { ShippingAddress } from "@/types";
 
 const PK_PHONE_REGEX = /^(\+92|0)[3][0-9]{9}$/;
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -25,22 +27,25 @@ const PROVINCES = [
 
 export default function CheckoutPage() {
   const { items, subtotal, clearCart } = useCart();
+  const { user } = useAuth();
   const router = useRouter();
+  const supabase = useRef(createClient()).current;
 
-  const shippingCost = subtotal >= siteConfig.freeShippingThreshold ? 0 : siteConfig.standardShippingCost;
+  const shippingCost =
+    subtotal >= siteConfig.freeShippingThreshold ? 0 : siteConfig.standardShippingCost;
   const total = subtotal + shippingCost;
 
   const [form, setForm] = useState<ShippingAddress & { email: string; notes: string }>({
-    fullName: "",
-    phone: "",
+    fullName: user?.name ?? "",
+    phone: user?.phone ?? "",
     address: "",
     city: "",
     province: "Punjab",
     postalCode: "",
-    email: "",
+    email: user?.email ?? "",
     notes: "",
   });
-  const [paymentMethod, setPaymentMethod] = useState<"cod" | "bank_transfer">("cod");
+  const [paymentMethod, setPaymentMethod] = useState<"cod" | "bank_transfer" | "online_payment">("cod");
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -66,58 +71,189 @@ export default function CheckoutPage() {
 
     setIsSubmitting(true);
     try {
-      const order: Order = {
-        id: `AMA-${Date.now().toString().slice(-6)}`,
-        items,
-        total,
-        shippingCost,
-        status: "placed",
-        customerName: form.fullName,
-        customerPhone: form.phone,
-        customerEmail: form.email || undefined,
-        shippingAddress: {
-          fullName: form.fullName,
-          phone: form.phone,
-          address: form.address,
-          city: form.city,
-          province: form.province,
-          postalCode: form.postalCode || undefined,
-        },
-        paymentMethod,
-        placedAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        notes: form.notes || undefined,
+      const shippingAddress = {
+        fullName: form.fullName,
+        phone: form.phone,
+        address: form.address,
+        city: form.city,
+        province: form.province,
+        postalCode: form.postalCode || undefined,
       };
 
-      const existingOrders = JSON.parse(localStorage.getItem("amabaya-orders") || "[]");
-      existingOrders.push(order);
-      localStorage.setItem("amabaya-orders", JSON.stringify(existingOrders));
+      let finalOrderId: string;
 
+      if (user) {
+        // ── Logged-in: save to Supabase ──────────────────────────────────────
+        const { data: order, error: orderError } = await supabase
+          .from("orders")
+          .insert({
+            user_id: user.id,
+            status: "placed",
+            total,
+            shipping_cost: shippingCost,
+            payment_method: paymentMethod,
+            shipping_address: shippingAddress,
+            notes: form.notes || null,
+          })
+          .select("id")
+          .single();
+
+        if (orderError) throw orderError;
+
+        // Insert order items
+        const orderItems = items.map((item) => ({
+          order_id: order.id,
+          product_id: null,
+          product_snapshot: {
+            name: item.product.title,
+            slug: item.product.slug,
+            images: item.product.images,
+            sku: item.product.sku,
+          },
+          quantity: item.quantity,
+          size: item.selectedSize,
+          color: item.selectedColor,
+          unit_price: item.product.price,
+        }));
+
+        const { error: itemsError } = await supabase
+          .from("order_items")
+          .insert(orderItems);
+
+        if (itemsError) throw itemsError;
+
+        finalOrderId = order.id;
+
+        // Save to localStorage as fallback for order-tracking page
+        saveToLocalStorage(buildLocalOrder(order.id));
+
+        clearCart();
+
+        // ── PayFast redirect if online payment selected ───────────────────
+        if (paymentMethod === "online_payment") {
+          toast.success("Order created!", "Redirecting to PayFast secure payment...");
+          try {
+            const res = await fetch("/api/payfast/initiate", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                orderId: order.id,
+                amount: total,
+                customerName: form.fullName,
+                customerEmail: form.email,
+                customerPhone: form.phone,
+              }),
+            });
+            const { url, fields } = await res.json();
+
+            // Create and auto-submit a hidden form to PayFast
+            const payfastForm = document.createElement("form");
+            payfastForm.method = "POST";
+            payfastForm.action = url;
+            Object.entries(fields as Record<string, string>).forEach(([k, v]) => {
+              const input = document.createElement("input");
+              input.type = "hidden";
+              input.name = k;
+              input.value = v;
+              payfastForm.appendChild(input);
+            });
+            document.body.appendChild(payfastForm);
+            payfastForm.submit();
+            return; // Don't proceed further — page will redirect
+          } catch (pfErr) {
+            console.error("PayFast initiation failed:", pfErr);
+            toast.error("Payment failed", "Please try COD or Bank Transfer instead.");
+          }
+        }
+
+        toast.success("Order Confirmed! 🎉", `Order #${order.id.slice(0, 8).toUpperCase()} placed successfully.`);
+
+
+      } else {
+        // ── Guest: save to localStorage only ────────────────────────────────
+        const guestId = `AMA-${Date.now().toString().slice(-6)}`;
+        finalOrderId = guestId;
+
+        saveToLocalStorage(buildLocalOrder(guestId));
+        clearCart();
+        toast.success("Order Confirmed!", `Order #${guestId} placed. Sign in to track online.`);
+      }
+
+      // Optional: send email confirmation
       if (form.email) {
         try {
           const { sendOrderConfirmation } = await import("@/lib/emailjs");
-          await sendOrderConfirmation(order);
-        } catch (err) {
-          console.warn("Email sending failed:", err);
+          await sendOrderConfirmation({
+            id: finalOrderId,
+            customerName: form.fullName,
+            customerEmail: form.email,
+            customerPhone: form.phone,
+            items,
+            total,
+            shippingCost,
+            paymentMethod,
+            shippingAddress,
+            placedAt: new Date().toISOString(),
+          });
+        } catch (emailErr) {
+          console.warn("Email sending failed (non-critical):", emailErr);
         }
       }
 
-      clearCart();
-      toast.success("Order Confirmed", `Order #${order.id} has been placed successfully.`);
-      router.push(`/order-tracking?orderId=${order.id}`);
-    } catch {
-      toast.error("Checkout issue", "Please contact us via WhatsApp for instant manual booking.");
+      router.push(`/order-tracking?orderId=${finalOrderId}`);
+
+    } catch (err) {
+      console.error("Checkout error:", err);
+      const msg = err instanceof Error ? err.message
+        : (err as { message?: string })?.message
+        ?? JSON.stringify(err);
+      toast.error("Checkout failed", msg);
     } finally {
       setIsSubmitting(false);
     }
+
   };
+
+  /** Build a localStorage-compatible order object */
+  function buildLocalOrder(id: string) {
+    return {
+      id,
+      items,
+      total,
+      shippingCost,
+      status: "placed" as const,
+      customerName: form.fullName,
+      customerPhone: form.phone,
+      customerEmail: form.email || undefined,
+      shippingAddress: {
+        fullName: form.fullName,
+        phone: form.phone,
+        address: form.address,
+        city: form.city,
+        province: form.province,
+        postalCode: form.postalCode || undefined,
+      },
+      paymentMethod,
+      placedAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      notes: form.notes || undefined,
+    };
+  }
+
+  function saveToLocalStorage(order: ReturnType<typeof buildLocalOrder>) {
+    const existing = JSON.parse(localStorage.getItem("amabaya-orders") || "[]");
+    existing.push(order);
+    localStorage.setItem("amabaya-orders", JSON.stringify(existing));
+  }
 
   if (items.length === 0) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center p-6 text-center">
         <div>
           <h1 className="font-serif text-3xl text-[#111827] mb-2 font-normal">Your Bag Is Empty</h1>
-          <p className="text-xs text-[#6B7280] font-sans mb-6">Please add items to your cart before proceeding to checkout.</p>
+          <p className="text-xs text-[#6B7280] font-sans mb-6">
+            Please add items to your cart before proceeding to checkout.
+          </p>
           <a href="/products" className="luxury-btn-primary">
             Explore Collections
           </a>
@@ -131,17 +267,22 @@ export default function CheckoutPage() {
       {/* Header */}
       <div className="bg-[#FBF9F6] border-b border-[#E5E7EB] py-12 px-4 sm:px-6 lg:px-8 text-center">
         <h1 className="font-serif text-3xl sm:text-4xl text-[#111827] font-normal">
-          Checkout & Dispatch
+          Checkout &amp; Dispatch
         </h1>
         <p className="text-xs text-[#6B7280] font-sans mt-1">
           Complete your delivery details for express nationwide delivery
         </p>
+        {!user && (
+          <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-4 py-2 mt-4 inline-block">
+            <a href="/auth/login" className="font-semibold underline">Sign in</a> to save your order history and track orders online.
+          </p>
+        )}
       </div>
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <form onSubmit={handleSubmit}>
           <div className="grid lg:grid-cols-12 gap-10 lg:gap-14">
-            
+
             {/* Left: Shipping & Details (7 Cols) */}
             <div className="lg:col-span-7 space-y-8">
               {/* Contact Info */}
@@ -333,11 +474,39 @@ export default function CheckoutPage() {
                     />
                     <div>
                       <p className="font-serif text-lg font-medium text-[#111827]">
-                        Direct Bank Transfer / Raast / JazzCash
+                        Bank Transfer / Raast / JazzCash
                       </p>
                       <p className="text-xs text-[#6B7280] font-sans mt-0.5">
                         Transfer details and IBAN will be provided upon order submission.
                       </p>
+                    </div>
+                  </label>
+
+                  {/* PayFast Online Payment */}
+                  <label
+                    className={`flex items-start gap-4 p-4 bg-white border cursor-pointer transition-colors ${
+                      paymentMethod === "online_payment" ? "border-[#111827] ring-1 ring-[#111827]" : "border-[#D1D5DB]"
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="paymentMethod"
+                      value="online_payment"
+                      checked={paymentMethod === "online_payment"}
+                      onChange={() => setPaymentMethod("online_payment")}
+                      className="mt-1 accent-[#111827]"
+                    />
+                    <div className="flex-1">
+                      <p className="font-serif text-lg font-medium text-[#111827]">
+                        Online Payment (Card / JazzCash / EasyPaisa)
+                      </p>
+                      <p className="text-xs text-[#6B7280] font-sans mt-0.5">
+                        Secure payment via PayFast — Visa, Mastercard, JazzCash, EasyPaisa accepted.
+                      </p>
+                      <div className="flex items-center gap-2 mt-2">
+                        <span className="text-[10px] bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded font-medium">🔒 SSL Secured</span>
+                        <span className="text-[10px] text-[#9CA3AF]">Powered by PayFast</span>
+                      </div>
                     </div>
                   </label>
                 </div>
@@ -356,7 +525,12 @@ export default function CheckoutPage() {
                   {items.map((item) => (
                     <div key={item.id} className="py-3 flex gap-3 items-center">
                       <div className="w-12 aspect-[3/4] bg-white border border-[#E5E7EB] shrink-0 overflow-hidden">
-                        <img src={item.product.images[0]} alt={item.product.title} className="w-full h-full object-cover" />
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={item.product.images[0]}
+                          alt={item.product.title}
+                          className="w-full h-full object-cover"
+                        />
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="font-serif text-sm text-[#111827] truncate">{item.product.title}</p>
@@ -393,18 +567,20 @@ export default function CheckoutPage() {
                   </div>
                 </div>
 
-                <button
+                <motion.button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full luxury-btn-primary py-4 text-xs tracking-widest font-sans flex items-center justify-center gap-2"
+                  whileTap={{ scale: 0.98 }}
+                  className="w-full luxury-btn-primary py-4 text-xs tracking-widest font-sans flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-wait"
                 >
                   <Lock className="w-3.5 h-3.5" />
                   <span>{isSubmitting ? "Confirming Order..." : "Confirm & Place Order"}</span>
-                </button>
+                </motion.button>
 
                 <div className="pt-4 border-t border-[#E5E7EB] text-[11px] text-[#6B7280] font-sans space-y-1 text-center">
                   <p>✦ 7-Day Doorstep Exchanges</p>
                   <p>✦ Order confirmation will be sent via SMS / WhatsApp</p>
+                  {user && <p className="text-emerald-700">✦ Order saved to your account</p>}
                 </div>
               </div>
             </div>

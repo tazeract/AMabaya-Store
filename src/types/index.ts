@@ -59,11 +59,25 @@ export interface WishlistItem {
 
 // ─── Auth Types ────────────────────────────────────────────────────────────
 
+export interface SavedAddress {
+  id: string;
+  label: string;         // e.g. "Home", "Office"
+  fullName: string;
+  phone: string;
+  address: string;
+  city: string;
+  province: string;
+  postalCode?: string;
+  isDefault: boolean;
+}
+
 export interface User {
   id: string;
   name: string;
   email: string;
   phone?: string;
+  avatarUrl?: string;
+  addresses?: SavedAddress[];
   createdAt: string;
 }
 

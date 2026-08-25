@@ -14,6 +14,8 @@ import {
   ChevronDown,
   Phone,
   ArrowRight,
+  LogOut,
+  LayoutDashboard,
 } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
@@ -65,6 +67,102 @@ const mainNavLinks = [
   { href: "/contact", label: "Contact" },
 ];
 
+// ─── UserNav: avatar badge + dropdown ────────────────────────────────────────
+function UserNav() {
+  const { user, logout } = useAuth();
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  // Close on outside click
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  if (!user) {
+    return (
+      <Link
+        href="/auth/login"
+        aria-label="Sign In"
+        className="p-2 text-[#374151] hover:text-[#111827] transition-colors"
+        title="Sign In"
+      >
+        <User className="w-5 h-5 stroke-[1.5]" />
+      </Link>
+    );
+  }
+
+  const initials = user.name
+    .split(" ")
+    .map((w) => w[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        onClick={() => setOpen((o) => !o)}
+        aria-label="Account menu"
+        aria-expanded={open}
+        className="flex items-center gap-1.5 p-1 rounded-full hover:bg-[#F9FAFB] transition-colors"
+        title={user.name}
+      >
+        <span className="w-8 h-8 rounded-full bg-gradient-to-br from-[var(--color-gold-light)] to-[var(--color-gold-dark)] flex items-center justify-center text-white text-[11px] font-bold tracking-wide shadow-sm">
+          {initials}
+        </span>
+        <ChevronDown
+          className={`w-3 h-3 text-[#6B7280] transition-transform duration-200 ${open ? "rotate-180" : ""}`}
+        />
+      </button>
+
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, y: 8, scale: 0.97 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 8, scale: 0.97 }}
+            transition={{ duration: 0.15 }}
+            className="absolute top-full right-0 mt-2 w-52 bg-white border border-[#E5E7EB] rounded-xl shadow-xl overflow-hidden z-50"
+          >
+            {/* User info header */}
+            <div className="px-4 py-3 border-b border-[#F3F4F6]">
+              <p className="text-sm font-semibold text-[#111827] truncate">{user.name}</p>
+              <p className="text-[11px] text-[#9CA3AF] truncate">{user.email}</p>
+            </div>
+
+            {/* Menu items */}
+            <div className="py-1">
+              <Link
+                href="/account"
+                onClick={() => setOpen(false)}
+                className="flex items-center gap-3 px-4 py-2.5 text-sm text-[#374151] hover:bg-[#F9FAFB] hover:text-[#111827] transition-colors"
+              >
+                <LayoutDashboard className="w-4 h-4 text-[#9CA3AF]" />
+                My Account
+              </Link>
+              <button
+                onClick={async () => {
+                  setOpen(false);
+                  await logout();
+                }}
+                className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-[#374151] hover:bg-[#FEF2F2] hover:text-red-600 transition-colors"
+              >
+                <LogOut className="w-4 h-4 text-[#9CA3AF]" />
+                Sign Out
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+// ─── Navbar ───────────────────────────────────────────────────────────────────
 export function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
@@ -74,7 +172,7 @@ export function Navbar() {
   const pathname = usePathname();
   const { itemCount } = useCart();
   const { count: wishlistCount } = useWishlist();
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Rotating Announcement
@@ -97,6 +195,21 @@ export function Navbar() {
     setIsMobileOpen(false);
     setActiveDropdown(null);
   }, [pathname]);
+
+  // Scroll lock when mobile menu open + close on Escape
+  useEffect(() => {
+    if (isMobileOpen) {
+      document.body.style.overflow = "hidden";
+      const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setIsMobileOpen(false); };
+      document.addEventListener("keydown", onKey);
+      return () => {
+        document.body.style.overflow = "";
+        document.removeEventListener("keydown", onKey);
+      };
+    } else {
+      document.body.style.overflow = "";
+    }
+  }, [isMobileOpen]);
 
   const handleOpenCart = () => {
     document.dispatchEvent(new CustomEvent("open-cart"));
@@ -254,15 +367,8 @@ export function Navbar() {
                 <span className="font-sans text-[11px] tracking-wider uppercase">Search...</span>
               </button>
 
-              {/* Account Link */}
-              <Link
-                href={user ? "/auth/login" : "/auth/login"}
-                aria-label="Account"
-                className="p-2 text-[#374151] hover:text-[#111827] transition-colors"
-                title={user ? user.name : "Sign In"}
-              >
-                <User className="w-5 h-5 stroke-[1.5]" />
-              </Link>
+              {/* Account */}
+              <UserNav />
 
               {/* Wishlist Link */}
               <Link
@@ -334,6 +440,35 @@ export function Navbar() {
                 </button>
               </div>
 
+              {/* Mobile user section */}
+              {user ? (
+                <div className="px-5 py-3 bg-[#FFFBF5] border-b border-[#F3F4F6] flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[var(--color-gold-light)] to-[var(--color-gold-dark)] flex items-center justify-center text-white text-xs font-bold">
+                      {user.name
+                        .split(" ")
+                        .map((w) => w[0])
+                        .join("")
+                        .slice(0, 2)
+                        .toUpperCase()}
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-[#111827]">{user.name}</p>
+                      <p className="text-[10px] text-[#9CA3AF]">{user.email}</p>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="px-5 py-3 bg-[#FFFBF5] border-b border-[#F3F4F6]">
+                  <Link
+                    href="/auth/login"
+                    className="flex items-center gap-2 text-sm font-medium text-[var(--color-gold)]"
+                  >
+                    <User className="w-4 h-4" /> Sign In / Create Account
+                  </Link>
+                </div>
+              )}
+
               {/* Nav links */}
               <div className="flex-1 overflow-y-auto py-4 px-5 divide-y divide-[#F3F4F6]">
                 <div className="pb-4 space-y-1">
@@ -351,6 +486,11 @@ export function Navbar() {
                 </div>
 
                 <div className="py-4 space-y-2 text-xs text-[#4B5563]">
+                  {user && (
+                    <Link href="/account" className="block py-1 hover:text-[#111827] font-medium">
+                      My Account
+                    </Link>
+                  )}
                   <Link href="/order-tracking" className="block py-1 hover:text-[#111827]">
                     Track Your Order
                   </Link>
@@ -365,6 +505,14 @@ export function Navbar() {
                   >
                     WhatsApp Helpline (+92 300 1234567)
                   </a>
+                  {user && (
+                    <button
+                      onClick={() => logout()}
+                      className="block py-1 text-red-500 hover:text-red-700 font-medium text-left"
+                    >
+                      Sign Out
+                    </button>
+                  )}
                 </div>
               </div>
 

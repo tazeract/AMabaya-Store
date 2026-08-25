@@ -1,14 +1,20 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // Static export for GitHub Pages / Vercel
-  output: "export",
+  // Removed "output: export" — Supabase SSR requires dynamic rendering (server components + cookies)
+  // Deploy to Vercel, Railway, or any Node.js host instead of static hosting
   trailingSlash: true,
-  // Required for static export — no image optimization
   images: {
+    // Allow Supabase Storage image domains
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "*.supabase.co",
+      },
+    ],
+    // Keep unoptimized for any local images in /public
     unoptimized: true,
   },
-  // Allow @google/model-viewer as external package
   transpilePackages: [],
 };
 
