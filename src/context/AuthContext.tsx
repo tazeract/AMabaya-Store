@@ -9,7 +9,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { createClient } from "@/lib/supabase/client";
+import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
 import type { User, AuthState, SavedAddress } from "@/types";
 
 interface AuthContextValue extends AuthState {
@@ -64,6 +64,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   /** Subscribe to auth state changes (handles refresh, signout across tabs, etc.) */
   useEffect(() => {
+    // Skip during build / when Supabase is not configured
+    if (!isSupabaseConfigured()) {
+      setIsLoading(false);
+      return;
+    }
+
     // 1. Initial session check
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (session?.user) {
@@ -90,6 +96,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   /** Login with email + password */
   const login = useCallback(
     async (email: string, password: string) => {
+      if (!isSupabaseConfigured()) throw new Error("Supabase is not configured.");
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw new Error(error.message);
     },
