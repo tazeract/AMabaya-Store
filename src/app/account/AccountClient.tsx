@@ -23,6 +23,7 @@ import {
 import { useAuth } from "@/context/AuthContext";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "@/components/ui/Toaster";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { SavedAddress } from "@/types";
 
@@ -504,7 +505,7 @@ export function AccountClient() {
         {/* Page header */}
         <div className="mb-8">
           <nav className="flex items-center gap-2 text-xs text-[#9CA3AF] mb-4">
-            <a href="/" className="hover:text-[#374151] transition-colors">Home</a>
+            <Link href="/" className="hover:text-[#374151] transition-colors">Home</Link>
             <ChevronRight className="w-3 h-3" />
             <span className="text-[#374151]">My Account</span>
           </nav>

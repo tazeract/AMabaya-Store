@@ -3,6 +3,7 @@
 import { useState, useRef } from "react";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
 import { formatPrice } from "@/lib/products";
@@ -255,9 +256,9 @@ export default function CheckoutPage() {
           <p className="text-xs text-[#6B7280] font-sans mb-6">
             Please add items to your cart before proceeding to checkout.
           </p>
-          <a href="/products" className="luxury-btn-primary">
+          <Link href="/products" className="luxury-btn-primary inline-block">
             Explore Collections
-          </a>
+          </Link>
         </div>
       </div>
     );
