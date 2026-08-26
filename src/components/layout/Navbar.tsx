@@ -87,10 +87,10 @@ function UserNav() {
       <Link
         href="/auth/login"
         aria-label="Customer Login Account"
-        className="p-2 text-[#374151] hover:text-black transition-colors duration-200 group flex items-center justify-center"
+        className="p-2 text-[#374151] hover:text-black transition-colors duration-300 group flex items-center justify-center cursor-pointer"
         title="Customer Login Account"
       >
-        <User className="w-6 h-6 stroke-[1.6] group-hover:scale-105 transition-transform" />
+        <User className="w-6 h-6 stroke-[1.6] group-hover:scale-125 group-hover:-translate-y-0.5 transition-all duration-300 ease-out" />
       </Link>
     );
   }
@@ -108,25 +108,25 @@ function UserNav() {
         onClick={() => setOpen((o) => !o)}
         aria-label="Customer Account menu"
         aria-expanded={open}
-        className="flex items-center gap-1.5 p-1 rounded-full hover:bg-[#F9FAFB] transition-colors"
+        className="flex items-center gap-1.5 p-1 rounded-full hover:bg-[#F9FAFB] transition-all duration-300 group cursor-pointer"
         title={`Customer Account (${user.name})`}
       >
-        <span className="w-8 h-8 rounded-full bg-gradient-to-br from-[var(--color-gold-light)] to-[var(--color-gold-dark)] flex items-center justify-center text-white text-[11px] font-bold tracking-wide shadow-sm">
+        <span className="w-8 h-8 rounded-full bg-gradient-to-br from-[var(--color-gold-light)] to-[var(--color-gold-dark)] flex items-center justify-center text-white text-[11px] font-bold tracking-wide shadow-sm group-hover:scale-105 group-hover:shadow-md transition-all duration-300">
           {initials}
         </span>
         <ChevronDown
-          className={`w-3.5 h-3.5 text-[#6B7280] transition-transform duration-200 ${open ? "rotate-180" : ""}`}
+          className={`w-3.5 h-3.5 text-[#6B7280] group-hover:text-[#111827] transition-transform duration-300 ease-out ${open ? "rotate-180" : ""}`}
         />
       </button>
 
       <AnimatePresence>
         {open && (
           <motion.div
-            initial={{ opacity: 0, y: 8, scale: 0.97 }}
+            initial={{ opacity: 0, y: 10, scale: 0.97 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 8, scale: 0.97 }}
-            transition={{ duration: 0.15 }}
-            className="absolute top-full right-0 mt-2 w-52 bg-white border border-[#E5E7EB] rounded-xl shadow-xl overflow-hidden z-50"
+            transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+            className="absolute top-full right-0 mt-2 w-52 bg-white/98 backdrop-blur-md border border-[#E5E7EB] rounded-xl shadow-[0_12px_32px_rgba(0,0,0,0.1)] overflow-hidden z-50"
           >
             {/* User info header */}
             <div className="px-4 py-3 border-b border-[#F3F4F6]">
@@ -287,10 +287,10 @@ export function Navbar() {
             {/* Brand Logo */}
             <div className="flex-shrink-0 text-center lg:text-left">
               <Link href="/" className="group inline-flex flex-col items-center lg:items-start" aria-label="AMabaya Home">
-                <span className="font-serif text-2xl sm:text-3xl font-medium tracking-[0.28em] text-[#111827] group-hover:text-[var(--color-gold)] transition-colors duration-300">
+                <span className="font-serif text-2xl sm:text-3xl font-medium tracking-[0.28em] text-[#111827] group-hover:tracking-[0.32em] group-hover:text-[var(--color-gold-dark)] transition-all duration-500 ease-out">
                   AMABAYA
                 </span>
-                <span className="text-[8px] font-sans tracking-[0.35em] text-[#6B7280] uppercase -mt-0.5">
+                <span className="text-[8px] font-sans tracking-[0.35em] text-[#6B7280] group-hover:text-[#111827] uppercase -mt-0.5 transition-colors duration-300">
                   Haute Modesty · Pakistan
                 </span>
               </Link>
@@ -307,7 +307,7 @@ export function Navbar() {
                 >
                   <Link
                     href={link.href}
-                    className={`relative px-3 lg:px-3.5 xl:px-4 py-2 text-[12.5px] xl:text-[13px] font-medium tracking-[0.1em] uppercase transition-colors duration-200 inline-flex items-center gap-1.5 whitespace-nowrap ${
+                    className={`relative px-3 lg:px-3.5 xl:px-4 py-2 text-[12.5px] xl:text-[13px] font-medium tracking-[0.1em] uppercase transition-all duration-300 ease-out inline-flex items-center gap-1.5 whitespace-nowrap hover:-translate-y-0.5 ${
                       pathname === link.href
                         ? "text-[#111827] font-semibold"
                         : link.isHighlight
@@ -315,23 +315,25 @@ export function Navbar() {
                         : "text-[#374151] hover:text-[#111827]"
                     }`}
                   >
-                    <span>{link.label}</span>
-                    {link.sub && <ChevronDown className="w-3.5 h-3.5 opacity-50 group-hover:rotate-180 transition-transform duration-200" />}
+                    <span className="transition-colors duration-200">{link.label}</span>
+                    {link.sub && (
+                      <ChevronDown className="w-3.5 h-3.5 opacity-50 group-hover:opacity-100 group-hover:rotate-180 group-hover:text-[var(--color-gold-dark)] transition-all duration-300 ease-out" />
+                    )}
 
-                    {/* Subtle underline indicator on hover */}
-                    <span className="absolute bottom-0 left-3 lg:left-3.5 xl:left-4 right-3 lg:right-3.5 xl:right-4 h-[2px] bg-[#111827] scale-x-0 group-hover:scale-x-100 transition-transform duration-200 origin-left" />
+                    {/* Classic Center-Expanding Animated Underline */}
+                    <span className="absolute bottom-0 left-3 lg:left-3.5 xl:left-4 right-3 lg:right-3.5 xl:right-4 h-[2px] bg-gradient-to-r from-[var(--color-gold)] via-[#111827] to-[var(--color-gold)] scale-x-0 group-hover:scale-x-100 transition-transform duration-300 ease-out origin-center rounded-full" />
                   </Link>
 
-                  {/* Mega / Minimal Dropdown */}
+                  {/* Mega / Minimal Dropdown with Smooth Reveal */}
                   {link.sub && (
                     <AnimatePresence>
                       {activeDropdown === link.label && (
                         <motion.div
-                          initial={{ opacity: 0, y: 8 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: 8 }}
-                          transition={{ duration: 0.18 }}
-                          className="absolute top-full left-0 mt-1 min-w-[220px] bg-white border border-[#E5E7EB] shadow-xl rounded-none py-3 z-50"
+                          initial={{ opacity: 0, y: 12, scale: 0.98 }}
+                          animate={{ opacity: 1, y: 0, scale: 1 }}
+                          exit={{ opacity: 0, y: 8, scale: 0.98 }}
+                          transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+                          className="absolute top-full left-0 mt-1 min-w-[230px] bg-white/98 backdrop-blur-md border border-[#E5E7EB] shadow-[0_12px_32px_rgba(0,0,0,0.08)] py-3 z-50"
                         >
                           <div className="px-4 py-1.5 mb-2 border-b border-[#F3F4F6]">
                             <p className="text-[10px] uppercase tracking-widest text-[#9CA3AF] font-semibold">
@@ -342,9 +344,12 @@ export function Navbar() {
                             <Link
                               key={item.label}
                               href={item.href}
-                              className="block px-4 py-2 text-[13px] text-[#4B5563] hover:text-[#111827] hover:bg-[#F9FAFB] transition-colors"
+                              className="group/item flex items-center justify-between px-4 py-2.5 text-[13px] text-[#4B5563] hover:text-[#111827] hover:bg-[#FBF9F6] transition-all duration-200"
                             >
-                              {item.label}
+                              <span className="group-hover/item:translate-x-1 transition-transform duration-200">
+                                {item.label}
+                              </span>
+                              <ArrowRight className="w-3 h-3 opacity-0 -translate-x-1 group-hover/item:opacity-100 group-hover/item:translate-x-0 text-[var(--color-gold-dark)] transition-all duration-200" />
                             </Link>
                           ))}
                         </motion.div>
@@ -361,40 +366,40 @@ export function Navbar() {
               <button
                 onClick={() => setIsSearchOpen(true)}
                 aria-label="Search"
-                className="hidden lg:flex items-center gap-2.5 px-4 py-2 w-44 xl:w-56 text-xs text-[#6B7280] hover:text-[#111827] bg-[#F9FAFB] hover:bg-white rounded-full border border-[#E5E7EB] hover:border-[#111827] transition-all shadow-xs group"
+                className="hidden lg:flex items-center gap-2.5 px-4 py-2 w-44 xl:w-56 text-xs text-[#6B7280] hover:text-[#111827] bg-[#F9FAFB] hover:bg-white rounded-full border border-[#E5E7EB] hover:border-[#111827] transition-all duration-300 ease-out hover:shadow-md hover:-translate-y-0.5 group cursor-pointer"
               >
-                <Search className="w-4 h-4 text-[#6B7280] group-hover:text-[#111827] flex-shrink-0 transition-colors" />
+                <Search className="w-4 h-4 text-[#6B7280] group-hover:text-[#111827] group-hover:scale-110 group-hover:rotate-6 flex-shrink-0 transition-all duration-300 ease-out" />
                 <span className="font-sans text-[11px] tracking-wider uppercase truncate">Search...</span>
               </button>
 
               {/* Customer Account / Login */}
               <UserNav />
 
-              {/* Wishlist Link (Hover changes to Blue) */}
+              {/* Wishlist Link (Hover changes to Blue with Heartbeat animation) */}
               <Link
                 href="/wishlist"
                 aria-label="Wishlist"
-                className="p-2 text-[#374151] hover:text-blue-600 transition-colors duration-200 relative group flex items-center justify-center"
+                className="p-2 text-[#374151] hover:text-blue-600 transition-colors duration-300 relative group flex items-center justify-center"
                 title="Wishlist"
               >
-                <Heart className="w-6 h-6 stroke-[1.6] group-hover:scale-105 transition-transform" />
+                <Heart className="w-6 h-6 stroke-[1.6] group-hover:scale-125 group-hover:-rotate-6 transition-all duration-300 ease-out" />
                 {wishlistCount > 0 && (
-                  <span className="absolute top-0.5 right-0.5 w-4 h-4 bg-blue-600 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                  <span className="absolute top-0.5 right-0.5 w-4 h-4 bg-blue-600 text-white text-[10px] font-bold rounded-full flex items-center justify-center shadow-xs transition-transform duration-300 group-hover:scale-110">
                     {wishlistCount}
                   </span>
                 )}
               </Link>
 
-              {/* Cart Drawer Trigger Button (Hover changes to Red) */}
+              {/* Cart Drawer Trigger Button (Hover changes to Red with Bag Tilt animation) */}
               <button
                 onClick={handleOpenCart}
                 aria-label="Shopping Cart"
-                className="p-2 text-[#374151] hover:text-red-600 transition-colors duration-200 relative flex items-center justify-center group"
+                className="p-2 text-[#374151] hover:text-red-600 transition-colors duration-300 relative flex items-center justify-center group cursor-pointer"
                 title="Shopping Cart"
               >
-                <ShoppingBag className="w-6 h-6 stroke-[1.6] group-hover:scale-105 transition-transform" />
+                <ShoppingBag className="w-6 h-6 stroke-[1.6] group-hover:scale-125 group-hover:-rotate-12 transition-all duration-300 ease-out" />
                 {itemCount > 0 && (
-                  <span className="w-4 h-4 bg-red-600 text-white text-[10px] font-bold rounded-full flex items-center justify-center absolute top-0.5 right-0.5">
+                  <span className="w-4 h-4 bg-red-600 text-white text-[10px] font-bold rounded-full flex items-center justify-center absolute top-0.5 right-0.5 shadow-xs transition-transform duration-300 group-hover:scale-110">
                     {itemCount}
                   </span>
                 )}
