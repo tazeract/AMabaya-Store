@@ -2,12 +2,12 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 /**
- * Next.js Middleware
+ * Next.js Proxy / Middleware (Next.js 16+ convention)
  *
  * 1. Refreshes the Supabase session cookie on every request (keeps JWT alive).
  * 2. Protects /account — redirects unauthenticated users to /auth/login.
  */
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
@@ -55,6 +55,9 @@ export async function middleware(request: NextRequest) {
 
   return supabaseResponse;
 }
+
+// Keep backwards-compatible middleware export if needed
+export const middleware = proxy;
 
 export const config = {
   matcher: [
