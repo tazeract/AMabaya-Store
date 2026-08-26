@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import crypto from "crypto";
 import { createClient } from "@supabase/supabase-js";
 
 // ─── Supabase admin client (service role) ────────────────────────────────────
@@ -10,81 +9,145 @@ function getSupabaseAdmin() {
   return createClient(url, key);
 }
 
-// ─── PayFast signature verification ──────────────────────────────────────────
-function verifyPayFastSignature(data: Record<string, string>, receivedSig: string): boolean {
-  const passphrase = process.env.PAYFAST_SECURED_KEY ?? "";
-  
-  // Build query string (exclude signature itself)
-  const params = { ...data };
-  delete params.signature;
-
-  let queryString = Object.keys(params)
-    .filter((k) => params[k] !== "")
-    .map((k) => `${k}=${encodeURIComponent(params[k]).replace(/%20/g, "+")}`)
-    .join("&");
-
-  if (passphrase) {
-    queryString += `&passphrase=${encodeURIComponent(passphrase).replace(/%20/g, "+")}`;
-  }
-
-  const hash = crypto.createHash("md5").update(queryString).digest("hex");
-  return hash === receivedSig;
+// Helper to determine if GoPayFast transaction is successful
+function isGoPayFastSuccess(errCode?: string | null, status?: string | null): boolean {
+  if (errCode && (errCode === "000" || errCode === "00" || errCode === "0")) return true;
+  if (status && ["success", "complete", "approved", "paid", "00", "000"].includes(status.toLowerCase())) return true;
+  return false;
 }
 
 // ─── POST /api/payfast/callback ───────────────────────────────────────────────
+// GoPayFast Pakistan posts transaction status back upon payment completion
 export async function POST(request: NextRequest) {
   try {
-    const formData = await request.formData();
-    const data: Record<string, string> = {};
-    formData.forEach((value, key) => { data[key] = value.toString(); });
+    const url = new URL(request.url);
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? `${url.protocol}//${url.host}`;
 
-    const {
-      payment_status,
-      m_payment_id: orderId,
-      signature,
-      merchant_id,
-    } = data;
+    let data: Record<string, string> = {};
 
-    // 1. Verify merchant ID
-    const expectedMerchantId = process.env.PAYFAST_MERCHANT_ID;
-    if (expectedMerchantId && merchant_id !== expectedMerchantId) {
-      console.error("PayFast: merchant_id mismatch");
-      return new NextResponse("Forbidden", { status: 403 });
+    const contentType = request.headers.get("content-type") ?? "";
+    if (contentType.includes("application/json")) {
+      data = await request.json();
+    } else {
+      const formData = await request.formData();
+      formData.forEach((val, key) => {
+        data[key] = val.toString();
+      });
     }
 
-    // 2. Verify signature
-    if (signature && !verifyPayFastSignature(data, signature)) {
-      console.error("PayFast: invalid signature");
-      return new NextResponse("Bad signature", { status: 400 });
-    }
+    // Extract GoPayFast Pakistan return parameters
+    const orderId =
+      data.basket_id ||
+      data.Basket_Id ||
+      data.BASKET_ID ||
+      data.m_payment_id ||
+      data.orderId ||
+      url.searchParams.get("orderId") ||
+      "";
 
-    // 3. Update order in Supabase
+    const errCode = data.err_code || data.errCode || data.code || "";
+    const errMsg = data.err_msg || data.error_msg || data.response_message || data.status_msg || "";
+    const transactionId =
+      data.transaction_id ||
+      data.Transaction_Id ||
+      data.txnid ||
+      data.rd ||
+      data.pf_payment_id ||
+      "";
+
+    const queryStatus = url.searchParams.get("status");
+    const statusParam = data.payment_status || data.status || queryStatus || "";
+
+    const isSuccess = isGoPayFastSuccess(errCode, statusParam);
+
+    // Update order in Supabase
     const supabase = getSupabaseAdmin();
     if (supabase && orderId) {
-      const newStatus = payment_status === "COMPLETE" ? "paid" : "pending_payment";
+      const newStatus = isSuccess ? "paid" : "pending_payment";
+      const paymentStatus = isSuccess ? "completed" : (errMsg || "failed");
+
       const { error } = await supabase
         .from("orders")
         .update({
           status: newStatus,
-          payment_status: payment_status,
-          payfast_payment_id: data.pf_payment_id ?? null,
+          payment_status: paymentStatus,
+          payfast_payment_id: transactionId || null,
         })
         .eq("id", orderId);
 
       if (error) {
-        console.error("PayFast callback — DB update failed:", error.message);
-        return new NextResponse("DB error", { status: 500 });
+        console.error("GoPayFast callback — Supabase update error:", error.message);
       }
     }
 
-    return new NextResponse("OK", { status: 200 });
+    // If request is from browser navigation / form POST redirect, redirect to customer-facing page
+    const acceptHeader = request.headers.get("accept") ?? "";
+    const isBrowserNavigation =
+      acceptHeader.includes("text/html") || request.headers.get("sec-fetch-mode") === "navigate";
+
+    if (isBrowserNavigation || url.searchParams.has("orderId")) {
+      const destination = isSuccess
+        ? `${baseUrl}/order-tracking?orderId=${orderId}&status=success`
+        : `${baseUrl}/order-tracking?orderId=${orderId}&status=failed&msg=${encodeURIComponent(errMsg || "Payment was not completed")}`;
+
+      return NextResponse.redirect(destination, 303);
+    }
+
+    return NextResponse.json({
+      success: true,
+      message: isSuccess ? "Payment marked as completed" : "Payment marked as pending/failed",
+      orderId,
+      transactionId,
+    });
   } catch (err) {
-    console.error("PayFast callback error:", err);
+    console.error("GoPayFast callback error:", err);
+    return NextResponse.json({ error: "Internal error processing callback" }, { status: 500 });
+  }
+}
+
+// ─── GET /api/payfast/callback ────────────────────────────────────────────────
+// GoPayFast Pakistan redirect URL (when customer is redirected via browser GET)
+export async function GET(request: NextRequest) {
+  try {
+    const url = new URL(request.url);
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? `${url.protocol}//${url.host}`;
+
+    const orderId = url.searchParams.get("orderId") || url.searchParams.get("basket_id") || "";
+    const errCode = url.searchParams.get("err_code") || url.searchParams.get("code") || "";
+    const statusParam = url.searchParams.get("status") || "";
+    const errMsg = url.searchParams.get("err_msg") || url.searchParams.get("msg") || "";
+    const transactionId = url.searchParams.get("transaction_id") || url.searchParams.get("rd") || "";
+
+    const isSuccess = isGoPayFastSuccess(errCode, statusParam);
+
+    // Update order status if orderId is present
+    const supabase = getSupabaseAdmin();
+    if (supabase && orderId) {
+      const newStatus = isSuccess ? "paid" : "pending_payment";
+      const paymentStatus = isSuccess ? "completed" : (errMsg || "failed");
+
+      await supabase
+        .from("orders")
+        .update({
+          status: newStatus,
+          payment_status: paymentStatus,
+          payfast_payment_id: transactionId || null,
+        })
+        .eq("id", orderId);
+    }
+
+    if (orderId) {
+      const destination = isSuccess
+        ? `${baseUrl}/order-tracking?orderId=${orderId}&status=success`
+        : `${baseUrl}/order-tracking?orderId=${orderId}&status=failed&msg=${encodeURIComponent(errMsg || "Payment was not completed")}`;
+
+      return NextResponse.redirect(destination, 307);
+    }
+
+    return new NextResponse("GoPayFast Pakistan callback endpoint is active.", { status: 200 });
+  } catch (err) {
+    console.error("GoPayFast GET callback error:", err);
     return new NextResponse("Internal error", { status: 500 });
   }
 }
 
-// PayFast sends GET to verify the endpoint exists
-export async function GET() {
-  return new NextResponse("PayFast callback endpoint active", { status: 200 });
-}

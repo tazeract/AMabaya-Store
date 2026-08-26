@@ -126,57 +126,58 @@ export default function CheckoutPage() {
 
         // Save to localStorage as fallback for order-tracking page
         saveToLocalStorage(buildLocalOrder(order.id));
-
         clearCart();
 
-        // ── PayFast redirect if online payment selected ───────────────────
-        if (paymentMethod === "online_payment") {
-          toast.success("Order created!", "Redirecting to PayFast secure payment...");
-          try {
-            const res = await fetch("/api/payfast/initiate", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                orderId: order.id,
-                amount: total,
-                customerName: form.fullName,
-                customerEmail: form.email,
-                customerPhone: form.phone,
-              }),
-            });
-            const { url, fields } = await res.json();
-
-            // Create and auto-submit a hidden form to PayFast
-            const payfastForm = document.createElement("form");
-            payfastForm.method = "POST";
-            payfastForm.action = url;
-            Object.entries(fields as Record<string, string>).forEach(([k, v]) => {
-              const input = document.createElement("input");
-              input.type = "hidden";
-              input.name = k;
-              input.value = v;
-              payfastForm.appendChild(input);
-            });
-            document.body.appendChild(payfastForm);
-            payfastForm.submit();
-            return; // Don't proceed further — page will redirect
-          } catch (pfErr) {
-            console.error("PayFast initiation failed:", pfErr);
-            toast.error("Payment failed", "Please try COD or Bank Transfer instead.");
-          }
-        }
-
-        toast.success("Order Confirmed! 🎉", `Order #${order.id.slice(0, 8).toUpperCase()} placed successfully.`);
-
-
       } else {
-        // ── Guest: save to localStorage only ────────────────────────────────
+        // ── Guest: save to localStorage ──────────────────────────────────────
         const guestId = `AMA-${Date.now().toString().slice(-6)}`;
         finalOrderId = guestId;
 
         saveToLocalStorage(buildLocalOrder(guestId));
         clearCart();
-        toast.success("Order Confirmed!", `Order #${guestId} placed. Sign in to track online.`);
+      }
+
+      // ── PayFast Pakistan redirect if online payment selected ─────────────
+      if (paymentMethod === "online_payment") {
+        toast.success("Order Created!", "Redirecting to GoPayFast secure payment gateway...");
+        try {
+          const res = await fetch("/api/payfast/initiate", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              orderId: finalOrderId,
+              amount: total,
+              customerName: form.fullName,
+              customerEmail: form.email,
+              customerPhone: form.phone,
+            }),
+          });
+          const { url, fields } = await res.json();
+
+          if (url && fields) {
+            // Create and auto-submit a hidden form to GoPayFast Pakistan
+            const payfastForm = document.createElement("form");
+            payfastForm.method = "POST";
+            payfastForm.action = url;
+            Object.entries(fields as Record<string, string>).forEach(([k, v]) => {
+              if (v !== undefined && v !== null) {
+                const input = document.createElement("input");
+                input.type = "hidden";
+                input.name = k;
+                input.value = v;
+                payfastForm.appendChild(input);
+              }
+            });
+            document.body.appendChild(payfastForm);
+            payfastForm.submit();
+            return; // Don't proceed further — browser is redirecting to GoPayFast
+          }
+        } catch (pfErr) {
+          console.error("GoPayFast initiation failed:", pfErr);
+          toast.error("Payment initiation failed", "Please try COD or Bank Transfer instead.");
+        }
+      } else {
+        toast.success("Order Confirmed! 🎉", `Order #${finalOrderId.slice(0, 8).toUpperCase()} placed successfully.`);
       }
 
       // Optional: send email confirmation
@@ -482,10 +483,10 @@ export default function CheckoutPage() {
                     </div>
                   </label>
 
-                  {/* PayFast Online Payment */}
+                  {/* GoPayFast Online Payment */}
                   <label
-                    className={`flex items-start gap-4 p-4 bg-white border cursor-pointer transition-colors ${
-                      paymentMethod === "online_payment" ? "border-[#111827] ring-1 ring-[#111827]" : "border-[#D1D5DB]"
+                    className={`flex items-start gap-4 p-4 bg-white border cursor-pointer transition-all ${
+                      paymentMethod === "online_payment" ? "border-[#111827] ring-2 ring-[#111827]/10 shadow-sm" : "border-[#D1D5DB]"
                     }`}
                   >
                     <input
@@ -497,15 +498,23 @@ export default function CheckoutPage() {
                       className="mt-1 accent-[#111827]"
                     />
                     <div className="flex-1">
-                      <p className="font-serif text-lg font-medium text-[#111827]">
-                        Online Payment (Card / JazzCash / EasyPaisa)
+                      <div className="flex items-center justify-between flex-wrap gap-2">
+                        <p className="font-serif text-lg font-medium text-[#111827]">
+                          PayFast Online Payment
+                        </p>
+                        <span className="text-[10px] bg-[#111827] text-white px-2 py-0.5 rounded font-medium tracking-wide uppercase">
+                          Instant Confirmation
+                        </span>
+                      </div>
+                      <p className="text-xs text-[#6B7280] font-sans mt-1">
+                        Pay securely with your Pakistani Debit/Credit Card, JazzCash, EasyPaisa, PayPak, or 1Link Bank Account.
                       </p>
-                      <p className="text-xs text-[#6B7280] font-sans mt-0.5">
-                        Secure payment via PayFast — Visa, Mastercard, JazzCash, EasyPaisa accepted.
-                      </p>
-                      <div className="flex items-center gap-2 mt-2">
-                        <span className="text-[10px] bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded font-medium">🔒 SSL Secured</span>
-                        <span className="text-[10px] text-[#9CA3AF]">Powered by PayFast</span>
+                      <div className="flex items-center flex-wrap gap-1.5 mt-3">
+                        <span className="text-[10px] font-semibold bg-red-50 text-red-700 border border-red-200 px-2 py-0.5 rounded">JazzCash</span>
+                        <span className="text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded">EasyPaisa</span>
+                        <span className="text-[10px] font-semibold bg-blue-50 text-blue-700 border border-blue-200 px-2 py-0.5 rounded">Visa / Mastercard</span>
+                        <span className="text-[10px] font-semibold bg-purple-50 text-purple-700 border border-purple-200 px-2 py-0.5 rounded">PayPak / 1Link</span>
+                        <span className="text-[10px] text-[#9CA3AF] ml-auto">🔒 Secured by GoPayFast</span>
                       </div>
                     </div>
                   </label>
