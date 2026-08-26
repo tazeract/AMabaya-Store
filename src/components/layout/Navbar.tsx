@@ -86,11 +86,11 @@ function UserNav() {
     return (
       <Link
         href="/auth/login"
-        aria-label="Sign In"
-        className="p-2 text-[#374151] hover:text-[#111827] transition-colors"
-        title="Sign In"
+        aria-label="Customer Login Account"
+        className="p-2 text-[#374151] hover:text-black transition-colors duration-200 group flex items-center justify-center"
+        title="Customer Login Account"
       >
-        <User className="w-5 h-5 stroke-[1.5]" />
+        <User className="w-6 h-6 stroke-[1.6] group-hover:scale-105 transition-transform" />
       </Link>
     );
   }
@@ -106,16 +106,16 @@ function UserNav() {
     <div ref={ref} className="relative">
       <button
         onClick={() => setOpen((o) => !o)}
-        aria-label="Account menu"
+        aria-label="Customer Account menu"
         aria-expanded={open}
         className="flex items-center gap-1.5 p-1 rounded-full hover:bg-[#F9FAFB] transition-colors"
-        title={user.name}
+        title={`Customer Account (${user.name})`}
       >
         <span className="w-8 h-8 rounded-full bg-gradient-to-br from-[var(--color-gold-light)] to-[var(--color-gold-dark)] flex items-center justify-center text-white text-[11px] font-bold tracking-wide shadow-sm">
           {initials}
         </span>
         <ChevronDown
-          className={`w-3 h-3 text-[#6B7280] transition-transform duration-200 ${open ? "rotate-180" : ""}`}
+          className={`w-3.5 h-3.5 text-[#6B7280] transition-transform duration-200 ${open ? "rotate-180" : ""}`}
         />
       </button>
 
@@ -142,7 +142,7 @@ function UserNav() {
                 className="flex items-center gap-3 px-4 py-2.5 text-sm text-[#374151] hover:bg-[#F9FAFB] hover:text-[#111827] transition-colors"
               >
                 <LayoutDashboard className="w-4 h-4 text-[#9CA3AF]" />
-                My Account
+                Customer Account
               </Link>
               <button
                 onClick={async () => {
@@ -356,43 +356,45 @@ export function Navbar() {
             </nav>
 
             {/* Right Quick Action Icons */}
-            <div className="flex items-center space-x-1 sm:space-x-2">
+            <div className="flex items-center gap-2 sm:gap-3 lg:gap-4">
               {/* Desktop Search Button */}
               <button
                 onClick={() => setIsSearchOpen(true)}
                 aria-label="Search"
-                className="hidden lg:flex items-center gap-2 px-3 py-1.5 text-xs text-[#6B7280] hover:text-[#111827] rounded-full border border-[#E5E7EB] hover:border-[#9CA3AF] transition-all"
+                className="hidden lg:flex items-center gap-2.5 px-4 py-2 w-44 xl:w-56 text-xs text-[#6B7280] hover:text-[#111827] bg-[#F9FAFB] hover:bg-white rounded-full border border-[#E5E7EB] hover:border-[#111827] transition-all shadow-xs group"
               >
-                <Search className="w-3.5 h-3.5" />
-                <span className="font-sans text-[11px] tracking-wider uppercase">Search...</span>
+                <Search className="w-4 h-4 text-[#6B7280] group-hover:text-[#111827] flex-shrink-0 transition-colors" />
+                <span className="font-sans text-[11px] tracking-wider uppercase truncate">Search...</span>
               </button>
 
-              {/* Account */}
+              {/* Customer Account / Login */}
               <UserNav />
 
-              {/* Wishlist Link */}
+              {/* Wishlist Link (Hover changes to Blue) */}
               <Link
                 href="/wishlist"
                 aria-label="Wishlist"
-                className="p-2 text-[#374151] hover:text-[#111827] transition-colors relative"
+                className="p-2 text-[#374151] hover:text-blue-600 transition-colors duration-200 relative group flex items-center justify-center"
+                title="Wishlist"
               >
-                <Heart className="w-5 h-5 stroke-[1.5]" />
+                <Heart className="w-6 h-6 stroke-[1.6] group-hover:scale-105 transition-transform" />
                 {wishlistCount > 0 && (
-                  <span className="absolute top-1 right-1 w-4 h-4 bg-[var(--color-gold)] text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                  <span className="absolute top-0.5 right-0.5 w-4 h-4 bg-blue-600 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
                     {wishlistCount}
                   </span>
                 )}
               </Link>
 
-              {/* Cart Drawer Trigger Button */}
+              {/* Cart Drawer Trigger Button (Hover changes to Red) */}
               <button
                 onClick={handleOpenCart}
                 aria-label="Shopping Cart"
-                className="p-2 text-[#374151] hover:text-[#111827] transition-colors relative flex items-center gap-1.5 group"
+                className="p-2 text-[#374151] hover:text-red-600 transition-colors duration-200 relative flex items-center justify-center group"
+                title="Shopping Cart"
               >
-                <ShoppingBag className="w-5 h-5 stroke-[1.5] group-hover:scale-105 transition-transform" />
+                <ShoppingBag className="w-6 h-6 stroke-[1.6] group-hover:scale-105 transition-transform" />
                 {itemCount > 0 && (
-                  <span className="w-4 h-4 bg-[#111827] text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                  <span className="w-4 h-4 bg-red-600 text-white text-[10px] font-bold rounded-full flex items-center justify-center absolute top-0.5 right-0.5">
                     {itemCount}
                   </span>
                 )}
