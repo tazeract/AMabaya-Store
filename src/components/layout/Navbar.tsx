@@ -170,6 +170,10 @@ export function Navbar() {
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const [announcementIdx, setAnnouncementIdx] = useState(0);
   const pathname = usePathname();
+
+  if (pathname?.startsWith("/admin")) {
+    return null;
+  }
   const { itemCount } = useCart();
   const { count: wishlistCount } = useWishlist();
   const { user, logout } = useAuth();
@@ -286,9 +290,9 @@ export function Navbar() {
 
             {/* Brand Logo */}
             <div className="flex-shrink-0 text-center lg:text-left">
-              <Link href="/" className="group inline-flex flex-col items-center lg:items-start" aria-label="AMabaya Home">
+              <Link href="/" className="group inline-flex flex-col items-center lg:items-start" aria-label="RIWAYAH Home">
                 <span className="font-serif text-2xl sm:text-3xl font-medium tracking-[0.28em] text-[#111827] group-hover:tracking-[0.32em] group-hover:text-[var(--color-gold-dark)] transition-all duration-500 ease-out">
-                  AMABAYA
+                  RIWAYAH
                 </span>
                 <span className="text-[8px] font-sans tracking-[0.35em] text-[#6B7280] group-hover:text-[#111827] uppercase -mt-0.5 transition-colors duration-300">
                   Haute Modesty · Pakistan
@@ -434,7 +438,7 @@ export function Navbar() {
               <div className="p-5 border-b border-[#E5E7EB] flex items-center justify-between bg-[#FBF9F6]">
                 <div>
                   <span className="font-serif text-xl font-medium tracking-[0.25em] text-[#111827]">
-                    AMABAYA
+                    RIWAYAH
                   </span>
                   <p className="text-[9px] text-[#6B7280] tracking-widest uppercase">Luxury Modest Wear</p>
                 </div>

@@ -1,26 +1,26 @@
 /** @type {import('./src/types').SiteConfig} */
 const siteConfig = {
   // ─── Brand ────────────────────────────────────────────────────────────────
-  storeName: "AMabaya",
+  storeName: "RIWAYAH",
   storeTagline: "Draped in Elegance. Born in Culture.",
   storeDescription:
-    "Pakistan's premier luxury Abaya brand, crafting timeless abayas, kaftans, and dupattas for the modern South Asian woman.",
-  logoText: "AM",
+    "Pakistan's premier luxury Abaya & Modest Fashion brand, crafting timeless abayas, kaftans, and dupattas for the modern South Asian woman.",
+  logoText: "RIWAYAH",
   currency: "PKR",
   currencySymbol: "₨",
 
   // ─── Contact ──────────────────────────────────────────────────────────────
-  contactPhone: "+92-300-1234567",
-  whatsappNumber: "923001234567", // No + or dashes for wa.me URL
-  contactEmail: "hello@amabaya.pk",
+  contactPhone: "+92 328 6900066",
+  whatsappNumber: "923286900066", // No + or dashes for wa.me URL
+  contactEmail: "hello@riwayah.pk",
   address: "Shop 12, Gulberg III, Lahore, Punjab, Pakistan",
 
   // ─── Social Links ─────────────────────────────────────────────────────────
   socialLinks: {
-    instagram: "https://instagram.com/amabaya.pk",
-    facebook: "https://facebook.com/amabaya.pk",
-    tiktok: "https://tiktok.com/@amabaya.pk",
-    pinterest: "https://pinterest.com/amabaya",
+    instagram: "https://instagram.com/riwayah.pk",
+    facebook: "https://facebook.com/riwayah.pk",
+    tiktok: "https://tiktok.com/@riwayah.pk",
+    pinterest: "https://pinterest.com/riwayah",
   },
 
   // ─── EmailJS Config ───────────────────────────────────────────────────────
@@ -37,9 +37,9 @@ const siteConfig = {
   recaptchaSiteKey: "YOUR_RECAPTCHA_SITE_KEY",
 
   // ─── SEO / OpenGraph ──────────────────────────────────────────────────────
-  siteUrl: "https://amabaya.pk",
+  siteUrl: "https://riwayah.pk",
   ogImage: "/og-image.jpg",
-  twitterHandle: "@amabaya_pk",
+  twitterHandle: "@riwayah_pk",
 
   // ─── Shipping & Policies ──────────────────────────────────────────────────
   freeShippingThreshold: 5000, // PKR — free shipping above this amount

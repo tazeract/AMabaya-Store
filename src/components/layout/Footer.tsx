@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Mail, Phone, MapPin, ArrowRight, Check } from "lucide-react";
 import siteConfig from "@/lib/siteConfig";
 
@@ -22,7 +23,7 @@ const customerCareLinks = [
 ];
 
 const brandLinks = [
-  { label: "The AMabaya Story", href: "/about" },
+  { label: "The RIWAYAH Story", href: "/about" },
   { label: "Artisanal Craftsmanship", href: "/about" },
   { label: "Contact & Flagship Store", href: "/contact" },
   { label: "Privacy Policy", href: "/contact" },
@@ -30,8 +31,13 @@ const brandLinks = [
 ];
 
 export function Footer() {
+  const pathname = usePathname();
   const [email, setEmail] = useState("");
   const [subscribed, setSubscribed] = useState(false);
+
+  if (pathname?.startsWith("/admin")) {
+    return null;
+  }
 
   const handleSubscribe = (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,14 +51,14 @@ export function Footer() {
 
   return (
     <footer className="bg-white border-t border-[#E5E7EB] text-[#111827]">
-      {/* ─── Newsletter & AMabaya Circle Section ───────────────────────────── */}
+      {/* ─── Newsletter & RIWAYAH Circle Section ───────────────────────────── */}
       <div className="border-b border-[#E5E7EB] bg-[#FBF9F6] py-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto text-center">
           <p className="text-[11px] font-sans font-semibold tracking-[0.25em] text-[#A3845A] uppercase mb-2">
             The Haute Modesty Newsletter
           </p>
           <h2 className="font-serif text-3xl sm:text-4xl text-[#111827] font-normal tracking-tight mb-3">
-            Join The AMabaya Circle
+            Join The RIWAYAH Circle
           </h2>
           <p className="text-sm text-[#4B5563] font-sans max-w-md mx-auto mb-8">
             Enjoy first access to exclusive limited editions, festive releases, and private styling sessions.
@@ -83,7 +89,7 @@ export function Footer() {
           </form>
           {subscribed && (
             <p className="text-xs text-emerald-700 font-sans mt-3">
-              Thank you for subscribing to AMabaya Circle. Welcome!
+              Thank you for subscribing to RIWAYAH Circle. Welcome!
             </p>
           )}
         </div>
@@ -97,7 +103,7 @@ export function Footer() {
           <div className="space-y-4">
             <Link href="/" className="inline-block">
               <span className="font-serif text-2xl font-medium tracking-[0.25em] text-[#111827]">
-                AMABAYA
+                RIWAYAH
               </span>
               <p className="text-[9px] text-[#6B7280] tracking-widest uppercase -mt-1">
                 Haute Modesty · Lahore, Pakistan

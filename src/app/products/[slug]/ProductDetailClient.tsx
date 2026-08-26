@@ -83,7 +83,7 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
 
   const handleWhatsApp = () => {
     const productUrl = `${siteConfig.siteUrl}/products/${product.slug}`;
-    const message = `Salam! I want to order this from AMabaya:\n\n*${product.title}*\nSize: ${selectedSize}\nColor: ${selectedColor.name}\nQty: ${quantity}\nPrice: ${formatPrice(product.price * quantity)}\nURL: ${productUrl}`;
+    const message = `Salam! I want to order this from RIWAYAH:\n\n*${product.title}*\nSize: ${selectedSize}\nColor: ${selectedColor.name}\nQty: ${quantity}\nPrice: ${formatPrice(product.price * quantity)}\nURL: ${productUrl}`;
     window.open(`https://wa.me/${siteConfig.whatsappNumber}?text=${encodeURIComponent(message)}`, "_blank");
   };
 
@@ -235,7 +235,7 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
             {/* Title Block */}
             <div>
               <p className="text-[11px] font-semibold tracking-[0.22em] text-[#A3845A] uppercase mb-1">
-                {product.category} · AMabaya Signature
+                {product.category} · RIWAYAH Signature
               </p>
               <h1 className="font-serif text-3xl sm:text-4xl text-[#111827] font-normal leading-tight">
                 {product.title}

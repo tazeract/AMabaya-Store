@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, ShoppingBag, Trash2, Plus, Minus, ArrowRight, Truck } from "lucide-react";
 import { useCart } from "@/context/CartContext";
@@ -9,8 +10,13 @@ import { formatPrice } from "@/lib/products";
 import siteConfig from "@/lib/siteConfig";
 
 export function CartDrawer() {
+  const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
   const { items, removeItem, updateQuantity, itemCount, subtotal } = useCart();
+
+  if (pathname?.startsWith("/admin")) {
+    return null;
+  }
 
   // Listen for custom open event from Navbar & ProductCard
   useEffect(() => {

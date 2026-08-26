@@ -8,7 +8,7 @@ const timeline = [
   {
     year: "2018",
     title: "The Vision Born in Lahore",
-    desc: "AMabaya was founded with an ambition: to create bespoke luxury modest wear tailored from premier fabrics for Pakistani women.",
+    desc: "RIWAYAH was founded with an ambition: to create bespoke luxury modest wear tailored from premier fabrics for Pakistani women.",
   },
   {
     year: "2020",

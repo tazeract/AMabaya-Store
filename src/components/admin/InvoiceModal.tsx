@@ -79,9 +79,9 @@ export function InvoiceModal({ order, onClose }: { order: Order; onClose: () => 
           {/* Invoice Header */}
           <div className="flex justify-between items-start border-b border-[#E5E7EB] pb-6">
             <div>
-              <h1 className="font-serif text-3xl font-medium tracking-[0.15em] text-[#111827]">AMABAYA</h1>
+              <h1 className="font-serif text-3xl font-medium tracking-[0.15em] text-[#111827]">RIWAYAH</h1>
               <p className="text-xs text-[#6B7280] mt-1 tracking-wider uppercase">Luxury Modest Couture</p>
-              <p className="text-xs text-[#9CA3AF] mt-0.5">Lahore, Pakistan · hello@amabaya.pk</p>
+              <p className="text-xs text-[#9CA3AF] mt-0.5">Lahore, Pakistan · hello@riwayah.pk</p>
             </div>
             <div className="text-right">
               <span className="text-xs font-bold uppercase tracking-widest text-[#9CA3AF]">Tax Invoice</span>
@@ -191,8 +191,8 @@ export function InvoiceModal({ order, onClose }: { order: Order; onClose: () => 
 
           {/* Footer note */}
           <div className="border-t border-[#E5E7EB] pt-6 text-center text-[11px] text-[#9CA3AF]">
-            <p>Thank you for choosing AMabaya. For any returns or exchanges, please contact support within 7 days.</p>
-            <p className="mt-1">WhatsApp: +92 300 1234567 · Website: www.amabaya.pk</p>
+            <p>Thank you for choosing RIWAYAH. For any returns or exchanges, please contact support within 7 days.</p>
+            <p className="mt-1">WhatsApp: +92 328 6900066 · Website: www.riwayah.pk</p>
           </div>
         </div>
       </div>

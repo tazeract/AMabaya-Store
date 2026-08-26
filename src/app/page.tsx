@@ -79,7 +79,7 @@ export default async function HomePage() {
               </h2>
 
               <p className="text-sm sm:text-base text-[#4B5563] font-sans leading-relaxed">
-                Founded in Lahore, AMabaya bridges the gap between classic Islamic modesty and contemporary high fashion. Every garment is cut from breathable Korean Nida, pure raw silks, and lightweight crystalline organzas—finished with hand-embellished zardozi, gota, and pearls.
+                Founded in Lahore, RIWAYAH bridges the gap between classic Islamic modesty and contemporary high fashion. Every garment is cut from breathable Korean Nida, pure raw silks, and lightweight crystalline organzas—finished with hand-embellished zardozi, gota, and pearls.
               </p>
 
               <div className="grid grid-cols-2 gap-6 pt-3 border-t border-[#E5E7EB]">
@@ -102,7 +102,7 @@ export default async function HomePage() {
                   href="/about"
                   className="luxury-btn-primary group inline-flex items-center gap-2"
                 >
-                  <span>Read The AMabaya Story</span>
+                  <span>Read The RIWAYAH Story</span>
                   <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </Link>
               </div>

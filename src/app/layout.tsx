@@ -24,7 +24,7 @@ export const metadata: Metadata = {
     "luxury abaya",
     "designer abaya",
     "modest fashion",
-    "AMabaya",
+    "RIWAYAH",
     "eid collection",
     "online shopping Pakistan",
     "Sapphire abaya",
