@@ -31,7 +31,17 @@ function ProductsPageContent() {
   const [showMobileFilters, setShowMobileFilters] = useState(false);
 
   useEffect(() => {
-    getAllProducts().then(setAllProducts);
+    const fetchProds = () => {
+      getAllProducts().then(setAllProducts);
+    };
+    fetchProds();
+
+    window.addEventListener("amabaya_products_updated", fetchProds);
+    window.addEventListener("storage", fetchProds);
+    return () => {
+      window.removeEventListener("amabaya_products_updated", fetchProds);
+      window.removeEventListener("storage", fetchProds);
+    };
   }, []);
 
   const filtered = useMemo(() => {

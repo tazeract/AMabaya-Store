@@ -21,7 +21,17 @@ export function FeaturedCollection() {
   const [products, setProducts] = useState<Product[]>([]);
 
   useEffect(() => {
-    getAllProducts().then(setProducts);
+    const fetchProds = () => {
+      getAllProducts().then(setProducts);
+    };
+    fetchProds();
+
+    window.addEventListener("amabaya_products_updated", fetchProds);
+    window.addEventListener("storage", fetchProds);
+    return () => {
+      window.removeEventListener("amabaya_products_updated", fetchProds);
+      window.removeEventListener("storage", fetchProds);
+    };
   }, []);
 
   const filteredProducts = products.filter((p) => {

@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Eye, ShoppingBag, Heart, ArrowRight } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
 import { toast } from "@/components/ui/Toaster";
+import { getAllProducts } from "@/lib/products";
 import type { Product } from "@/types";
 
 interface TrendingAbayasProps {
@@ -87,8 +88,31 @@ export function TrendingAbayas({ products }: TrendingAbayasProps) {
   const { addItem } = useCart();
   const { toggle, isWishlisted } = useWishlist();
   const [hoveredId, setHoveredId] = useState<string | null>(null);
+  const [liveProducts, setLiveProducts] = useState<Product[]>(products || []);
 
-  const displayList = products && products.length > 0 ? products.slice(0, 4) : DEFAULT_ABAYAS;
+  useEffect(() => {
+    if (products && products.length > 0) {
+      setLiveProducts(products);
+    } else {
+      getAllProducts().then((res) => {
+        if (res && res.length > 0) setLiveProducts(res);
+      });
+    }
+
+    const refresh = () => {
+      getAllProducts().then((res) => {
+        if (res && res.length > 0) setLiveProducts(res);
+      });
+    };
+    window.addEventListener("amabaya_products_updated", refresh);
+    window.addEventListener("storage", refresh);
+    return () => {
+      window.removeEventListener("amabaya_products_updated", refresh);
+      window.removeEventListener("storage", refresh);
+    };
+  }, [products]);
+
+  const displayList = liveProducts.length > 0 ? liveProducts.slice(0, 4) : DEFAULT_ABAYAS;
 
   const handleQuickAdd = (product: any, e: React.MouseEvent) => {
     e.preventDefault();

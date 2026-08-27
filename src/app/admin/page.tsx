@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useRef, useMemo, ChangeEvent } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -13,7 +13,8 @@ import {
   ChevronRight, Sparkles, Filter, Percent, ArrowUpDown,
   Printer, Check, Copy, AlertTriangle, Key, Layers,
   Phone, Mail, MapPin, CheckCircle2, Shield, Download,
-  SlidersHorizontal, CheckSquare, Square
+  SlidersHorizontal, CheckSquare, Square, Menu, Camera,
+  Crown, Star, ArrowUpRight, FolderPlus
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { InvoiceModal } from "@/components/admin/InvoiceModal";
@@ -158,7 +159,7 @@ interface UserProfile {
 // ─── Default Catalog Seed Fallbacks ──────────────────────────────────────────
 const INITIAL_PRODUCTS: ProductRow[] = [
   {
-    id: "prod-1",
+    id: "00000000-0000-4000-8000-000000000001",
     slug: "classic-noir-abaya",
     name: "Classic Noir Korean Nida Abaya",
     category: "Abaya",
@@ -190,7 +191,7 @@ const INITIAL_PRODUCTS: ProductRow[] = [
     created_at: "2024-01-15T10:00:00Z",
   },
   {
-    id: "prod-2",
+    id: "00000000-0000-4000-8000-000000000002",
     slug: "royal-zahra-kaftan",
     name: "Royal Zahra Embroidered Kaftan",
     category: "Kaftan",
@@ -220,7 +221,7 @@ const INITIAL_PRODUCTS: ProductRow[] = [
     created_at: "2024-02-01T12:00:00Z",
   },
   {
-    id: "prod-3",
+    id: "00000000-0000-4000-8000-000000000003",
     slug: "pearl-embroidered-dupatta",
     name: "Pearl Laser-Cut Scalloped Dupatta",
     category: "Dupatta",
@@ -246,7 +247,7 @@ const INITIAL_PRODUCTS: ProductRow[] = [
     created_at: "2024-02-10T14:00:00Z",
   },
   {
-    id: "prod-4",
+    id: "00000000-0000-4000-8000-000000000004",
     slug: "emerald-velvet-abaya",
     name: "Emerald Royale Micro-Velvet Abaya",
     category: "Abaya",
@@ -275,7 +276,7 @@ const INITIAL_PRODUCTS: ProductRow[] = [
     created_at: "2024-02-15T09:00:00Z",
   },
   {
-    id: "prod-5",
+    id: "00000000-0000-4000-8000-000000000005",
     slug: "ivory-zari-kaftan",
     name: "Ivory Luxe Floral Zari Kaftan",
     category: "Kaftan",
@@ -304,7 +305,7 @@ const INITIAL_PRODUCTS: ProductRow[] = [
     created_at: "2024-02-20T11:00:00Z",
   },
   {
-    id: "prod-6",
+    id: "00000000-0000-4000-8000-000000000006",
     slug: "organza-luxe-dupatta",
     name: "Gota Patti Luxe Chiffon Dupatta",
     category: "Dupatta",
@@ -398,72 +399,6 @@ const INITIAL_ORDERS: Order[] = [
       },
     ],
   },
-  {
-    id: "ord-7643de11",
-    user_id: "user-3",
-    status: "shipped",
-    total: 7400,
-    shipping_cost: 0,
-    payment_method: "cod",
-    placed_at: "2026-08-25T14:10:00Z",
-    tracking_code: "LEO-44910283",
-    notes: "",
-    shipping_address: {
-      fullName: "Mahnoor Tariq",
-      phone: "+92 333 9021485",
-      address: "House 112, Street 8, Sector F-8/2",
-      city: "Islamabad",
-      province: "Federal",
-      email: "mahnoor.t@gmail.com",
-    },
-    order_items: [
-      {
-        id: "item-4",
-        product_snapshot: { name: "Classic Noir Korean Nida Abaya", images: ["/products/classic-noir-abaya/image-1.jpg"] },
-        quantity: 1,
-        size: "L",
-        color: "Midnight Black",
-        unit_price: 4500,
-      },
-      {
-        id: "item-5",
-        product_snapshot: { name: "Pearl Laser-Cut Scalloped Dupatta", images: ["/products/pearl-embroidered-dupatta/image-1.jpg"] },
-        quantity: 1,
-        size: "Free Size",
-        color: "Sheer Ivory",
-        unit_price: 2900,
-      },
-    ],
-  },
-  {
-    id: "ord-6190fa44",
-    user_id: "user-4",
-    status: "delivered",
-    total: 6800,
-    shipping_cost: 0,
-    payment_method: "cod",
-    placed_at: "2026-08-23T11:05:00Z",
-    tracking_code: "TRX-88201944",
-    notes: "",
-    shipping_address: {
-      fullName: "Sadia Qureshi",
-      phone: "+92 300 7812903",
-      address: "Bungalow 7-A, Cantt Area",
-      city: "Multan",
-      province: "Punjab",
-      email: "sadia.q@yahoo.com",
-    },
-    order_items: [
-      {
-        id: "item-6",
-        product_snapshot: { name: "Emerald Royale Micro-Velvet Abaya", images: ["/products/classic-noir-abaya/image-2.jpg"] },
-        quantity: 1,
-        size: "M",
-        color: "Royal Emerald",
-        unit_price: 6800,
-      },
-    ],
-  },
 ];
 
 const INITIAL_PROMOCODES: Promocode[] = [
@@ -536,7 +471,7 @@ const STATUS_CONFIG: Record<OrderStatus, { label: string; icon: React.ElementTyp
 const ALL_STATUSES = Object.keys(STATUS_CONFIG) as OrderStatus[];
 
 function formatPKR(n: number) {
-  return `Rs. ${n.toLocaleString("en-PK")}`;
+  return `Rs. ${Number(n || 0).toLocaleString("en-PK")}`;
 }
 function formatDate(iso: string) {
   try {
@@ -549,12 +484,20 @@ function toSlug(name: string) {
   return name.toLowerCase().replace(/[^a-z0-9\s-]/g, "").trim().replace(/\s+/g, "-");
 }
 
+function generateSafeUUID(): string {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+  return "00000000-0000-4000-8000-" + Date.now().toString(16).padStart(12, "0");
+}
+
 export default function AdminPage() {
   const [authenticated, setAuthenticated] = useState<boolean | null>(null);
   const [activeSection, setActiveSection] = useState<AdminSection>("products");
   const [adminPassword, setAdminPassword] = useState(DEFAULT_ADMIN_PASSWORD);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  // Core Data States with Fallback Seed defaults
+  // Core Data States
   const [products, setProducts] = useState<ProductRow[]>(INITIAL_PRODUCTS);
   const [orders, setOrders] = useState<Order[]>(INITIAL_ORDERS);
   const [promocodes, setPromocodes] = useState<Promocode[]>(INITIAL_PROMOCODES);
@@ -583,13 +526,21 @@ export default function AdminPage() {
   const [orderSearch, setOrderSearch] = useState("");
   const [orderStatusFilter, setOrderStatusFilter] = useState("all");
 
-  // Promocode tester state
+  // Promocode tester
   const [testCodeInput, setTestCodeInput] = useState("");
   const [testAmountInput, setTestAmountInput] = useState<number>(6000);
   const [testResult, setTestResult] = useState<string | null>(null);
 
   // Supabase client instance
   const supabase = useRef(createClient()).current;
+
+  // Broadcast changes across the browser
+  const notifyStoreUpdate = () => {
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new Event("amabaya_products_updated"));
+      window.dispatchEvent(new Event("storage"));
+    }
+  };
 
   // 1. Authenticate check on mount
   useEffect(() => {
@@ -623,7 +574,7 @@ export default function AdminPage() {
           sizes: Array.isArray(p.sizes_json) && p.sizes_json.length > 0
             ? p.sizes_json
             : [{ label: "S", available: true }, { label: "M", available: true }, { label: "L", available: true }, { label: "XL", available: true }],
-          stock: p.stock ?? 10,
+          stock: typeof p.stock === "number" ? p.stock : 10,
           is_new: !!p.is_new,
           is_bestseller: !!p.is_bestseller,
           featured: !!p.featured,
@@ -635,6 +586,7 @@ export default function AdminPage() {
           created_at: p.created_at,
         }));
         setProducts(formatted);
+        localStorage.setItem("amabaya_local_products", JSON.stringify(formatted));
       } else {
         const savedProds = localStorage.getItem("amabaya_local_products");
         if (savedProds) setProducts(JSON.parse(savedProds));
@@ -700,59 +652,66 @@ export default function AdminPage() {
   // ─── Product CRUD ───────────────────────────────────────────────────────────
   const handleSaveProduct = async (formData: ProductFormData) => {
     try {
-      const payload: Record<string, unknown> = {
+      const dbPayload: Record<string, unknown> = {
         name: formData.name,
         slug: formData.slug || toSlug(formData.name),
         category: formData.category,
-        price: formData.price,
-        original_price: formData.original_price || null,
-        description: formData.description,
-        long_description: formData.long_description,
+        price: Number(formData.price),
+        original_price: formData.original_price ? Number(formData.original_price) : null,
+        description: formData.description || "",
+        long_description: formData.long_description || "",
         images: formData.images.length > 0 ? formData.images : ["/products/classic-noir-abaya/image-1.jpg"],
         sizes_json: formData.sizes,
         sizes: formData.sizes.map((s) => s.label),
-        stock: formData.stock,
-        is_new: formData.is_new,
-        is_bestseller: formData.is_bestseller,
-        featured: formData.featured,
-        tags: formData.tags,
-        sku: formData.sku,
-        material: formData.material,
-        rating: formData.rating,
-        review_count: formData.review_count,
+        stock: Number(formData.stock) || 0,
+        is_new: !!formData.is_new,
+        is_bestseller: !!formData.is_bestseller,
+        featured: !!formData.featured,
+        tags: formData.tags || [],
+        sku: formData.sku || "",
+        material: formData.material || "Korean Nida",
+        rating: Number(formData.rating) || 5,
+        review_count: Number(formData.review_count) || 1,
       };
 
       if (formData.id) {
         // Update in Supabase
-        await supabase.from("products").update(payload).eq("id", formData.id);
+        const { error } = await supabase.from("products").update(dbPayload).eq("id", formData.id);
+        if (error) {
+          console.warn("Supabase update notice:", error.message);
+        }
         const updated = products.map((p) =>
           p.id === formData.id ? { ...p, ...formData, id: p.id } : p
         );
         setProducts(updated);
         localStorage.setItem("amabaya_local_products", JSON.stringify(updated));
+        notifyStoreUpdate();
         toast.success(`"${formData.name}" updated successfully!`);
       } else {
-        // Insert
-        const newId = "prod-" + Date.now();
-        await supabase.from("products").insert([{ ...payload, id: newId }]);
+        // Insert new product
+        const newId = generateSafeUUID();
+        const { error } = await supabase.from("products").insert([{ ...dbPayload, id: newId }]);
+        if (error) {
+          console.warn("Supabase insert notice:", error.message);
+        }
         const created: ProductRow = {
           id: newId,
           slug: formData.slug || toSlug(formData.name),
           name: formData.name,
           category: formData.category,
-          price: formData.price,
-          original_price: formData.original_price,
-          description: formData.description,
-          long_description: formData.long_description,
+          price: Number(formData.price),
+          original_price: formData.original_price ? Number(formData.original_price) : undefined,
+          description: formData.description || "",
+          long_description: formData.long_description || "",
           images: formData.images.length > 0 ? formData.images : ["/products/classic-noir-abaya/image-1.jpg"],
           sizes: formData.sizes,
-          stock: formData.stock,
-          is_new: formData.is_new,
-          is_bestseller: formData.is_bestseller,
-          featured: formData.featured,
-          tags: formData.tags,
-          sku: formData.sku,
-          material: formData.material,
+          stock: Number(formData.stock) || 0,
+          is_new: !!formData.is_new,
+          is_bestseller: !!formData.is_bestseller,
+          featured: !!formData.featured,
+          tags: formData.tags || [],
+          sku: formData.sku || "",
+          material: formData.material || "Korean Nida",
           rating: 5,
           review_count: 1,
           created_at: new Date().toISOString(),
@@ -760,7 +719,8 @@ export default function AdminPage() {
         const updated = [created, ...products];
         setProducts(updated);
         localStorage.setItem("amabaya_local_products", JSON.stringify(updated));
-        toast.success(`New design "${formData.name}" published!`);
+        notifyStoreUpdate();
+        toast.success(`New design "${formData.name}" published to store!`);
       }
 
       setProductModalOpen(false);
@@ -777,7 +737,8 @@ export default function AdminPage() {
       const updated = products.filter((p) => p.id !== id);
       setProducts(updated);
       localStorage.setItem("amabaya_local_products", JSON.stringify(updated));
-      toast.success("Product removed");
+      notifyStoreUpdate();
+      toast.success("Product removed from storefront");
     } catch (e: any) {
       toast.error(e?.message || "Could not delete");
     }
@@ -787,8 +748,9 @@ export default function AdminPage() {
     const updated = products.map((p) => (p.id === id ? { ...p, stock } : p));
     setProducts(updated);
     localStorage.setItem("amabaya_local_products", JSON.stringify(updated));
+    notifyStoreUpdate();
     await supabase.from("products").update({ stock }).eq("id", id);
-    toast.success("Stock updated");
+    toast.success("Inventory stock updated");
   };
 
   // ─── Order CRUD ─────────────────────────────────────────────────────────────
@@ -806,7 +768,7 @@ export default function AdminPage() {
     }
   };
 
-  // ─── Brands & Collections CRUD (Fully Editable) ─────────────────────────────
+  // ─── Brands & Collections CRUD ──────────────────────────────────────────────
   const handleSaveBrand = (brandData: BrandCollection) => {
     let updated: BrandCollection[];
     if (editingBrand) {
@@ -837,7 +799,7 @@ export default function AdminPage() {
     toast.success("Featured status updated");
   };
 
-  // ─── Categories CRUD (Fully Editable) ───────────────────────────────────────
+  // ─── Categories CRUD ────────────────────────────────────────────────────────
   const handleSaveCategory = (catData: CategoryItem) => {
     let updated: CategoryItem[];
     if (editingCategory) {
@@ -986,137 +948,159 @@ export default function AdminPage() {
     );
   }
 
+  const navContent = (
+    <div className="flex-1 overflow-y-auto px-3.5 py-4 space-y-6 text-xs custom-scrollbar">
+      <div>
+        <p className="px-3 text-[10px] font-bold uppercase tracking-widest text-[#64748B] mb-2">
+          Store Management
+        </p>
+        <nav className="space-y-1">
+          <SidebarItem
+            icon={ShoppingBag}
+            label="Products"
+            count={products.length}
+            active={activeSection === "products"}
+            onClick={() => {
+              setActiveSection("products");
+              setMobileMenuOpen(false);
+            }}
+          />
+          <SidebarItem
+            icon={Package}
+            label="Orders"
+            count={orders.length}
+            active={activeSection === "orders"}
+            onClick={() => {
+              setActiveSection("orders");
+              setMobileMenuOpen(false);
+            }}
+          />
+          <SidebarItem
+            icon={Tag}
+            label="Promocodes"
+            count={promocodes.length}
+            active={activeSection === "promocodes"}
+            onClick={() => {
+              setActiveSection("promocodes");
+              setMobileMenuOpen(false);
+            }}
+          />
+          <SidebarItem
+            icon={Sliders}
+            label="Carousel"
+            count={slides.length}
+            active={activeSection === "carousel"}
+            onClick={() => {
+              setActiveSection("carousel");
+              setMobileMenuOpen(false);
+            }}
+          />
+          <SidebarItem
+            icon={ImageIcon}
+            label="Banners"
+            count={banners.length}
+            active={activeSection === "banners"}
+            onClick={() => {
+              setActiveSection("banners");
+              setMobileMenuOpen(false);
+            }}
+          />
+        </nav>
+      </div>
+
+      <div>
+        <p className="px-3 text-[10px] font-bold uppercase tracking-widest text-[#64748B] mb-2">
+          Catalog Collections
+        </p>
+        <nav className="space-y-1">
+          <SidebarItem
+            icon={Sparkles}
+            label="Collections"
+            count={brands.length}
+            active={activeSection === "brands"}
+            onClick={() => {
+              setActiveSection("brands");
+              setMobileMenuOpen(false);
+            }}
+          />
+          <SidebarItem
+            icon={LayoutGrid}
+            label="Categories"
+            count={categories.length}
+            active={activeSection === "categories"}
+            onClick={() => {
+              setActiveSection("categories");
+              setMobileMenuOpen(false);
+            }}
+          />
+        </nav>
+      </div>
+
+      <div>
+        <p className="px-3 text-[10px] font-bold uppercase tracking-widest text-[#64748B] mb-2">
+          Administration
+        </p>
+        <nav className="space-y-1">
+          <SidebarItem
+            icon={Users}
+            label="Customers"
+            count={users.length}
+            active={activeSection === "users"}
+            onClick={() => {
+              setActiveSection("users");
+              setMobileMenuOpen(false);
+            }}
+          />
+          <SidebarItem
+            icon={ShieldCheck}
+            label="Security & Roles"
+            active={activeSection === "roles"}
+            onClick={() => {
+              setActiveSection("roles");
+              setMobileMenuOpen(false);
+            }}
+          />
+          <SidebarItem
+            icon={BookOpen}
+            label="Documentation"
+            active={activeSection === "documentation"}
+            onClick={() => {
+              setActiveSection("documentation");
+              setMobileMenuOpen(false);
+            }}
+          />
+          <SidebarItem
+            icon={FileText}
+            label="Changelog"
+            badge="v15.0"
+            active={activeSection === "changelog"}
+            onClick={() => {
+              setActiveSection("changelog");
+              setMobileMenuOpen(false);
+            }}
+          />
+        </nav>
+      </div>
+    </div>
+  );
+
   return (
     <div className="fixed inset-0 bg-[#F8FAFC] flex font-sans antialiased text-[#0F172A] overflow-hidden z-50">
       <Toaster position="top-right" />
 
-      {/* ─── OBSIDIAN LUXURY SIDEBAR ────────────────────────────────────────── */}
-      <aside className="w-64 bg-[#0F172A] text-[#94A3B8] flex flex-col flex-shrink-0 h-full border-r border-[#1E293B] select-none">
-        {/* Brand Header */}
+      {/* ─── DESKTOP OBSIDIAN LUXURY SIDEBAR ────────────────────────────────── */}
+      <aside className="hidden lg:flex w-64 bg-[#0F172A] text-[#94A3B8] flex-col flex-shrink-0 h-full border-r border-[#1E293B] select-none">
         <div className="p-6 pb-4 flex items-center justify-between border-b border-[#1E293B]/80">
           <div className="flex items-center gap-2.5">
             <span className="font-serif text-2xl font-bold tracking-[0.1em] text-white">RIWAYAH</span>
-            <span className="text-[10px] font-bold uppercase tracking-wider bg-purple-950 text-purple-300 border border-purple-800/80 px-2 py-0.5 rounded-md shadow-xs">
+            <span className="text-[10px] font-bold uppercase tracking-wider bg-purple-950 text-purple-300 border border-purple-800/80 px-2 py-0.5 rounded-md">
               Admin
             </span>
           </div>
         </div>
 
-        {/* Scrollable Navigation Groups */}
-        <div className="flex-1 overflow-y-auto px-3.5 py-4 space-y-6 text-xs custom-scrollbar">
-          {/* Main Navigation */}
-          <div>
-            <p className="px-3 text-[10px] font-bold uppercase tracking-widest text-[#64748B] mb-2">
-              Navigation
-            </p>
-            <nav className="space-y-1">
-              <SidebarItem
-                icon={ShoppingBag}
-                label="Products"
-                count={products.length}
-                active={activeSection === "products"}
-                onClick={() => setActiveSection("products")}
-              />
-              <SidebarItem
-                icon={Package}
-                label="Orders"
-                count={orders.length}
-                active={activeSection === "orders"}
-                onClick={() => setActiveSection("orders")}
-              />
-              <SidebarItem
-                icon={Tag}
-                label="Promocodes"
-                count={promocodes.length}
-                active={activeSection === "promocodes"}
-                onClick={() => setActiveSection("promocodes")}
-              />
-              <SidebarItem
-                icon={Sliders}
-                label="Carousel"
-                count={slides.length}
-                active={activeSection === "carousel"}
-                onClick={() => setActiveSection("carousel")}
-              />
-              <SidebarItem
-                icon={ImageIcon}
-                label="Banners"
-                count={banners.length}
-                active={activeSection === "banners"}
-                onClick={() => setActiveSection("banners")}
-              />
-            </nav>
-          </div>
+        {navContent}
 
-          {/* Details */}
-          <div>
-            <p className="px-3 text-[10px] font-bold uppercase tracking-widest text-[#64748B] mb-2">
-              Details
-            </p>
-            <nav className="space-y-1">
-              <SidebarItem
-                icon={Tag}
-                label="Brands & Collections"
-                count={brands.length}
-                active={activeSection === "brands"}
-                onClick={() => setActiveSection("brands")}
-              />
-              <SidebarItem
-                icon={LayoutGrid}
-                label="Categories"
-                count={categories.length}
-                active={activeSection === "categories"}
-                onClick={() => setActiveSection("categories")}
-              />
-            </nav>
-          </div>
-
-          {/* Access Controls */}
-          <div>
-            <p className="px-3 text-[10px] font-bold uppercase tracking-widest text-[#64748B] mb-2">
-              Access Controls
-            </p>
-            <nav className="space-y-1">
-              <SidebarItem
-                icon={Users}
-                label="Users & Customers"
-                count={users.length}
-                active={activeSection === "users"}
-                onClick={() => setActiveSection("users")}
-              />
-              <SidebarItem
-                icon={ShieldCheck}
-                label="Roles & Security"
-                active={activeSection === "roles"}
-                onClick={() => setActiveSection("roles")}
-              />
-            </nav>
-          </div>
-
-          {/* Docs */}
-          <div>
-            <p className="px-3 text-[10px] font-bold uppercase tracking-widest text-[#64748B] mb-2">
-              Docs & Audit
-            </p>
-            <nav className="space-y-1">
-              <SidebarItem
-                icon={BookOpen}
-                label="Documentation"
-                active={activeSection === "documentation"}
-                onClick={() => setActiveSection("documentation")}
-              />
-              <SidebarItem
-                icon={FileText}
-                label="Changelog"
-                badge="14.9.1"
-                active={activeSection === "changelog"}
-                onClick={() => setActiveSection("changelog")}
-              />
-            </nav>
-          </div>
-        </div>
-
-        {/* Bottom User Card */}
         <div className="p-3.5 border-t border-[#1E293B] bg-[#090D16]">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -1124,8 +1108,8 @@ export default function AdminPage() {
                 A
               </div>
               <div className="leading-tight">
-                <p className="text-xs font-bold text-white">admin</p>
-                <p className="text-[10px] text-[#94A3B8]">Super Admin</p>
+                <p className="text-xs font-bold text-white">Master Admin</p>
+                <p className="text-[10px] text-[#94A3B8]">Full Store Access</p>
               </div>
             </div>
             <button
@@ -1143,36 +1127,110 @@ export default function AdminPage() {
         </div>
       </aside>
 
-      {/* ─── MAIN WORKSPACE (Pure Standalone Dashboard) ────────────────────── */}
+      {/* ─── MOBILE DRAWER OVERLAY ──────────────────────────────────────────── */}
+      <AnimatePresence>
+        {mobileMenuOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setMobileMenuOpen(false)}
+              className="fixed inset-0 bg-black/70 backdrop-blur-xs z-50 lg:hidden"
+            />
+            <motion.div
+              initial={{ x: "-100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "-100%" }}
+              transition={{ type: "spring", damping: 25, stiffness: 200 }}
+              className="fixed top-0 bottom-0 left-0 w-72 bg-[#0F172A] text-[#94A3B8] z-50 flex flex-col border-r border-[#1E293B] shadow-2xl lg:hidden"
+            >
+              <div className="p-5 flex items-center justify-between border-b border-[#1E293B]">
+                <div className="flex items-center gap-2">
+                  <span className="font-serif text-xl font-bold tracking-[0.1em] text-white">RIWAYAH</span>
+                  <span className="text-[9px] font-bold uppercase tracking-wider bg-purple-950 text-purple-300 border border-purple-800/80 px-1.5 py-0.5 rounded">
+                    Admin
+                  </span>
+                </div>
+                <button
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="p-1.5 text-gray-400 hover:text-white rounded-lg hover:bg-white/10"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {navContent}
+
+              <div className="p-4 border-t border-[#1E293B] bg-[#090D16] flex items-center justify-between">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center text-white font-bold text-xs">
+                    A
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-white">Master Admin</p>
+                    <p className="text-[10px] text-[#94A3B8]">Mobile Suite</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => {
+                    sessionStorage.removeItem("amabaya_admin");
+                    setAuthenticated(false);
+                    setMobileMenuOpen(false);
+                    toast.success("Logged out");
+                  }}
+                  className="p-2 text-red-400 hover:bg-red-950/40 rounded-lg"
+                >
+                  <LogOut className="w-4 h-4" />
+                </button>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* ─── MAIN WORKSPACE ─────────────────────────────────────────────────── */}
       <main className="flex-1 flex flex-col min-w-0 h-full overflow-y-auto bg-[#F8FAFC]">
         {/* Top Header Bar */}
-        <header className="bg-white border-b border-[#E2E8F0] px-8 py-4 sticky top-0 z-20 flex items-center justify-between shadow-xs">
-          <div>
-            <div className="flex items-center gap-1.5 text-xs text-[#64748B] mb-0.5 font-medium">
-              <Link href="/" target="_blank" className="hover:text-[#0F172A] flex items-center gap-1">
-                Storefront <ExternalLink className="w-3 h-3 text-[#94A3B8]" />
-              </Link>
-              <span>/</span>
-              <span className="capitalize text-[#0F172A] font-semibold">{activeSection}</span>
+        <header className="bg-white border-b border-[#E2E8F0] px-4 sm:px-8 py-3.5 sm:py-4 sticky top-0 z-20 flex items-center justify-between shadow-xs">
+          <div className="flex items-center gap-3">
+            {/* Mobile Hamburger Toggle */}
+            <button
+              onClick={() => setMobileMenuOpen(true)}
+              className="lg:hidden p-2 -ml-2 text-[#475569] hover:text-[#0F172A] hover:bg-[#F1F5F9] rounded-xl transition-colors"
+              title="Open Navigation Menu"
+            >
+              <Menu className="w-5 h-5" />
+            </button>
+
+            <div>
+              <div className="flex items-center gap-1.5 text-[11px] sm:text-xs text-[#64748B] mb-0.5 font-medium">
+                <Link href="/" target="_blank" className="hover:text-[#0F172A] flex items-center gap-1">
+                  Storefront <ExternalLink className="w-3 h-3 text-[#94A3B8]" />
+                </Link>
+                <span>/</span>
+                <span className="capitalize text-[#0F172A] font-semibold">{activeSection}</span>
+              </div>
+              <h1 className="text-lg sm:text-2xl font-serif font-bold text-[#0F172A] capitalize tracking-tight">
+                {activeSection === "brands"
+                  ? "Collections"
+                  : activeSection === "users"
+                  ? "Customers"
+                  : activeSection}
+              </h1>
             </div>
-            <h1 className="text-2xl font-serif font-bold text-[#0F172A] capitalize tracking-tight">
-              {activeSection === "brands"
-                ? "Brands & Collections"
-                : activeSection === "users"
-                ? "Customers & Users"
-                : activeSection}
-            </h1>
           </div>
 
           {/* Action Hub */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             <button
               onClick={loadData}
               disabled={loading}
-              className="p-2 border border-[#E2E8F0] text-[#64748B] hover:text-[#0F172A] rounded-xl hover:bg-[#F1F5F9] transition-colors"
-              title="Refresh Store Data"
+              className="p-2 sm:px-3 sm:py-2 border border-[#E2E8F0] text-[#64748B] hover:text-[#0F172A] rounded-xl hover:bg-[#F1F5F9] transition-colors flex items-center gap-1.5 text-xs font-medium"
+              title="Refresh Data"
             >
               <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin text-purple-600" : ""}`} />
+              <span className="hidden md:inline">Sync</span>
             </button>
 
             {activeSection === "products" && (
@@ -1181,10 +1239,10 @@ export default function AdminPage() {
                   setEditingProduct(undefined);
                   setProductModalOpen(true);
                 }}
-                className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#0F172A] text-white text-xs font-semibold rounded-xl hover:bg-[#1E293B] transition-all shadow-sm"
+                className="inline-flex items-center gap-1.5 px-3.5 sm:px-4 py-2 bg-[#0F172A] text-white text-xs font-semibold rounded-xl hover:bg-[#1E293B] transition-all shadow-sm"
               >
                 <Plus className="w-4 h-4" />
-                Add Product
+                <span>Add Product</span>
               </button>
             )}
 
@@ -1194,10 +1252,10 @@ export default function AdminPage() {
                   setEditingBrand(undefined);
                   setBrandModalOpen(true);
                 }}
-                className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#0F172A] text-white text-xs font-semibold rounded-xl hover:bg-[#1E293B] transition-all shadow-sm"
+                className="inline-flex items-center gap-1.5 px-3.5 sm:px-4 py-2 bg-[#0F172A] text-white text-xs font-semibold rounded-xl hover:bg-[#1E293B] transition-all shadow-sm"
               >
                 <Plus className="w-4 h-4" />
-                Add Collection
+                <span>Add Collection</span>
               </button>
             )}
 
@@ -1207,82 +1265,82 @@ export default function AdminPage() {
                   setEditingCategory(undefined);
                   setCategoryModalOpen(true);
                 }}
-                className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#0F172A] text-white text-xs font-semibold rounded-xl hover:bg-[#1E293B] transition-all shadow-sm"
+                className="inline-flex items-center gap-1.5 px-3.5 sm:px-4 py-2 bg-[#0F172A] text-white text-xs font-semibold rounded-xl hover:bg-[#1E293B] transition-all shadow-sm"
               >
                 <Plus className="w-4 h-4" />
-                Add Category
+                <span>Add Category</span>
               </button>
             )}
 
             {activeSection === "promocodes" && (
               <button
                 onClick={() => setPromoModalOpen(true)}
-                className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#0F172A] text-white text-xs font-semibold rounded-xl hover:bg-[#1E293B] transition-all shadow-sm"
+                className="inline-flex items-center gap-1.5 px-3.5 sm:px-4 py-2 bg-[#0F172A] text-white text-xs font-semibold rounded-xl hover:bg-[#1E293B] transition-all shadow-sm"
               >
                 <Plus className="w-4 h-4" />
-                New Coupon
+                <span>New Coupon</span>
               </button>
             )}
 
             {activeSection === "carousel" && (
               <button
                 onClick={() => setSlideModalOpen(true)}
-                className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#0F172A] text-white text-xs font-semibold rounded-xl hover:bg-[#1E293B] transition-all shadow-sm"
+                className="inline-flex items-center gap-1.5 px-3.5 sm:px-4 py-2 bg-[#0F172A] text-white text-xs font-semibold rounded-xl hover:bg-[#1E293B] transition-all shadow-sm"
               >
                 <Plus className="w-4 h-4" />
-                Add Hero Slide
+                <span>Add Slide</span>
               </button>
             )}
 
             {activeSection === "users" && (
               <button
                 onClick={exportUsersCSV}
-                className="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-700 text-white text-xs font-semibold rounded-xl hover:bg-emerald-800 transition-all shadow-sm"
+                className="inline-flex items-center gap-1.5 px-3.5 sm:px-4 py-2 bg-emerald-700 text-white text-xs font-semibold rounded-xl hover:bg-emerald-800 transition-all shadow-sm"
               >
                 <Download className="w-4 h-4" />
-                Export CSV
+                <span>Export CSV</span>
               </button>
             )}
           </div>
         </header>
 
-        {/* Main Body */}
-        <div className="p-8 space-y-6">
+        {/* Main Body Content */}
+        <div className="p-3.5 sm:p-6 lg:p-8 space-y-6">
           {/* ═════════ 1. PRODUCTS SECTION ═════════ */}
           {activeSection === "products" && (
-            <div className="space-y-6">
+            <div className="space-y-5">
               {/* Stat Highlights */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <StatCard label="Total Catalog Products" value={products.length} icon={ShoppingBag} color="text-indigo-600 bg-indigo-50" />
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+                <StatCard label="Catalog Designs" value={products.length} icon={ShoppingBag} color="text-indigo-600 bg-indigo-50" />
                 <StatCard
-                  label="In Stock Designs"
+                  label="In Stock"
                   value={products.filter((p) => p.stock > 0).length}
                   icon={CheckCircle2}
                   color="text-emerald-600 bg-emerald-50"
                 />
                 <StatCard
-                  label="Low / Out of Stock"
+                  label="Low Stock (≤5)"
                   value={products.filter((p) => p.stock <= 5).length}
                   icon={AlertTriangle}
                   color="text-amber-600 bg-amber-50"
                 />
                 <StatCard
-                  label="Featured / Bestsellers"
+                  label="Featured / VIP"
                   value={products.filter((p) => p.featured || p.is_bestseller).length}
                   icon={Sparkles}
                   color="text-purple-600 bg-purple-50"
                 />
               </div>
 
-              {/* Data Table */}
+              {/* Data Table Container */}
               <div className="bg-white rounded-2xl border border-[#E2E8F0] shadow-xs overflow-hidden">
                 {/* Search & Filter Bar */}
-                <div className="p-4 border-b border-[#E2E8F0] flex flex-wrap items-center justify-between gap-3">
-                  <div className="relative flex-1 min-w-[240px] max-w-md">
+                <div className="p-3.5 sm:p-4 border-b border-[#E2E8F0] flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+                  <div className="relative flex-1 min-w-[200px] max-w-md">
                     <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[#94A3B8]" />
                     <input
                       type="text"
-                      placeholder="Filter by product name, category, SKU..."
+                      placeholder="Search design title, SKU, fabric..."
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       className="w-full pl-9 pr-4 py-2 border border-[#CBD5E1] rounded-xl text-xs outline-none focus:border-[#0F172A] transition-all bg-[#F8FAFC]"
@@ -1293,7 +1351,7 @@ export default function AdminPage() {
                     <select
                       value={selectedCategory}
                       onChange={(e) => setSelectedCategory(e.target.value)}
-                      className="px-3 py-2 border border-[#CBD5E1] rounded-xl text-xs text-[#334155] outline-none bg-white font-medium"
+                      className="flex-1 sm:flex-initial px-3 py-2 border border-[#CBD5E1] rounded-xl text-xs text-[#334155] outline-none bg-white font-medium"
                     >
                       <option value="all">All Categories</option>
                       {categories.map((c) => (
@@ -1306,9 +1364,9 @@ export default function AdminPage() {
                     <select
                       value={stockFilter}
                       onChange={(e) => setStockFilter(e.target.value)}
-                      className="px-3 py-2 border border-[#CBD5E1] rounded-xl text-xs text-[#334155] outline-none bg-white font-medium"
+                      className="flex-1 sm:flex-initial px-3 py-2 border border-[#CBD5E1] rounded-xl text-xs text-[#334155] outline-none bg-white font-medium"
                     >
-                      <option value="all">All Stock Levels</option>
+                      <option value="all">All Stock</option>
                       <option value="in_stock">In Stock ({">"}0)</option>
                       <option value="low_stock">Low Stock (≤5)</option>
                       <option value="out_of_stock">Out of Stock (0)</option>
@@ -1318,22 +1376,21 @@ export default function AdminPage() {
 
                 {/* Table */}
                 <div className="overflow-x-auto">
-                  <table className="w-full text-left text-xs">
+                  <table className="w-full text-left text-xs min-w-[640px]">
                     <thead className="bg-[#F8FAFC] text-[#64748B] font-semibold border-b border-[#E2E8F0]">
                       <tr>
-                        <th className="py-3.5 px-6">Image</th>
-                        <th className="py-3.5 px-6">Name & SKU</th>
-                        <th className="py-3.5 px-6">Price</th>
-                        <th className="py-3.5 px-6">Old Price</th>
-                        <th className="py-3.5 px-6">Stock Level</th>
-                        <th className="py-3.5 px-6">Category</th>
-                        <th className="py-3.5 px-6 text-right">Actions</th>
+                        <th className="py-3.5 px-4 sm:px-6">Preview</th>
+                        <th className="py-3.5 px-4 sm:px-6">Product Title & SKU</th>
+                        <th className="py-3.5 px-4 sm:px-6">Price</th>
+                        <th className="py-3.5 px-4 sm:px-6">Stock</th>
+                        <th className="py-3.5 px-4 sm:px-6">Category</th>
+                        <th className="py-3.5 px-4 sm:px-6 text-right">Actions</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-[#F1F5F9]">
                       {filteredProducts.length === 0 ? (
                         <tr>
-                          <td colSpan={7} className="py-12 text-center text-[#94A3B8]">
+                          <td colSpan={6} className="py-12 text-center text-[#94A3B8]">
                             No products match your search query.
                           </td>
                         </tr>
@@ -1342,18 +1399,23 @@ export default function AdminPage() {
                           const mainImg = product.images?.[0] || "/products/classic-noir-abaya/image-1.jpg";
                           return (
                             <tr key={product.id} className="hover:bg-[#F8FAFC] transition-colors group">
-                              <td className="py-3 px-6">
-                                <div className="w-12 h-14 rounded-lg bg-gray-100 border border-[#E2E8F0] overflow-hidden flex-shrink-0">
+                              <td className="py-3 px-4 sm:px-6">
+                                <div className="w-12 h-14 rounded-xl bg-gray-100 border border-[#E2E8F0] overflow-hidden flex-shrink-0 relative shadow-2xs">
                                   {/* eslint-disable-next-line @next/next/no-img-element */}
                                   <img src={mainImg} alt={product.name} className="w-full h-full object-cover" />
+                                  {product.images.length > 1 && (
+                                    <span className="absolute bottom-0.5 right-0.5 bg-black/75 text-white text-[9px] px-1 rounded font-mono font-bold">
+                                      +{product.images.length - 1}
+                                    </span>
+                                  )}
                                 </div>
                               </td>
-                              <td className="py-3 px-6">
+                              <td className="py-3 px-4 sm:px-6">
                                 <div className="flex flex-col">
                                   <span className="text-sm font-semibold text-[#0F172A] group-hover:text-purple-700 transition-colors">
                                     {product.name}
                                   </span>
-                                  <div className="flex items-center gap-1.5 mt-0.5">
+                                  <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
                                     <span className="text-[11px] font-mono text-[#94A3B8]">
                                       SKU: {product.sku || product.slug}
                                     </span>
@@ -1362,20 +1424,25 @@ export default function AdminPage() {
                                         Bestseller
                                       </span>
                                     )}
+                                    {product.featured && (
+                                      <span className="text-[9px] font-bold uppercase tracking-wider bg-purple-100 text-purple-800 px-1.5 py-0.2 rounded">
+                                        Featured
+                                      </span>
+                                    )}
                                   </div>
                                 </div>
                               </td>
-                              <td className="py-3 px-6 font-semibold font-mono text-[#0F172A] text-sm">
-                                {formatPKR(product.price)}
-                              </td>
-                              <td className="py-3 px-6 font-mono text-[#94A3B8]">
-                                {product.original_price ? (
-                                  <span className="line-through">{formatPKR(product.original_price)}</span>
-                                ) : (
-                                  "—"
+                              <td className="py-3 px-4 sm:px-6">
+                                <div className="font-semibold font-mono text-[#0F172A] text-sm">
+                                  {formatPKR(product.price)}
+                                </div>
+                                {product.original_price && product.original_price > product.price && (
+                                  <span className="line-through text-[11px] text-[#94A3B8] font-mono block">
+                                    {formatPKR(product.original_price)}
+                                  </span>
                                 )}
                               </td>
-                              <td className="py-3 px-6">
+                              <td className="py-3 px-4 sm:px-6">
                                 <div className="inline-flex items-center gap-2">
                                   <input
                                     type="number"
@@ -1394,17 +1461,17 @@ export default function AdminPage() {
                                   />
                                 </div>
                               </td>
-                              <td className="py-3 px-6">
+                              <td className="py-3 px-4 sm:px-6">
                                 <span className="inline-block px-2.5 py-0.5 bg-[#F1F5F9] text-[#334155] font-semibold rounded-full text-[11px] border border-[#E2E8F0]">
                                   {product.category}
                                 </span>
                               </td>
-                              <td className="py-3 px-6 text-right">
+                              <td className="py-3 px-4 sm:px-6 text-right">
                                 <div className="flex items-center justify-end gap-1.5">
                                   <Link
                                     href={`/products/${product.slug}`}
                                     target="_blank"
-                                    className="p-1.5 text-[#94A3B8] hover:text-[#0F172A] hover:bg-[#E2E8F0] rounded-lg transition-colors"
+                                    className="p-2 text-[#94A3B8] hover:text-[#0F172A] hover:bg-[#E2E8F0] rounded-lg transition-colors"
                                     title="View on store"
                                   >
                                     <Eye className="w-4 h-4" />
@@ -1414,14 +1481,14 @@ export default function AdminPage() {
                                       setEditingProduct(product);
                                       setProductModalOpen(true);
                                     }}
-                                    className="p-1.5 text-[#94A3B8] hover:text-[#0F172A] hover:bg-[#E2E8F0] rounded-lg transition-colors"
+                                    className="p-2 text-[#94A3B8] hover:text-[#0F172A] hover:bg-[#E2E8F0] rounded-lg transition-colors"
                                     title="Edit design"
                                   >
                                     <Edit3 className="w-4 h-4" />
                                   </button>
                                   <button
                                     onClick={() => handleDeleteProduct(product.id, product.name)}
-                                    className="p-1.5 text-[#94A3B8] hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                    className="p-2 text-[#94A3B8] hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                                     title="Delete"
                                   >
                                     <Trash2 className="w-4 h-4" />
@@ -1441,18 +1508,18 @@ export default function AdminPage() {
 
           {/* ═════════ 2. ORDERS SECTION ═════════ */}
           {activeSection === "orders" && (
-            <div className="space-y-6">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="space-y-5">
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                 <StatCard label="Total Revenue" value={formatPKR(totalRevenue)} icon={DollarSign} color="text-emerald-600 bg-emerald-50" />
-                <StatCard label="All Orders Placed" value={orders.length} icon={Package} color="text-blue-600 bg-blue-50" />
+                <StatCard label="All Orders" value={orders.length} icon={Package} color="text-blue-600 bg-blue-50" />
                 <StatCard
-                  label="Pending Action"
+                  label="Processing"
                   value={orders.filter((o) => o.status === "placed" || o.status === "processing").length}
                   icon={Clock}
                   color="text-amber-600 bg-amber-50"
                 />
                 <StatCard
-                  label="Delivered Orders"
+                  label="Delivered"
                   value={orders.filter((o) => o.status === "delivered").length}
                   icon={PackageCheck}
                   color="text-purple-600 bg-purple-50"
@@ -1460,12 +1527,12 @@ export default function AdminPage() {
               </div>
 
               {/* Order Search */}
-              <div className="bg-white p-4 rounded-2xl border border-[#E2E8F0] shadow-xs flex flex-wrap items-center justify-between gap-3">
-                <div className="relative flex-1 min-w-[240px] max-w-md">
+              <div className="bg-white p-3.5 sm:p-4 rounded-2xl border border-[#E2E8F0] shadow-xs flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+                <div className="relative flex-1 min-w-[200px] max-w-md">
                   <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[#94A3B8]" />
                   <input
                     type="text"
-                    placeholder="Search by customer name, phone, order ID..."
+                    placeholder="Search customer name, phone, order ID..."
                     value={orderSearch}
                     onChange={(e) => setOrderSearch(e.target.value)}
                     className="w-full pl-9 pr-4 py-2 border border-[#CBD5E1] rounded-xl text-xs outline-none focus:border-[#0F172A] bg-[#F8FAFC]"
@@ -1506,14 +1573,14 @@ export default function AdminPage() {
             </div>
           )}
 
-          {/* ═════════ 3. BRANDS & COLLECTIONS (FULLY EDITABLE) ═════════ */}
+          {/* ═════════ 3. BRANDS & COLLECTIONS ═════════ */}
           {activeSection === "brands" && (
-            <div className="space-y-6">
-              <div className="bg-white p-6 rounded-2xl border border-[#E2E8F0] shadow-xs">
-                <div className="flex justify-between items-center mb-6">
+            <div className="space-y-5">
+              <div className="bg-white p-4 sm:p-6 rounded-2xl border border-[#E2E8F0] shadow-xs">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-6">
                   <div>
-                    <h3 className="font-serif font-bold text-lg text-[#0F172A]">Curated Collections & Brand Lookbooks</h3>
-                    <p className="text-xs text-[#64748B]">Manage, edit, or add capsule lines showcased on the storefront</p>
+                    <h3 className="font-serif font-bold text-lg text-[#0F172A]">Curated Capsule Collections</h3>
+                    <p className="text-xs text-[#64748B]">Manage lookbooks and seasonal themes shown across the store</p>
                   </div>
                   <button
                     onClick={() => {
@@ -1527,7 +1594,7 @@ export default function AdminPage() {
                   </button>
                 </div>
 
-                <div className="grid md:grid-cols-2 gap-4">
+                <div className="grid sm:grid-cols-2 gap-4">
                   {brands.map((col) => (
                     <div key={col.id} className="p-4 border border-[#E2E8F0] rounded-2xl flex gap-4 items-center bg-[#F8FAFC] hover:border-[#CBD5E1] transition-all group">
                       <div className="w-20 h-24 rounded-xl overflow-hidden bg-gray-200 flex-shrink-0 border border-[#E2E8F0]">
@@ -1551,7 +1618,7 @@ export default function AdminPage() {
                               onClick={() => handleToggleBrandFeatured(col.id)}
                               className="px-2 py-1 text-[10px] font-semibold border border-[#CBD5E1] rounded-lg hover:bg-white transition-colors"
                             >
-                              Toggle Feature
+                              Toggle
                             </button>
                             <button
                               onClick={() => {
@@ -1578,14 +1645,14 @@ export default function AdminPage() {
             </div>
           )}
 
-          {/* ═════════ 4. CATEGORIES (FULLY EDITABLE) ═════════ */}
+          {/* ═════════ 4. CATEGORIES ═════════ */}
           {activeSection === "categories" && (
-            <div className="space-y-6">
-              <div className="bg-white p-6 rounded-2xl border border-[#E2E8F0] shadow-xs">
-                <div className="flex justify-between items-center mb-6">
+            <div className="space-y-5">
+              <div className="bg-white p-4 sm:p-6 rounded-2xl border border-[#E2E8F0] shadow-xs">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-6">
                   <div>
                     <h3 className="font-serif font-bold text-lg text-[#0F172A]">Store Categories & Filters</h3>
-                    <p className="text-xs text-[#64748B]">Add or modify categories linked to product filters</p>
+                    <p className="text-xs text-[#64748B]">Add or edit primary department classifications</p>
                   </div>
                   <button
                     onClick={() => {
@@ -1642,38 +1709,38 @@ export default function AdminPage() {
             </div>
           )}
 
-          {/* ═════════ 5. PROMOCODES & TESTER ═════════ */}
+          {/* ═════════ 5. PROMOCODES ═════════ */}
           {activeSection === "promocodes" && (
-            <div className="space-y-6">
+            <div className="space-y-5">
               {/* Tester Bar */}
-              <div className="bg-gradient-to-r from-purple-900 to-indigo-900 text-white p-6 rounded-2xl shadow-sm space-y-3">
+              <div className="bg-gradient-to-r from-purple-950 via-slate-900 to-indigo-950 text-white p-5 rounded-2xl shadow-sm space-y-3 border border-purple-900/50">
                 <div className="flex items-center gap-2">
                   <Percent className="w-5 h-5 text-purple-300" />
-                  <h3 className="font-semibold text-base">Live Promo Code Simulator</h3>
+                  <h3 className="font-semibold text-sm sm:text-base">Live Discount Code Simulator</h3>
                 </div>
-                <div className="flex flex-wrap gap-3 items-center text-xs">
+                <div className="flex flex-wrap gap-2.5 items-center text-xs">
                   <input
                     type="text"
-                    placeholder="Enter coupon code..."
+                    placeholder="Coupon Code..."
                     value={testCodeInput}
                     onChange={(e) => setTestCodeInput(e.target.value)}
                     className="px-3.5 py-2 rounded-xl text-black font-mono font-bold uppercase outline-none bg-white"
                   />
                   <input
                     type="number"
-                    placeholder="Cart amount (PKR)"
+                    placeholder="Cart Total (PKR)"
                     value={testAmountInput}
                     onChange={(e) => setTestAmountInput(Number(e.target.value))}
-                    className="px-3.5 py-2 rounded-xl text-black font-mono outline-none bg-white w-36"
+                    className="px-3.5 py-2 rounded-xl text-black font-mono outline-none bg-white w-32"
                   />
                   <button
                     onClick={handleTestPromo}
-                    className="px-5 py-2 bg-purple-600 text-white font-bold rounded-xl hover:bg-purple-500 transition-colors"
+                    className="px-4 py-2 bg-purple-600 text-white font-bold rounded-xl hover:bg-purple-500 transition-colors"
                   >
-                    Test Calculation
+                    Test Discount
                   </button>
                   {testResult && (
-                    <span className="font-medium bg-black/40 px-3 py-1.5 rounded-xl border border-white/20">
+                    <span className="font-medium bg-black/60 text-white px-3 py-1.5 rounded-xl border border-white/20 text-xs">
                       {testResult}
                     </span>
                   )}
@@ -1681,7 +1748,7 @@ export default function AdminPage() {
               </div>
 
               {/* Coupons List */}
-              <div className="bg-white rounded-2xl border border-[#E2E8F0] p-6 shadow-xs">
+              <div className="bg-white rounded-2xl border border-[#E2E8F0] p-4 sm:p-6 shadow-xs">
                 <div className="flex items-center justify-between mb-4">
                   <div>
                     <h3 className="font-serif font-bold text-base text-[#0F172A]">Active Promo Codes & Vouchers</h3>
@@ -1696,16 +1763,16 @@ export default function AdminPage() {
                 </div>
 
                 <div className="overflow-x-auto">
-                  <table className="w-full text-left text-xs">
+                  <table className="w-full text-left text-xs min-w-[550px]">
                     <thead className="bg-[#F8FAFC] text-[#64748B] font-semibold border-b border-[#E2E8F0]">
                       <tr>
-                        <th className="py-3.5 px-4">Coupon Code</th>
-                        <th className="py-3.5 px-4">Discount</th>
-                        <th className="py-3.5 px-4">Min. Spend</th>
-                        <th className="py-3.5 px-4">Redemptions</th>
-                        <th className="py-3.5 px-4">Expires</th>
-                        <th className="py-3.5 px-4">Status</th>
-                        <th className="py-3.5 px-4 text-right">Actions</th>
+                        <th className="py-3 px-4">Coupon Code</th>
+                        <th className="py-3 px-4">Discount</th>
+                        <th className="py-3 px-4">Min. Spend</th>
+                        <th className="py-3 px-4">Uses</th>
+                        <th className="py-3 px-4">Expires</th>
+                        <th className="py-3 px-4">Status</th>
+                        <th className="py-3 px-4 text-right">Actions</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-[#F1F5F9]">
@@ -1755,11 +1822,11 @@ export default function AdminPage() {
 
           {/* ═════════ 6. CAROUSEL SECTION ═════════ */}
           {activeSection === "carousel" && (
-            <div className="space-y-6">
-              <div className="flex justify-between items-center bg-white p-6 rounded-2xl border border-[#E2E8F0] shadow-xs">
+            <div className="space-y-5">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-white p-4 sm:p-6 rounded-2xl border border-[#E2E8F0] shadow-xs">
                 <div>
                   <h3 className="font-serif font-bold text-base text-[#0F172A]">Homepage Hero Slides</h3>
-                  <p className="text-xs text-[#64748B]">Visual slides that greet visitors when entering the store</p>
+                  <p className="text-xs text-[#64748B]">Dynamic high-impact visual banners on storefront entry</p>
                 </div>
                 <button
                   onClick={() => setSlideModalOpen(true)}
@@ -1769,30 +1836,30 @@ export default function AdminPage() {
                 </button>
               </div>
 
-              <div className="grid md:grid-cols-2 gap-6">
+              <div className="grid sm:grid-cols-2 gap-4">
                 {slides.map((slide, idx) => (
                   <div key={slide.id} className="bg-white rounded-2xl border border-[#E2E8F0] overflow-hidden shadow-xs">
                     <div className="h-48 bg-[#0F172A] relative overflow-hidden">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img src={slide.image} alt={slide.title} className="w-full h-full object-cover opacity-70" />
-                      <div className="absolute inset-0 p-5 flex flex-col justify-between bg-gradient-to-t from-black/85 via-black/40 to-transparent text-white">
+                      <div className="absolute inset-0 p-4 flex flex-col justify-between bg-gradient-to-t from-black/85 via-black/40 to-transparent text-white">
                         <span className="text-[10px] font-bold tracking-widest uppercase bg-white/20 backdrop-blur-md px-2 py-0.5 rounded w-fit">
                           Slide #{idx + 1} · {slide.badge}
                         </span>
                         <div>
                           <p className="text-xs text-[#CBD5E1] tracking-wider uppercase">{slide.subtitle}</p>
-                          <h4 className="text-lg font-serif font-bold">{slide.title}</h4>
+                          <h4 className="text-base sm:text-lg font-serif font-bold">{slide.title}</h4>
                         </div>
                       </div>
                     </div>
-                    <div className="p-4 flex items-center justify-between text-xs border-t border-[#E2E8F0]">
+                    <div className="p-3.5 flex items-center justify-between text-xs border-t border-[#E2E8F0]">
                       <button
                         onClick={() => handleToggleSlide(slide.id)}
                         className={`px-3 py-1 rounded-full text-xs font-bold ${
                           slide.active ? "bg-emerald-100 text-emerald-800" : "bg-gray-100 text-gray-500"
                         }`}
                       >
-                        {slide.active ? "Visible on Home" : "Hidden"}
+                        {slide.active ? "Visible on Store" : "Hidden"}
                       </button>
                       <button
                         onClick={() => handleDeleteSlide(slide.id)}
@@ -1809,15 +1876,15 @@ export default function AdminPage() {
 
           {/* ═════════ 7. BANNERS SECTION ═════════ */}
           {activeSection === "banners" && (
-            <div className="space-y-6">
-              <div className="bg-white p-6 rounded-2xl border border-[#E2E8F0] shadow-xs space-y-4">
+            <div className="space-y-5">
+              <div className="bg-white p-4 sm:p-6 rounded-2xl border border-[#E2E8F0] shadow-xs space-y-4">
                 <div>
-                  <h3 className="font-serif font-bold text-base text-[#0F172A]">Announcement Bars & Promos</h3>
-                  <p className="text-xs text-[#64748B]">Top ribbon ticker and promotional callouts</p>
+                  <h3 className="font-serif font-bold text-base text-[#0F172A]">Top Announcement Ticker & Badges</h3>
+                  <p className="text-xs text-[#64748B]">Notice banners shown across the top navigation</p>
                 </div>
                 <div className="space-y-3">
                   {banners.map((b) => (
-                    <div key={b.id} className="p-4 border border-[#E2E8F0] rounded-xl flex items-center justify-between bg-[#F8FAFC]">
+                    <div key={b.id} className="p-4 border border-[#E2E8F0] rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-[#F8FAFC]">
                       <div>
                         <div className="flex items-center gap-2 mb-1">
                           <span className="font-semibold text-sm text-[#0F172A]">{b.title}</span>
@@ -1833,7 +1900,7 @@ export default function AdminPage() {
                           b.active ? "bg-emerald-600 text-white shadow-sm" : "bg-gray-200 text-gray-600"
                         }`}
                       >
-                        {b.active ? "Live / Active" : "Disabled"}
+                        {b.active ? "Active" : "Disabled"}
                       </button>
                     </div>
                   ))}
@@ -1844,12 +1911,12 @@ export default function AdminPage() {
 
           {/* ═════════ 8. USERS SECTION ═════════ */}
           {activeSection === "users" && (
-            <div className="space-y-6">
+            <div className="space-y-5">
               <div className="bg-white rounded-2xl border border-[#E2E8F0] shadow-xs overflow-hidden">
-                <div className="p-6 border-b border-[#E2E8F0] flex justify-between items-center">
+                <div className="p-4 sm:p-6 border-b border-[#E2E8F0] flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                   <div>
-                    <h3 className="font-serif font-bold text-base text-[#0F172A]">Registered Customer Accounts</h3>
-                    <p className="text-xs text-[#64748B]">Customer profiles, order frequency, and lifetime spend</p>
+                    <h3 className="font-serif font-bold text-base text-[#0F172A]">Customer Profiles</h3>
+                    <p className="text-xs text-[#64748B]">Customer accounts, purchase frequency, and lifetime spend</p>
                   </div>
                   <button
                     onClick={exportUsersCSV}
@@ -1860,28 +1927,28 @@ export default function AdminPage() {
                 </div>
 
                 <div className="overflow-x-auto">
-                  <table className="w-full text-left text-xs">
+                  <table className="w-full text-left text-xs min-w-[550px]">
                     <thead className="bg-[#F8FAFC] text-[#64748B] font-semibold border-b border-[#E2E8F0]">
                       <tr>
-                        <th className="py-3.5 px-6">Customer Name</th>
-                        <th className="py-3.5 px-6">Phone Number</th>
-                        <th className="py-3.5 px-6">City</th>
-                        <th className="py-3.5 px-6">Total Orders</th>
-                        <th className="py-3.5 px-6">Lifetime Spend</th>
-                        <th className="py-3.5 px-6">Member Since</th>
+                        <th className="py-3.5 px-4 sm:px-6">Customer Name</th>
+                        <th className="py-3.5 px-4 sm:px-6">Phone Number</th>
+                        <th className="py-3.5 px-4 sm:px-6">City</th>
+                        <th className="py-3.5 px-4 sm:px-6">Total Orders</th>
+                        <th className="py-3.5 px-4 sm:px-6">Lifetime Spend</th>
+                        <th className="py-3.5 px-4 sm:px-6">Joined</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-[#F1F5F9]">
                       {users.map((u) => (
                         <tr key={u.id} className="hover:bg-[#F8FAFC]">
-                          <td className="py-3.5 px-6 font-semibold text-[#0F172A]">{u.full_name}</td>
-                          <td className="py-3.5 px-6 text-[#64748B] font-mono">{u.phone}</td>
-                          <td className="py-3.5 px-6 text-[#64748B]">{u.city}</td>
-                          <td className="py-3.5 px-6 font-bold">{u.total_orders}</td>
-                          <td className="py-3.5 px-6 font-mono font-bold text-emerald-700">
+                          <td className="py-3.5 px-4 sm:px-6 font-semibold text-[#0F172A]">{u.full_name}</td>
+                          <td className="py-3.5 px-4 sm:px-6 text-[#64748B] font-mono">{u.phone}</td>
+                          <td className="py-3.5 px-4 sm:px-6 text-[#64748B]">{u.city}</td>
+                          <td className="py-3.5 px-4 sm:px-6 font-bold">{u.total_orders}</td>
+                          <td className="py-3.5 px-4 sm:px-6 font-mono font-bold text-emerald-700">
                             {formatPKR(u.total_spent)}
                           </td>
-                          <td className="py-3.5 px-6 text-[#94A3B8]">{formatDate(u.created_at)}</td>
+                          <td className="py-3.5 px-4 sm:px-6 text-[#94A3B8]">{formatDate(u.created_at)}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -1893,13 +1960,13 @@ export default function AdminPage() {
 
           {/* ═════════ 9. ROLES & SECURITY ═════════ */}
           {activeSection === "roles" && (
-            <div className="space-y-6 max-w-4xl">
-              <div className="bg-white p-6 rounded-2xl border border-[#E2E8F0] shadow-xs space-y-4">
+            <div className="space-y-5 max-w-3xl">
+              <div className="bg-white p-4 sm:p-6 rounded-2xl border border-[#E2E8F0] shadow-xs space-y-4">
                 <div className="flex items-center gap-3">
                   <ShieldCheck className="w-6 h-6 text-purple-600" />
                   <div>
-                    <h3 className="font-serif font-bold text-base text-[#0F172A]">Admin Access Credentials</h3>
-                    <p className="text-xs text-[#64748B]">Update store master key password</p>
+                    <h3 className="font-serif font-bold text-base text-[#0F172A]">Master Admin Password</h3>
+                    <p className="text-xs text-[#64748B]">Update store admin key</p>
                   </div>
                 </div>
 
@@ -1919,7 +1986,7 @@ export default function AdminPage() {
                 >
                   <div>
                     <label className="block text-xs font-bold text-[#334155] mb-1 uppercase tracking-wider">
-                      Master Password
+                      Master Key
                     </label>
                     <input
                       name="pw"
@@ -1937,27 +2004,20 @@ export default function AdminPage() {
                 </form>
               </div>
 
-              {/* Service Integrations */}
-              <div className="bg-white p-6 rounded-2xl border border-[#E2E8F0] shadow-xs space-y-4">
-                <h3 className="font-serif font-bold text-base text-[#0F172A]">Connected Infrastructure</h3>
-                <div className="grid sm:grid-cols-3 gap-4 text-xs">
-                  <div className="p-4 border border-emerald-200 bg-emerald-50 rounded-xl space-y-1">
+              <div className="bg-white p-4 sm:p-6 rounded-2xl border border-[#E2E8F0] shadow-xs space-y-3 text-xs">
+                <h4 className="font-serif font-bold text-sm text-[#0F172A]">System Architecture</h4>
+                <div className="grid sm:grid-cols-2 gap-3">
+                  <div className="p-3 border border-emerald-200 bg-emerald-50 rounded-xl">
                     <p className="font-bold text-emerald-800 flex items-center gap-1.5">
                       <CheckCircle className="w-4 h-4" /> Supabase Storage & DB
                     </p>
-                    <p className="text-emerald-700 text-[11px]">Synced with PostgreSQL</p>
+                    <p className="text-emerald-700 text-[11px]">Real-time synchronization enabled</p>
                   </div>
-                  <div className="p-4 border border-purple-200 bg-purple-50 rounded-xl space-y-1">
+                  <div className="p-3 border border-purple-200 bg-purple-50 rounded-xl">
                     <p className="font-bold text-purple-800 flex items-center gap-1.5">
-                      <CheckCircle className="w-4 h-4" /> PayFast Gateway
+                      <CheckCircle className="w-4 h-4" /> GoPayFast Payment Gateway
                     </p>
-                    <p className="text-purple-700 text-[11px]">Active Checkout Hooks</p>
-                  </div>
-                  <div className="p-4 border border-blue-200 bg-blue-50 rounded-xl space-y-1">
-                    <p className="font-bold text-blue-800 flex items-center gap-1.5">
-                      <CheckCircle className="w-4 h-4" /> EmailJS System
-                    </p>
-                    <p className="text-blue-700 text-[11px]">Instant Dispatch Notices</p>
+                    <p className="text-purple-700 text-[11px]">Pakistani Payment Rails Active</p>
                   </div>
                 </div>
               </div>
@@ -1966,26 +2026,32 @@ export default function AdminPage() {
 
           {/* ═════════ 10. DOCS & CHANGELOG ═════════ */}
           {activeSection === "documentation" && (
-            <div className="bg-white p-8 rounded-2xl border border-[#E2E8F0] shadow-xs max-w-4xl space-y-6 text-xs text-[#334155]">
-              <h3 className="text-xl font-serif font-bold text-[#0F172A]">Store Operation Manual</h3>
+            <div className="bg-white p-6 sm:p-8 rounded-2xl border border-[#E2E8F0] shadow-xs max-w-4xl space-y-4 text-xs text-[#334155]">
+              <h3 className="text-xl font-serif font-bold text-[#0F172A]">AMabaya Haute Modesty Studio Manual</h3>
               <p className="leading-relaxed">
-                Welcome to the AMabaya Store Master Suite. Every section here directly controls live catalog components. You can add new collections, modify product prices, update stock, register promo vouchers, and print tax invoices for all customer shipments.
+                Welcome to the updated AMabaya Control Suite. Every product change, stock adjustment, image upload, or discount code created here takes immediate effect across the entire website.
               </p>
+              <div className="p-4 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl space-y-2">
+                <p className="font-bold text-[#0F172A]">Image Upload Guide:</p>
+                <p>• You can upload photos directly from your phone camera or computer files.</p>
+                <p>• You can also paste external image URLs or pick curated store sample presets with 1 click.</p>
+                <p>• Drag or click &ldquo;Set as Cover&rdquo; to choose which photo is the primary storefront thumbnail.</p>
+              </div>
             </div>
           )}
 
           {activeSection === "changelog" && (
-            <div className="bg-white p-6 rounded-2xl border border-[#E2E8F0] shadow-xs max-w-3xl space-y-4">
+            <div className="bg-white p-6 rounded-2xl border border-[#E2E8F0] shadow-xs max-w-3xl space-y-4 text-xs">
               <div className="flex items-center justify-between border-b border-[#E2E8F0] pb-4">
                 <h3 className="font-serif font-bold text-base text-[#0F172A]">System Activity Audit</h3>
                 <span className="px-3 py-1 bg-purple-100 text-purple-800 text-xs font-bold rounded-full font-mono">
-                  v14.9.1
+                  v15.0 Mobile & Studio Upgrade
                 </span>
               </div>
-              <div className="space-y-2 text-xs">
-                <div className="p-3 border-l-2 border-purple-500 bg-[#F8FAFC] rounded-r-xl">
-                  <p className="font-bold text-[#0F172A]">Custom Collections & Categories Suite</p>
-                  <p className="text-[#64748B]">Enabled full CRUD editing for brands, collections, and custom store categories.</p>
+              <div className="space-y-2">
+                <div className="p-3 border-l-2 border-emerald-500 bg-[#F8FAFC] rounded-r-xl">
+                  <p className="font-bold text-[#0F172A]">Luxury Image Studio & Mobile Drawer</p>
+                  <p className="text-[#64748B]">Integrated multi-image device file upload, preset selectors, cover badge manager, and responsive mobile sidebar drawer.</p>
                 </div>
               </div>
             </div>
@@ -1994,7 +2060,6 @@ export default function AdminPage() {
       </main>
 
       {/* ─── MODALS ───────────────────────────────────────────────────────────── */}
-      {/* Product Form Modal */}
       {productModalOpen && (
         <ProductFormModal
           initial={editingProduct}
@@ -2007,7 +2072,6 @@ export default function AdminPage() {
         />
       )}
 
-      {/* Brand / Collection Modal */}
       {brandModalOpen && (
         <BrandModal
           initial={editingBrand}
@@ -2019,7 +2083,6 @@ export default function AdminPage() {
         />
       )}
 
-      {/* Category Modal */}
       {categoryModalOpen && (
         <CategoryModal
           initial={editingCategory}
@@ -2031,7 +2094,6 @@ export default function AdminPage() {
         />
       )}
 
-      {/* Promocode Modal */}
       {promoModalOpen && (
         <PromoModal
           onSave={(item) => {
@@ -2045,7 +2107,6 @@ export default function AdminPage() {
         />
       )}
 
-      {/* Slide Modal */}
       {slideModalOpen && (
         <SlideModal
           onSave={(item) => {
@@ -2059,7 +2120,6 @@ export default function AdminPage() {
         />
       )}
 
-      {/* Tax Invoice Modal */}
       {invoiceOrder && <InvoiceModal order={invoiceOrder} onClose={() => setInvoiceOrder(null)} />}
     </div>
   );
@@ -2121,13 +2181,13 @@ function StatCard({
   color: string;
 }) {
   return (
-    <div className="bg-white rounded-2xl border border-[#E2E8F0] p-5 flex items-center gap-4 shadow-xs">
-      <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${color}`}>
-        <Icon className="w-6 h-6" />
+    <div className="bg-white rounded-2xl border border-[#E2E8F0] p-4 sm:p-5 flex items-center gap-3 sm:gap-4 shadow-xs">
+      <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${color}`}>
+        <Icon className="w-5 h-5 sm:w-6 sm:h-6" />
       </div>
-      <div>
-        <p className="text-2xl font-serif font-bold text-[#0F172A] tracking-tight">{value}</p>
-        <p className="text-xs text-[#64748B] font-medium mt-0.5">{label}</p>
+      <div className="min-w-0 flex-1">
+        <p className="text-xl sm:text-2xl font-serif font-bold text-[#0F172A] tracking-tight truncate">{value}</p>
+        <p className="text-[11px] sm:text-xs text-[#64748B] font-medium mt-0.5 truncate">{label}</p>
       </div>
     </div>
   );
@@ -2157,12 +2217,12 @@ function OrderCard({
 
   return (
     <div className="bg-white rounded-2xl border border-[#E2E8F0] overflow-hidden shadow-xs">
-      <div className="flex items-center gap-3 p-4 flex-wrap">
+      <div className="flex items-center gap-3 p-3.5 sm:p-4 flex-wrap">
         <button onClick={() => setExpanded(!expanded)} className="p-1 text-[#94A3B8] hover:text-[#0F172A]">
           <ChevronDown className={`w-4 h-4 transition-transform ${expanded ? "rotate-180" : ""}`} />
         </button>
 
-        <div className="flex-1 min-w-[200px]">
+        <div className="flex-1 min-w-[160px]">
           <div className="flex items-center gap-2">
             <span className="text-xs font-mono font-bold text-[#0F172A]">
               #{order.id.slice(0, 8).toUpperCase()}
@@ -2188,7 +2248,7 @@ function OrderCard({
           value={order.status}
           onChange={(e) => handleStatus(e.target.value as OrderStatus)}
           disabled={updating}
-          className="text-xs border border-[#CBD5E1] rounded-lg px-2.5 py-1.5 outline-none bg-white font-medium hover:border-[#94A3B8]"
+          className="text-xs border border-[#CBD5E1] rounded-lg px-2 py-1 outline-none bg-white font-medium hover:border-[#94A3B8]"
         >
           {ALL_STATUSES.map((s) => (
             <option key={s} value={s}>
@@ -2212,7 +2272,7 @@ function OrderCard({
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            className="border-t border-[#F1F5F9] p-5 bg-[#F8FAFC] grid md:grid-cols-2 gap-6 text-xs"
+            className="border-t border-[#F1F5F9] p-4 sm:p-5 bg-[#F8FAFC] grid md:grid-cols-2 gap-5 text-xs"
           >
             <div>
               <p className="font-bold text-[#64748B] uppercase tracking-wider text-[10px] mb-3">Order Items</p>
@@ -2273,7 +2333,7 @@ function OrderCard({
                   onClick={() => handleStatus(order.status)}
                   className="px-4 py-2 bg-[#0F172A] text-white text-xs font-bold rounded-xl hover:bg-[#1E293B]"
                 >
-                  Save Tracking
+                  Save
                 </button>
               </div>
             </div>
@@ -2284,7 +2344,28 @@ function OrderCard({
   );
 }
 
-// ─── Product Modal ────────────────────────────────────────────────────────────
+// ─── UPGRADED LUXURY & CLASSIC PRODUCT MODAL ──────────────────────────────────
+const CURATED_IMAGE_PRESETS = [
+  { label: "Classic Noir (Front)", url: "/products/classic-noir-abaya/image-1.jpg" },
+  { label: "Classic Noir (Side)", url: "/products/classic-noir-abaya/image-2.jpg" },
+  { label: "Classic Noir (Detail)", url: "/products/classic-noir-abaya/image-3.jpg" },
+  { label: "Royal Zahra Kaftan", url: "/products/royal-zahra-kaftan/image-1.jpg" },
+  { label: "Zahra Kaftan (Cuffs)", url: "/products/royal-zahra-kaftan/image-2.jpg" },
+  { label: "Organza Scalloped Dupatta", url: "/products/pearl-embroidered-dupatta/image-1.jpg" },
+];
+
+const FABRIC_PRESETS = [
+  "100% Premium Korean Nida",
+  "Pure Banarsi Raw Silk & Zari",
+  "Crystalline Sheer Organza",
+  "Micro-Velvet 9000 Grade",
+  "Pure Crinkle Chiffon",
+  "Pure Crepe Silk & Marori",
+  "Soft Nada Fabric",
+];
+
+const STANDARD_SIZES = ["XS", "S", "M", "L", "XL", "XXL", "Free Size (2.75 Yards)"];
+
 function ProductFormModal({
   initial,
   categories,
@@ -2307,7 +2388,7 @@ function ProductFormModal({
           original_price: 5500,
           description: "",
           long_description: "",
-          images: [],
+          images: ["/products/classic-noir-abaya/image-1.jpg"],
           sizes: [
             { label: "S", available: true },
             { label: "M", available: true },
@@ -2318,34 +2399,177 @@ function ProductFormModal({
           is_new: true,
           is_bestseller: false,
           featured: true,
-          tags: [],
+          tags: ["luxury", "abaya", "eid"],
           sku: "",
-          material: "Korean Nida",
+          material: "100% Premium Korean Nida",
           rating: 5,
           review_count: 1,
         }
   );
+
   const [saving, setSaving] = useState(false);
   const [imageUrlInput, setImageUrlInput] = useState("");
+  const [tagInput, setTagInput] = useState("");
+  const [customSizeInput, setCustomSizeInput] = useState("");
+  const [dragOver, setDragOver] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const isEdit = !!initial;
 
   const set = (field: keyof ProductFormData, value: unknown) => {
-    setForm((prev) => ({ ...prev, [field]: value }));
-    if (field === "name" && !isEdit) {
-      setForm((prev) => ({ ...prev, name: value as string, slug: toSlug(value as string) }));
+    setForm((prev) => {
+      const updated = { ...prev, [field]: value };
+      if (field === "name" && !isEdit) {
+        const slug = toSlug(value as string);
+        updated.slug = slug;
+        if (!prev.sku || prev.sku.startsWith("AMA-")) {
+          updated.sku = `AMA-${slug.slice(0, 8).toUpperCase()}`;
+        }
+      }
+      return updated;
+    });
+  };
+
+  // Add Image via text input or pasted URLs (comma or newline separated)
+  const handleAddImageUrl = () => {
+    if (!imageUrlInput.trim()) {
+      toast.error("Please enter a valid image URL or path");
+      return;
+    }
+    const urls = imageUrlInput
+      .split(/[\n,]+/)
+      .map((u) => u.trim())
+      .filter(Boolean);
+
+    if (urls.length === 0) return;
+    setForm((prev) => ({
+      ...prev,
+      images: Array.from(new Set([...prev.images, ...urls])),
+    }));
+    setImageUrlInput("");
+    toast.success(urls.length > 1 ? `${urls.length} images added` : "Image added to gallery");
+  };
+
+  // Quick Preset Add
+  const handleAddPreset = (url: string) => {
+    setForm((prev) => {
+      if (prev.images.includes(url)) {
+        toast("Image is already in gallery", { icon: "ℹ️" });
+        return prev;
+      }
+      toast.success("Preset image attached");
+      return { ...prev, images: [...prev.images, url] };
+    });
+  };
+
+  // Set cover photo (move to index 0)
+  const handleSetCover = (index: number) => {
+    if (index === 0) return;
+    setForm((prev) => {
+      const copy = [...prev.images];
+      const [chosen] = copy.splice(index, 1);
+      copy.unshift(chosen);
+      return { ...prev, images: copy };
+    });
+    toast.success("Cover image updated");
+  };
+
+  // Handle local device image file uploads
+  const handleFileUpload = (files: FileList | null) => {
+    if (!files || files.length === 0) return;
+    const validFiles = Array.from(files).filter((f) => f.type.startsWith("image/"));
+    if (validFiles.length === 0) {
+      toast.error("Please select valid image files (JPG, PNG, WEBP)");
+      return;
+    }
+
+    let loadedCount = 0;
+    validFiles.forEach((file) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const result = e.target?.result as string;
+        if (result) {
+          setForm((prev) => ({
+            ...prev,
+            images: [...prev.images, result],
+          }));
+          loadedCount++;
+          if (loadedCount === validFiles.length) {
+            toast.success(`${loadedCount} photo(s) uploaded successfully!`);
+          }
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  // Toggle size availability or add standard size
+  const toggleSize = (sizeLabel: string) => {
+    setForm((prev) => {
+      const exists = prev.sizes.find((s) => s.label.toLowerCase() === sizeLabel.toLowerCase());
+      if (exists) {
+        return {
+          ...prev,
+          sizes: prev.sizes.map((s) =>
+            s.label.toLowerCase() === sizeLabel.toLowerCase()
+              ? { ...s, available: !s.available }
+              : s
+          ),
+        };
+      }
+      return {
+        ...prev,
+        sizes: [...prev.sizes, { label: sizeLabel, available: true }],
+      };
+    });
+  };
+
+  const handleAddCustomSize = () => {
+    if (!customSizeInput.trim()) return;
+    const label = customSizeInput.trim();
+    if (!form.sizes.some((s) => s.label.toLowerCase() === label.toLowerCase())) {
+      setForm((prev) => ({
+        ...prev,
+        sizes: [...prev.sizes, { label, available: true }],
+      }));
+      setCustomSizeInput("");
+      toast.success(`Size "${label}" added`);
     }
   };
 
-  const handleAddImageUrl = () => {
-    if (!imageUrlInput.trim()) return;
-    setForm((prev) => ({ ...prev, images: [...prev.images, imageUrlInput.trim()] }));
-    setImageUrlInput("");
+  // Tags
+  const handleAddTag = () => {
+    if (!tagInput.trim()) return;
+    const newTags = tagInput
+      .split(/[\n,]+/)
+      .map((t) => t.trim().toLowerCase())
+      .filter(Boolean);
+    setForm((prev) => ({
+      ...prev,
+      tags: Array.from(new Set([...prev.tags, ...newTags])),
+    }));
+    setTagInput("");
   };
+
+  const handleRemoveTag = (tagToRemove: string) => {
+    setForm((prev) => ({
+      ...prev,
+      tags: prev.tags.filter((t) => t !== tagToRemove),
+    }));
+  };
+
+  // Calculate discount
+  const discountPercent = useMemo(() => {
+    if (form.original_price && form.original_price > form.price && form.price > 0) {
+      return Math.round(((form.original_price - form.price) / form.original_price) * 100);
+    }
+    return null;
+  }, [form.price, form.original_price]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.name.trim()) return toast.error("Product name is required");
     if (form.price <= 0) return toast.error("Price must be greater than 0");
+    if (form.images.length === 0) return toast.error("Please add at least 1 product image");
 
     setSaving(true);
     await onSave(form);
@@ -2353,181 +2577,489 @@ function ProductFormModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/65 backdrop-blur-xs p-4 overflow-y-auto">
-      <div className="bg-white w-full max-w-2xl rounded-3xl shadow-2xl p-7 my-8 border border-[#E2E8F0] max-h-[90vh] overflow-y-auto">
-        <div className="flex justify-between items-center pb-4 border-b border-[#E2E8F0]">
-          <div>
-            <h3 className="font-serif font-bold text-xl text-[#0F172A]">
-              {isEdit ? "Edit Design" : "Publish New Store Design"}
-            </h3>
-            <p className="text-xs text-[#64748B]">
-              {isEdit ? `Modifying catalog item: ${form.name}` : "Add an Abaya, Kaftan, Dupatta, or Set to storefront"}
-            </p>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-xs p-2.5 sm:p-4 overflow-y-auto">
+      <div className="bg-white w-full max-w-3xl rounded-3xl shadow-2xl my-4 sm:my-8 border border-[#E2E8F0] max-h-[92vh] flex flex-col overflow-hidden">
+        {/* Header */}
+        <div className="px-6 py-4 sm:px-8 sm:py-5 border-b border-[#E2E8F0] flex justify-between items-center bg-[#F8FAFC]">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-[#0F172A] text-amber-400 flex items-center justify-center shadow-xs">
+              <Sparkles className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="font-serif font-bold text-lg sm:text-xl text-[#0F172A]">
+                {isEdit ? "Edit Haute Design" : "Publish New Store Design"}
+              </h3>
+              <p className="text-xs text-[#64748B]">
+                {isEdit
+                  ? `Refining catalog piece: ${form.name}`
+                  : "Add an artisanal Abaya, Kaftan, Dupatta, or Ensembled Set"}
+              </p>
+            </div>
           </div>
-          <button onClick={onClose} className="p-1 text-[#94A3B8] hover:text-[#0F172A] rounded-lg">
+          <button
+            onClick={onClose}
+            className="p-2 text-[#94A3B8] hover:text-[#0F172A] hover:bg-gray-100 rounded-xl transition-colors"
+          >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4 pt-4 text-xs">
-          <div className="grid sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block font-bold text-[#334155] mb-1">Product Title</label>
-              <input
-                type="text"
-                value={form.name}
-                onChange={(e) => set("name", e.target.value)}
-                placeholder="e.g. Classic Noir Korean Nida Abaya"
-                className="w-full px-3.5 py-2.5 border border-[#CBD5E1] rounded-xl outline-none focus:border-[#0F172A]"
-                required
-              />
+        {/* Scrollable Form Body */}
+        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-5 sm:p-8 space-y-6 text-xs custom-scrollbar">
+          {/* 1. Basic Information */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 pb-2 border-b border-[#E2E8F0]">
+              <Crown className="w-4 h-4 text-purple-600" />
+              <span className="font-serif font-bold text-sm text-[#0F172A]">Design Identity</span>
             </div>
-            <div>
-              <label className="block font-bold text-[#334155] mb-1">Category</label>
-              <select
-                value={form.category}
-                onChange={(e) => set("category", e.target.value)}
-                className="w-full px-3.5 py-2.5 border border-[#CBD5E1] rounded-xl outline-none bg-white font-medium"
-              >
-                {categories.map((c) => (
-                  <option key={c} value={c}>
-                    {c}
-                  </option>
+
+            <div className="grid sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block font-bold text-[#334155] mb-1.5">Product Title *</label>
+                <input
+                  type="text"
+                  value={form.name}
+                  onChange={(e) => set("name", e.target.value)}
+                  placeholder="e.g. Classic Noir Korean Nida Abaya"
+                  className="w-full px-3.5 py-2.5 border border-[#CBD5E1] rounded-xl outline-none focus:border-[#0F172A] transition-all font-medium text-[#0F172A]"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block font-bold text-[#334155] mb-1.5">Category *</label>
+                <select
+                  value={form.category}
+                  onChange={(e) => set("category", e.target.value)}
+                  className="w-full px-3.5 py-2.5 border border-[#CBD5E1] rounded-xl outline-none bg-white font-medium text-[#0F172A]"
+                >
+                  {categories.map((c) => (
+                    <option key={c} value={c}>
+                      {c}
+                    </option>
+                  ))}
+                  <option value="Accessories">Accessories</option>
+                  <option value="Set">Set</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="grid sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block font-bold text-[#334155] mb-1.5">Fabric & Material Specs</label>
+                <select
+                  value={form.material}
+                  onChange={(e) => set("material", e.target.value)}
+                  className="w-full px-3.5 py-2.5 border border-[#CBD5E1] rounded-xl outline-none bg-white font-medium text-[#0F172A]"
+                >
+                  {FABRIC_PRESETS.map((fab) => (
+                    <option key={fab} value={fab}>
+                      {fab}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block font-bold text-[#334155] mb-1.5">SKU / Product Code</label>
+                <input
+                  type="text"
+                  value={form.sku}
+                  onChange={(e) => set("sku", e.target.value)}
+                  placeholder="e.g. AMA-NOIR-01"
+                  className="w-full px-3.5 py-2.5 border border-[#CBD5E1] rounded-xl outline-none font-mono text-[#0F172A]"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* 2. Pricing & Stock */}
+          <div className="space-y-4 pt-2">
+            <div className="flex items-center gap-2 pb-2 border-b border-[#E2E8F0]">
+              <DollarSign className="w-4 h-4 text-emerald-600" />
+              <span className="font-serif font-bold text-sm text-[#0F172A]">Pricing & Inventory</span>
+            </div>
+
+            <div className="grid sm:grid-cols-3 gap-4">
+              <div>
+                <label className="block font-bold text-[#334155] mb-1.5">Sale Price (PKR) *</label>
+                <input
+                  type="number"
+                  value={form.price || ""}
+                  onChange={(e) => set("price", Number(e.target.value))}
+                  placeholder="4500"
+                  className="w-full px-3.5 py-2.5 border border-[#CBD5E1] rounded-xl outline-none font-mono text-sm font-bold text-[#0F172A]"
+                  required
+                />
+              </div>
+
+              <div>
+                <div className="flex justify-between items-center mb-1.5">
+                  <label className="font-bold text-[#334155]">Original Price (PKR)</label>
+                  {discountPercent !== null && (
+                    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800">
+                      {discountPercent}% OFF
+                    </span>
+                  )}
+                </div>
+                <input
+                  type="number"
+                  value={form.original_price || ""}
+                  onChange={(e) => set("original_price", e.target.value ? Number(e.target.value) : undefined)}
+                  placeholder="5500 (Leave empty if no discount)"
+                  className="w-full px-3.5 py-2.5 border border-[#CBD5E1] rounded-xl outline-none font-mono text-sm text-[#64748B]"
+                />
+              </div>
+
+              <div>
+                <label className="block font-bold text-[#334155] mb-1.5">Available Stock *</label>
+                <input
+                  type="number"
+                  value={form.stock}
+                  onChange={(e) => set("stock", Number(e.target.value))}
+                  className="w-full px-3.5 py-2.5 border border-[#CBD5E1] rounded-xl outline-none font-mono text-sm font-bold text-[#0F172A]"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* 3. Visual Imagery Studio (Enhanced) */}
+          <div className="space-y-4 pt-2">
+            <div className="flex items-center justify-between pb-2 border-b border-[#E2E8F0]">
+              <div className="flex items-center gap-2">
+                <Camera className="w-4 h-4 text-indigo-600" />
+                <span className="font-serif font-bold text-sm text-[#0F172A]">Photography & Image Studio</span>
+              </div>
+              <span className="text-[11px] text-[#64748B]">
+                {form.images.length} Image{form.images.length === 1 ? "" : "s"} Attached
+              </span>
+            </div>
+
+            {/* Drag & Drop Upload Zone */}
+            <div
+              onDragOver={(e) => {
+                e.preventDefault();
+                setDragOver(true);
+              }}
+              onDragLeave={() => setDragOver(false)}
+              onDrop={(e) => {
+                e.preventDefault();
+                setDragOver(false);
+                handleFileUpload(e.dataTransfer.files);
+              }}
+              className={`border-2 border-dashed rounded-2xl p-4 sm:p-6 text-center transition-all cursor-pointer ${
+                dragOver
+                  ? "border-purple-600 bg-purple-50"
+                  : "border-[#CBD5E1] bg-[#F8FAFC] hover:border-[#94A3B8]"
+              }`}
+              onClick={() => fileInputRef.current?.click()}
+            >
+              <input
+                ref={fileInputRef}
+                type="file"
+                multiple
+                accept="image/*"
+                className="hidden"
+                onChange={(e: ChangeEvent<HTMLInputElement>) => handleFileUpload(e.target.files)}
+              />
+              <div className="flex flex-col items-center justify-center gap-2">
+                <div className="w-10 h-10 rounded-full bg-purple-100 text-purple-700 flex items-center justify-center">
+                  <Upload className="w-5 h-5" />
+                </div>
+                <div>
+                  <p className="font-bold text-[#0F172A] text-xs sm:text-sm">
+                    Click to browse files or drop photos here
+                  </p>
+                  <p className="text-[11px] text-[#64748B] mt-0.5">
+                    Supports high-res JPG, PNG, WEBP (Select one or multiple photos from phone / computer)
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* URL Input Bar */}
+            <div className="space-y-1.5">
+              <label className="block font-bold text-[#334155]">Or Paste Web Image URL / Path</label>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  placeholder="https://... or /products/classic-noir-abaya/image-1.jpg"
+                  value={imageUrlInput}
+                  onChange={(e) => setImageUrlInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      handleAddImageUrl();
+                    }
+                  }}
+                  className="flex-1 px-3.5 py-2.5 border border-[#CBD5E1] rounded-xl outline-none text-xs focus:border-[#0F172A]"
+                />
+                <button
+                  type="button"
+                  onClick={handleAddImageUrl}
+                  className="px-4 py-2.5 bg-[#0F172A] text-white font-bold rounded-xl hover:bg-[#1E293B] transition-colors flex items-center gap-1.5 whitespace-nowrap"
+                >
+                  <Plus className="w-3.5 h-3.5" /> Add Image
+                </button>
+              </div>
+            </div>
+
+            {/* Quick Catalog Presets */}
+            <div className="space-y-1.5">
+              <p className="text-[11px] font-bold text-[#64748B] uppercase tracking-wider">
+                Quick 1-Click Photoshoot Presets:
+              </p>
+              <div className="flex flex-wrap gap-1.5">
+                {CURATED_IMAGE_PRESETS.map((preset) => (
+                  <button
+                    key={preset.label}
+                    type="button"
+                    onClick={() => handleAddPreset(preset.url)}
+                    className="px-2.5 py-1 bg-white border border-[#CBD5E1] hover:border-purple-600 rounded-lg text-[11px] text-[#334155] font-medium transition-colors hover:bg-purple-50 flex items-center gap-1"
+                  >
+                    <Plus className="w-3 h-3 text-purple-600" />
+                    {preset.label}
+                  </button>
                 ))}
-              </select>
-            </div>
-          </div>
-
-          <div className="grid sm:grid-cols-3 gap-4">
-            <div>
-              <label className="block font-bold text-[#334155] mb-1">Sale Price (PKR)</label>
-              <input
-                type="number"
-                value={form.price || ""}
-                onChange={(e) => set("price", Number(e.target.value))}
-                placeholder="4500"
-                className="w-full px-3.5 py-2.5 border border-[#CBD5E1] rounded-xl outline-none font-mono"
-                required
-              />
-            </div>
-            <div>
-              <label className="block font-bold text-[#334155] mb-1">Original Price (PKR)</label>
-              <input
-                type="number"
-                value={form.original_price || ""}
-                onChange={(e) => set("original_price", e.target.value ? Number(e.target.value) : undefined)}
-                placeholder="5500"
-                className="w-full px-3.5 py-2.5 border border-[#CBD5E1] rounded-xl outline-none font-mono"
-              />
-            </div>
-            <div>
-              <label className="block font-bold text-[#334155] mb-1">Inventory Stock</label>
-              <input
-                type="number"
-                value={form.stock}
-                onChange={(e) => set("stock", Number(e.target.value))}
-                className="w-full px-3.5 py-2.5 border border-[#CBD5E1] rounded-xl outline-none font-mono"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="block font-bold text-[#334155] mb-1">Product Images</label>
-            <div className="flex gap-2 mb-2">
-              <input
-                type="text"
-                placeholder="Image path (/products/classic-noir-abaya/image-1.jpg or https://...)"
-                value={imageUrlInput}
-                onChange={(e) => setImageUrlInput(e.target.value)}
-                className="flex-1 px-3.5 py-2.5 border border-[#CBD5E1] rounded-xl outline-none"
-              />
-              <button
-                type="button"
-                onClick={handleAddImageUrl}
-                className="px-4 py-2.5 bg-[#0F172A] text-white font-bold rounded-xl hover:bg-[#1E293B]"
-              >
-                + Add Image
-              </button>
+              </div>
             </div>
 
+            {/* Image Gallery Thumbnails Grid */}
             {form.images.length > 0 && (
-              <div className="flex flex-wrap gap-2 pt-1">
-                {form.images.map((img, idx) => (
-                  <div key={idx} className="relative group w-16 h-20 rounded-xl overflow-hidden border border-[#E2E8F0]">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={img} alt="" className="w-full h-full object-cover" />
-                    <button
-                      type="button"
-                      onClick={() => setForm((p) => ({ ...p, images: p.images.filter((_, i) => i !== idx) }))}
-                      className="absolute inset-0 bg-black/60 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+              <div className="space-y-2 pt-2">
+                <p className="text-[11px] font-bold text-[#64748B]">
+                  Gallery ({form.images.length}) · Image #1 is Primary Cover
+                </p>
+                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
+                  {form.images.map((img, idx) => (
+                    <div
+                      key={idx}
+                      className={`relative group aspect-[3/4] rounded-2xl overflow-hidden border-2 transition-all ${
+                        idx === 0
+                          ? "border-amber-500 ring-2 ring-amber-400/30 shadow-md"
+                          : "border-[#E2E8F0] hover:border-[#94A3B8]"
+                      }`}
                     >
-                      <X className="w-4 h-4" />
-                    </button>
-                  </div>
-                ))}
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={img} alt="" className="w-full h-full object-cover" />
+
+                      {/* Cover Badge */}
+                      {idx === 0 ? (
+                        <div className="absolute top-1.5 left-1.5 bg-amber-500 text-black text-[9px] font-bold px-1.5 py-0.5 rounded shadow-xs">
+                          COVER
+                        </div>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => handleSetCover(idx)}
+                          className="absolute bottom-1.5 left-1.5 right-1.5 bg-black/80 hover:bg-black text-white text-[9px] font-bold py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity text-center"
+                        >
+                          Make Cover
+                        </button>
+                      )}
+
+                      {/* Delete Button */}
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setForm((p) => ({
+                            ...p,
+                            images: p.images.filter((_, i) => i !== idx),
+                          }))
+                        }
+                        className="absolute top-1.5 right-1.5 w-6 h-6 bg-red-600/90 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-700 shadow-sm"
+                        title="Remove image"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
           </div>
 
-          <div>
-            <label className="block font-bold text-[#334155] mb-1">Product Description</label>
-            <textarea
-              rows={2}
-              value={form.description}
-              onChange={(e) => set("description", e.target.value)}
-              placeholder="Full-length abaya tailored from Korean Nida with gold embroidery..."
-              className="w-full px-3.5 py-2.5 border border-[#CBD5E1] rounded-xl outline-none"
-            />
+          {/* 4. Sizes Matrix */}
+          <div className="space-y-3 pt-2">
+            <div className="flex items-center justify-between pb-2 border-b border-[#E2E8F0]">
+              <span className="font-serif font-bold text-sm text-[#0F172A]">Sizes & Measurements</span>
+              <span className="text-[11px] text-[#64748B]">Click size chips to toggle availability</span>
+            </div>
+
+            <div className="flex flex-wrap gap-2">
+              {STANDARD_SIZES.map((sz) => {
+                const active = form.sizes.some((s) => s.label === sz && s.available !== false);
+                return (
+                  <button
+                    key={sz}
+                    type="button"
+                    onClick={() => toggleSize(sz)}
+                    className={`px-3.5 py-1.5 rounded-xl font-bold text-xs transition-all border ${
+                      active
+                        ? "bg-[#0F172A] text-white border-[#0F172A] shadow-xs"
+                        : "bg-gray-100 text-gray-400 border-gray-200 line-through"
+                    }`}
+                  >
+                    {sz}
+                  </button>
+                );
+              })}
+            </div>
+
+              {/* Custom Size Addition */}
+              <div className="flex gap-2 pt-2 items-center">
+                <input
+                  type="text"
+                  placeholder="Add custom size (e.g. 52, 54, 56 Tall)..."
+                  value={customSizeInput}
+                  onChange={(e) => setCustomSizeInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      handleAddCustomSize();
+                    }
+                  }}
+                  className="px-3 py-1.5 border border-[#CBD5E1] rounded-xl text-xs outline-none"
+                />
+                <button
+                  type="button"
+                  onClick={handleAddCustomSize}
+                  className="px-3 py-1.5 bg-gray-200 hover:bg-gray-300 font-bold rounded-xl text-xs"
+                >
+                  + Add Size
+                </button>
+              </div>
           </div>
 
-          <div className="flex flex-wrap gap-6 pt-2 border-t border-[#E2E8F0]">
-            <label className="flex items-center gap-2 cursor-pointer font-bold text-[#334155]">
-              <input
-                type="checkbox"
-                checked={form.featured}
-                onChange={(e) => set("featured", e.target.checked)}
-                className="w-4 h-4 rounded text-purple-600"
+          {/* 5. Descriptions & Styling */}
+          <div className="space-y-4 pt-2">
+            <div className="flex items-center gap-2 pb-2 border-b border-[#E2E8F0]">
+              <FileText className="w-4 h-4 text-amber-600" />
+              <span className="font-serif font-bold text-sm text-[#0F172A]">Descriptions & Details</span>
+            </div>
+
+            <div>
+              <label className="block font-bold text-[#334155] mb-1.5">Short Card Summary</label>
+              <textarea
+                rows={2}
+                value={form.description}
+                onChange={(e) => set("description", e.target.value)}
+                placeholder="Full-length signature abaya cut from breathable Korean Nida..."
+                className="w-full px-3.5 py-2.5 border border-[#CBD5E1] rounded-xl outline-none text-xs"
               />
-              Featured Collection
-            </label>
-            <label className="flex items-center gap-2 cursor-pointer font-bold text-[#334155]">
-              <input
-                type="checkbox"
-                checked={form.is_bestseller}
-                onChange={(e) => set("is_bestseller", e.target.checked)}
-                className="w-4 h-4 rounded text-purple-600"
+            </div>
+
+            <div>
+              <label className="block font-bold text-[#334155] mb-1.5">Detailed Long Description & Styling Notes</label>
+              <textarea
+                rows={3}
+                value={form.long_description}
+                onChange={(e) => set("long_description", e.target.value)}
+                placeholder="Designed for special celebrations, weddings, and high-modesty gatherings. Includes adjustable inner belt and antique gold embroidery..."
+                className="w-full px-3.5 py-2.5 border border-[#CBD5E1] rounded-xl outline-none text-xs"
               />
-              Bestseller Badge
-            </label>
-            <label className="flex items-center gap-2 cursor-pointer font-bold text-[#334155]">
-              <input
-                type="checkbox"
-                checked={form.is_new}
-                onChange={(e) => set("is_new", e.target.checked)}
-                className="w-4 h-4 rounded text-purple-600"
-              />
-              New Release
-            </label>
+            </div>
+
+            {/* Tags */}
+            <div className="space-y-1.5">
+              <label className="block font-bold text-[#334155]">Tags & Keywords</label>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  placeholder="e.g. bestseller, eid, wedding, velvet (Press enter)"
+                  value={tagInput}
+                  onChange={(e) => setTagInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      handleAddTag();
+                    }
+                  }}
+                  className="flex-1 px-3.5 py-2 border border-[#CBD5E1] rounded-xl outline-none text-xs"
+                />
+                <button
+                  type="button"
+                  onClick={handleAddTag}
+                  className="px-3.5 py-2 bg-gray-100 hover:bg-gray-200 font-bold rounded-xl text-xs"
+                >
+                  + Add Tag
+                </button>
+              </div>
+
+              {form.tags.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 pt-1.5">
+                  {form.tags.map((tg) => (
+                    <span
+                      key={tg}
+                      className="inline-flex items-center gap-1 bg-purple-50 text-purple-800 border border-purple-200 px-2.5 py-0.5 rounded-full text-[11px] font-semibold"
+                    >
+                      #{tg}
+                      <button type="button" onClick={() => handleRemoveTag(tg)} className="hover:text-red-600">
+                        <X className="w-3 h-3" />
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
 
-          <div className="flex justify-end gap-2 pt-4 border-t border-[#E2E8F0]">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 border border-[#CBD5E1] rounded-xl hover:bg-gray-50"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={saving}
-              className="px-6 py-2 bg-[#0F172A] text-white font-bold rounded-xl hover:bg-[#1E293B] shadow-sm flex items-center gap-2"
-            >
-              {saving && <RefreshCw className="w-3.5 h-3.5 animate-spin" />}
-              {isEdit ? "Update Design" : "Publish Design"}
-            </button>
+          {/* 6. Visibility Badges */}
+          <div className="pt-2 border-t border-[#E2E8F0]">
+            <p className="font-bold text-[#334155] mb-2.5">Storefront Highlighting</p>
+            <div className="flex flex-wrap gap-6 text-xs">
+              <label className="flex items-center gap-2 cursor-pointer font-bold text-[#334155]">
+                <input
+                  type="checkbox"
+                  checked={form.featured}
+                  onChange={(e) => set("featured", e.target.checked)}
+                  className="w-4 h-4 rounded text-purple-600"
+                />
+                Featured on Homepage
+              </label>
+
+              <label className="flex items-center gap-2 cursor-pointer font-bold text-[#334155]">
+                <input
+                  type="checkbox"
+                  checked={form.is_bestseller}
+                  onChange={(e) => set("is_bestseller", e.target.checked)}
+                  className="w-4 h-4 rounded text-purple-600"
+                />
+                Bestseller Badge
+              </label>
+
+              <label className="flex items-center gap-2 cursor-pointer font-bold text-[#334155]">
+                <input
+                  type="checkbox"
+                  checked={form.is_new}
+                  onChange={(e) => set("is_new", e.target.checked)}
+                  className="w-4 h-4 rounded text-purple-600"
+                />
+                New Release Ribbon
+              </label>
+            </div>
           </div>
         </form>
+
+        {/* Footer Actions */}
+        <div className="px-6 py-4 sm:px-8 sm:py-4 bg-[#F8FAFC] border-t border-[#E2E8F0] flex justify-end items-center gap-3">
+          <button
+            type="button"
+            onClick={onClose}
+            className="px-5 py-2.5 border border-[#CBD5E1] rounded-xl hover:bg-white text-xs font-bold text-[#334155]"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            onClick={handleSubmit}
+            disabled={saving}
+            className="px-6 py-2.5 bg-[#0F172A] text-white font-bold rounded-xl hover:bg-[#1E293B] shadow-md flex items-center gap-2 text-xs"
+          >
+            {saving && <RefreshCw className="w-4 h-4 animate-spin" />}
+            {isEdit ? "Update Design" : "Publish Design to Store"}
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -2557,7 +3089,7 @@ function BrandModal({
   );
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/65 backdrop-blur-xs p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-xs p-4">
       <div className="bg-white w-full max-w-md rounded-3xl shadow-2xl p-6 border border-[#E2E8F0]">
         <div className="flex justify-between items-center pb-3 border-b border-[#E2E8F0]">
           <h3 className="font-serif font-bold text-lg text-[#0F172A]">
@@ -2610,7 +3142,7 @@ function BrandModal({
               />
             </div>
             <div>
-              <label className="block font-bold text-[#334155] mb-1">Featured on Home</label>
+              <label className="block font-bold text-[#334155] mb-1">Featured</label>
               <select
                 value={form.featured ? "true" : "false"}
                 onChange={(e) => setForm({ ...form, featured: e.target.value === "true" })}
@@ -2677,7 +3209,7 @@ function CategoryModal({
   );
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/65 backdrop-blur-xs p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-xs p-4">
       <div className="bg-white w-full max-w-md rounded-3xl shadow-2xl p-6 border border-[#E2E8F0]">
         <div className="flex justify-between items-center pb-3 border-b border-[#E2E8F0]">
           <h3 className="font-serif font-bold text-lg text-[#0F172A]">
@@ -2768,7 +3300,7 @@ function PromoModal({
   });
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/65 backdrop-blur-xs p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-xs p-4">
       <div className="bg-white w-full max-w-md rounded-3xl shadow-2xl p-6 border border-[#E2E8F0]">
         <div className="flex justify-between items-center pb-3 border-b border-[#E2E8F0]">
           <h3 className="font-serif font-bold text-lg text-[#0F172A]">Create Promo Code</h3>
@@ -2893,7 +3425,7 @@ function SlideModal({
   });
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/65 backdrop-blur-xs p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-xs p-4">
       <div className="bg-white w-full max-w-lg rounded-3xl shadow-2xl p-6 border border-[#E2E8F0]">
         <div className="flex justify-between items-center pb-3 border-b border-[#E2E8F0]">
           <h3 className="font-serif font-bold text-lg text-[#0F172A]">Add Hero Slide</h3>
