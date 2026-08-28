@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Sparkles } from "lucide-react";
 import { getAllProducts } from "@/lib/products";
 import { ProductCard } from "@/components/products/ProductCard";
 import type { Product } from "@/types";
@@ -37,38 +37,41 @@ export function FeaturedCollection() {
   const filteredProducts = products.filter((p) => {
     if (activeTab === "All") return true;
     if (activeTab === "Bestseller") return p.isBestseller;
-    return p.category === activeTab;
+    return (p.category || "").toLowerCase() === activeTab.toLowerCase();
   });
 
   return (
-    <section className="py-20 lg:py-28 px-4 sm:px-6 lg:px-8 bg-[#FBF9F6] border-b border-[#E5E7EB]" aria-label="Featured Collection">
+    <section className="py-16 sm:py-24 px-4 sm:px-6 lg:px-8 bg-[#FAF9F7] border-b border-[#EAE6DF]" aria-label="Featured Collection">
       <div className="max-w-7xl mx-auto">
         
         {/* Header */}
-        <div className="text-center max-w-2xl mx-auto mb-12">
-          <p className="text-[11px] font-sans font-semibold tracking-[0.25em] text-[#A3845A] uppercase mb-2">
-            Haute Modesty
-          </p>
+        <div className="text-center max-w-2xl mx-auto mb-10">
+          <div className="inline-flex items-center gap-2 mb-2">
+            <Sparkles className="w-3.5 h-3.5 text-[#9A84C8]" />
+            <span className="text-[11px] font-sans font-bold tracking-[0.25em] text-[#9A84C8] uppercase">
+              Haute Modesty · Lahore Atelier
+            </span>
+          </div>
           <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl text-[#111827] font-normal tracking-tight">
             Featured Masterpieces
           </h2>
           <div className="w-12 h-[1px] bg-[#111827] mx-auto mt-4 mb-4" />
           <p className="text-sm text-[#4B5563] font-sans">
-            Hand-tailored in Lahore using imported Korean Nida, French Organza, and Pure Raw Silk.
+            Handcrafted with precision using imported Korean Nida, French Organza, and Pure Banarsi Raw Silk.
           </p>
         </div>
 
         {/* Minimal Tab Filter */}
-        <div className="flex justify-center mb-12">
-          <div className="inline-flex flex-wrap items-center justify-center gap-1 sm:gap-2 p-1 bg-white border border-[#E5E7EB]">
+        <div className="flex justify-center mb-10">
+          <div className="inline-flex flex-wrap items-center justify-center gap-1.5 p-1.5 bg-white border border-[#EAE6DF] rounded-xl shadow-xs">
             {TABS.map((tab) => (
               <button
                 key={tab.value}
                 onClick={() => setActiveTab(tab.value)}
-                className={`px-4 sm:px-6 py-2 text-xs font-sans font-medium uppercase tracking-widest transition-all ${
+                className={`px-4 sm:px-6 py-2 text-xs font-sans font-bold uppercase tracking-widest rounded-lg transition-all ${
                   activeTab === tab.value
-                    ? "bg-[#111827] text-white"
-                    : "text-[#4B5563] hover:text-[#111827]"
+                    ? "bg-[#111827] text-white shadow-xs"
+                    : "text-[#4B5563] hover:text-[#111827] hover:bg-[#F6F4EE]"
                 }`}
               >
                 {tab.label}
@@ -77,7 +80,7 @@ export function FeaturedCollection() {
           </div>
         </div>
 
-        {/* 4-Column (Desktop) / 2-Column (Mobile) Sapphire-Style Grid */}
+        {/* 4-Column Grid */}
         <AnimatePresence mode="wait">
           <motion.div
             key={activeTab}
@@ -85,11 +88,11 @@ export function FeaturedCollection() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
-            className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8"
+            className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6"
           >
             {filteredProducts.map((product, idx) => (
               <ProductCard
-                key={product.slug}
+                key={product.slug || idx}
                 product={product}
                 priority={idx < 4}
               />
@@ -98,12 +101,12 @@ export function FeaturedCollection() {
         </AnimatePresence>
 
         {/* View All Collection CTA */}
-        <div className="text-center mt-16">
+        <div className="text-center mt-12 sm:mt-16">
           <Link
             href="/products"
-            className="luxury-btn-primary group"
+            className="luxury-btn-primary group inline-flex items-center gap-2"
           >
-            <span>View All Collections</span>
+            <span>Explore Complete Catalogue</span>
             <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
           </Link>
         </div>

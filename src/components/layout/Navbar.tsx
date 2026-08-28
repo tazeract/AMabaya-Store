@@ -23,7 +23,7 @@ import { useAuth } from "@/context/AuthContext";
 import { SearchDrawer } from "@/components/products/SearchDrawer";
 import siteConfig from "@/lib/siteConfig";
 
-const announcements = [
+const DEFAULT_ANNOUNCEMENTS = [
   "FREE SHIPPING OVER RS. 5,000 | CASH ON DELIVERY AVAILABLE ALL OVER PAKISTAN",
   "NEW ARRIVALS: FESTIVE LUXURY MODEST EDIT NOW LIVE",
   "EXCHANGE WITHIN 7 DAYS · DIRECT WHATSAPP STYLING HELPLINE",
@@ -168,6 +168,7 @@ export function Navbar() {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+  const [announcements, setAnnouncements] = useState<string[]>(DEFAULT_ANNOUNCEMENTS);
   const [announcementIdx, setAnnouncementIdx] = useState(0);
   const pathname = usePathname();
 
@@ -179,13 +180,49 @@ export function Navbar() {
   const { user, logout } = useAuth();
   const dropdownRef = useRef<HTMLDivElement>(null);
 
+  // Load announcements from localStorage
+  const loadBanners = () => {
+    if (typeof window !== "undefined") {
+      try {
+        const saved = localStorage.getItem("amabaya_banners");
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            const activeTop = parsed
+              .filter((b: any) => b.active !== false && (b.type === "top_ribbon" || !b.type))
+              .map((b: any) => (b.text || b.title).toUpperCase());
+            if (activeTop.length > 0) {
+              setAnnouncements(activeTop);
+              return;
+            }
+          }
+        }
+      } catch (e) {
+        console.warn("Could not load banners in Navbar:", e);
+      }
+    }
+    setAnnouncements(DEFAULT_ANNOUNCEMENTS);
+  };
+
+  useEffect(() => {
+    loadBanners();
+    const handleUpdate = () => loadBanners();
+    window.addEventListener("amabaya_banners_updated", handleUpdate);
+    window.addEventListener("storage", handleUpdate);
+    return () => {
+      window.removeEventListener("amabaya_banners_updated", handleUpdate);
+      window.removeEventListener("storage", handleUpdate);
+    };
+  }, []);
+
   // Rotating Announcement
   useEffect(() => {
+    if (announcements.length <= 1) return;
     const timer = setInterval(() => {
       setAnnouncementIdx((prev) => (prev + 1) % announcements.length);
     }, 4500);
     return () => clearInterval(timer);
-  }, []);
+  }, [announcements.length]);
 
   // Scroll detection
   useEffect(() => {

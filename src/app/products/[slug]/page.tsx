@@ -1,8 +1,9 @@
 import { getProductBySlug, getProductSlugs } from "@/lib/products";
-import { notFound } from "next/navigation";
 import { ProductDetailClient } from "./ProductDetailClient";
 import type { Metadata } from "next";
 import siteConfig from "@/lib/siteConfig";
+
+export const dynamic = "force-dynamic";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -15,7 +16,12 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
   const product = await getProductBySlug(slug);
-  if (!product) return {};
+  if (!product) {
+    return {
+      title: `Product | ${siteConfig.storeName}`,
+      description: siteConfig.storeTagline,
+    };
+  }
 
   return {
     title: `${product.title} | ${siteConfig.storeName}`,
@@ -23,7 +29,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     openGraph: {
       title: product.title,
       description: product.description,
-      images: product.images[0]
+      images: product.images && product.images[0]
         ? [{ url: `${siteConfig.siteUrl}${product.images[0]}`, width: 800, height: 1000 }]
         : [],
     },
@@ -34,7 +40,5 @@ export default async function ProductDetailPage({ params }: PageProps) {
   const { slug } = await params;
   const product = await getProductBySlug(slug);
 
-  if (!product) notFound();
-
-  return <ProductDetailClient product={product} />;
+  return <ProductDetailClient initialProduct={product} slug={slug} />;
 }

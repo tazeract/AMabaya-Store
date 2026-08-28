@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { motion, AnimatePresence } from "framer-motion";
 import { Heart, ShoppingBag, Eye, Check } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
@@ -16,31 +15,47 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product, priority = false }: ProductCardProps) {
-  const [isHovered, setIsHovered] = useState(false);
-  const [selectedColor, setSelectedColor] = useState(product.colors[0]);
-  const [selectedSize, setSelectedSize] = useState(product.sizes[0]?.label ?? "Free Size");
+  const colors = Array.isArray(product.colors) && product.colors.length > 0
+    ? product.colors
+    : [{ name: "Midnight Black", hex: "#111827" }];
+
+  const sizes = Array.isArray(product.sizes) && product.sizes.length > 0
+    ? product.sizes
+    : [{ label: "Standard", available: true }];
+
+  const [selectedColor, setSelectedColor] = useState(colors[0]);
+  const [selectedSize, setSelectedSize] = useState(sizes[0]?.label ?? "Standard");
   const [isAdding, setIsAdding] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
 
   const { addItem, isInCart } = useCart();
   const { toggle, isWishlisted } = useWishlist();
 
   const wishlisted = isWishlisted(product.slug);
-  const inCart = isInCart(product.slug, selectedSize, selectedColor.name);
+  const currentColorName = selectedColor?.name ?? "Default";
+  const inCart = isInCart(product.slug, selectedSize, currentColorName);
   const discount = product.originalPrice
     ? getDiscountPercent(product.price, product.originalPrice)
-    : null;
+    : 0;
+
+  const images = Array.isArray(product.images) && product.images.length > 0
+    ? product.images
+    : ["/products/classic-noir-abaya/image-1.jpg"];
+
+  const mainImage = images[0] || "/products/classic-noir-abaya/image-1.jpg";
+  const hoverImage = images[1] || mainImage;
 
   const handleQuickAdd = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     setIsAdding(true);
-    addItem(product, selectedSize, selectedColor.name);
-    toast.success("Added to Cart", `${product.title} (${selectedSize})`);
-    
+    addItem(product, selectedSize, currentColorName);
+    toast.success("Added to Bag", `${product.title} (${selectedSize})`);
+
     setTimeout(() => {
       setIsAdding(false);
       document.dispatchEvent(new CustomEvent("open-cart"));
-    }, 400);
+    }, 300);
   };
 
   const handleWishlistToggle = (e: React.MouseEvent) => {
@@ -56,166 +71,155 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
 
   return (
     <article
-      className="group relative flex flex-col bg-white border border-[#E5E7EB] hover:border-[#D1D5DB] transition-all duration-300"
+      className="group relative flex flex-col bg-white border border-[#EBE7DF] hover:border-[#D5CEBF] rounded-lg overflow-hidden transition-all duration-300 hover:shadow-lg"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      <Link href={`/products/${product.slug}`} className="block relative overflow-hidden">
-        {/* 3:4 Tall Image Container */}
-        <div className="relative aspect-[3/4] w-full overflow-hidden bg-[#F9FAFB]">
+      <div className="relative aspect-[3/4] w-full overflow-hidden bg-[#F6F4EE]">
+        {/* Badges in Top Left */}
+        <div className="absolute top-2.5 left-2.5 flex flex-col gap-1.5 z-10 pointer-events-none">
+          {discount > 0 ? (
+            <span className="bg-[#DA3F3F] text-white text-[10px] font-sans font-bold tracking-wider px-2 py-0.5 rounded uppercase shadow-xs">
+              {discount}% OFF
+            </span>
+          ) : null}
+          {product.isBestseller ? (
+            <span className="bg-[#9A84C8] text-white text-[10px] font-sans font-bold tracking-wider px-2 py-0.5 rounded uppercase shadow-xs">
+              Bestseller
+            </span>
+          ) : null}
+          {product.isNew && !product.isBestseller && discount === 0 ? (
+            <span className="bg-[#64BF99] text-white text-[10px] font-sans font-bold tracking-wider px-2 py-0.5 rounded uppercase shadow-xs">
+              New In
+            </span>
+          ) : null}
+        </div>
+
+        {/* Minimal Wishlist Button in Top Right */}
+        <button
+          onClick={handleWishlistToggle}
+          aria-label={wishlisted ? "Remove from wishlist" : "Add to wishlist"}
+          className={`absolute top-2.5 right-2.5 z-10 w-8 h-8 rounded-full flex items-center justify-center transition-all ${
+            wishlisted
+              ? "bg-red-50 text-[#DA3F3F]"
+              : "bg-white/90 backdrop-blur-xs text-[#111827] hover:bg-white hover:scale-110 shadow-xs"
+          }`}
+        >
+          <Heart
+            className={`w-4 h-4 transition-colors ${
+              wishlisted ? "fill-[#DA3F3F]" : ""
+            }`}
+          />
+        </button>
+
+        {/* Product Image Link */}
+        <Link href={`/products/${product.slug}`} className="block w-full h-full">
           <img
-            src={product.images[0] || "/products/classic-noir-abaya/image-1.jpg"}
+            src={isHovered && hoverImage ? hoverImage : mainImage}
             alt={product.title}
             className="w-full h-full object-cover object-top transition-transform duration-700 ease-out group-hover:scale-105"
             loading={priority ? "eager" : "lazy"}
           />
+        </Link>
 
-          {/* Badges in Top Left */}
-          <div className="absolute top-2.5 left-2.5 flex flex-col gap-1 z-10">
-            {discount && (
-              <span className="bg-[#111827] text-white text-[10px] font-sans font-bold tracking-wider px-2 py-0.5 uppercase">
-                -{discount}%
-              </span>
-            )}
-            {product.isBestseller && !discount && (
-              <span className="bg-[var(--color-gold)] text-white text-[10px] font-sans font-bold tracking-wider px-2 py-0.5 uppercase">
-                Bestseller
-              </span>
-            )}
-            {product.isNew && !discount && !product.isBestseller && (
-              <span className="bg-[#111827] text-white text-[10px] font-sans font-semibold tracking-wider px-2 py-0.5 uppercase">
-                New
-              </span>
-            )}
-          </div>
-
-          {/* Minimal Wishlist Button in Top Right */}
-          <button
-            onClick={handleWishlistToggle}
-            aria-label={wishlisted ? "Remove from wishlist" : "Add to wishlist"}
-            className="absolute top-2.5 right-2.5 z-10 w-8 h-8 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center text-[#111827] hover:bg-white transition-all shadow-sm"
-          >
-            <Heart
-              className={`w-4 h-4 transition-colors ${
-                wishlisted
-                  ? "fill-red-600 text-red-600"
-                  : "text-[#374151] hover:text-red-600"
-              }`}
-            />
-          </button>
-
-          {/* Slide-Up Quick Add on Desktop Hover */}
-          <div className="hidden lg:block absolute inset-x-0 bottom-0 p-3 z-10 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out bg-gradient-to-t from-black/60 to-transparent">
-            {/* Quick Size Select if multiple sizes */}
-            {product.sizes.length > 1 && (
-              <div className="flex justify-center gap-1.5 mb-2">
-                {product.sizes.map((size) => (
-                  <button
-                    key={size.label}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      setSelectedSize(size.label);
-                    }}
-                    className={`w-6 h-6 text-[10px] font-bold uppercase transition-all ${
-                      selectedSize === size.label
-                        ? "bg-white text-[#111827]"
-                        : "bg-black/50 text-white hover:bg-white/80 hover:text-black"
-                    }`}
-                  >
-                    {size.label}
-                  </button>
-                ))}
-              </div>
-            )}
-
-            <button
-              onClick={handleQuickAdd}
-              disabled={isAdding}
-              aria-label="Add to cart"
-              className="w-full bg-[#111827] text-white text-xs font-semibold uppercase tracking-widest py-2.5 flex items-center justify-center gap-2 hover:bg-black transition-colors"
-            >
-              {isAdding ? (
-                <>
-                  <Check className="w-3.5 h-3.5 text-emerald-400" />
-                  <span>Added</span>
-                </>
-              ) : inCart ? (
-                <>
-                  <ShoppingBag className="w-3.5 h-3.5" />
-                  <span>In Cart (+1)</span>
-                </>
-              ) : (
-                <>
-                  <ShoppingBag className="w-3.5 h-3.5" />
-                  <span>Quick Add</span>
-                </>
-              )}
-            </button>
-          </div>
-        </div>
-
-        {/* Product Details */}
-        <div className="p-3.5 sm:p-4 flex flex-col flex-1 bg-white">
-          {/* Category & Color Swatches */}
-          <div className="flex items-center justify-between mb-1.5">
-            <span className="text-[10px] font-sans uppercase tracking-widest text-[#6B7280]">
-              {product.category}
-            </span>
-
-            {/* Minimal Color Swatches */}
-            {product.colors && product.colors.length > 0 && (
-              <div className="flex items-center gap-1">
-                {product.colors.map((color) => (
-                  <button
-                    key={color.name}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      setSelectedColor(color);
-                    }}
-                    title={color.name}
-                    aria-label={`Select color ${color.name}`}
-                    className={`w-2.5 h-2.5 rounded-full border transition-all ${
-                      selectedColor.name === color.name
-                        ? "border-[#111827] scale-125"
-                        : "border-transparent opacity-60 hover:opacity-100"
-                    }`}
-                    style={{ backgroundColor: color.hex }}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Product Title */}
-          <h3 className="font-serif text-[15px] sm:text-[16px] text-[#111827] font-medium leading-snug line-clamp-1 group-hover:text-[var(--color-gold-dark)] transition-colors">
-            {product.title}
-          </h3>
-
-          {/* Pricing in PKR format */}
-          <div className="mt-2 flex items-baseline gap-2">
-            <span className="font-sans font-semibold text-sm text-[#111827]">
-              {formatPrice(product.price)}
-            </span>
-            {product.originalPrice && (
-              <span className="font-sans text-xs text-[#9CA3AF] line-through">
-                {formatPrice(product.originalPrice)}
-              </span>
-            )}
-          </div>
-
-          {/* Mobile Quick Add Button */}
+        {/* Slide-Up Quick Add Overlay on Desktop Hover */}
+        <div className="hidden sm:flex absolute inset-x-2 bottom-2 z-10 gap-1.5 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-2 group-hover:translate-y-0">
           <button
             onClick={handleQuickAdd}
-            aria-label="Add to cart"
-            className="mt-3 lg:hidden w-full border border-[#111827] text-[#111827] text-[11px] font-semibold uppercase tracking-wider py-1.5 flex items-center justify-center gap-1.5 hover:bg-[#111827] hover:text-white transition-colors"
+            disabled={isAdding}
+            className="flex-1 py-2.5 bg-[#111827] text-white hover:bg-black text-[11px] font-bold uppercase tracking-wider rounded flex items-center justify-center gap-1.5 shadow-md transition-colors"
           >
-            <ShoppingBag className="w-3 h-3" />
-            <span>{inCart ? "In Cart" : "Add to Cart"}</span>
+            {isAdding ? (
+              <>
+                <Check className="w-3.5 h-3.5 text-emerald-400" />
+                <span>Added</span>
+              </>
+            ) : inCart ? (
+              <>
+                <ShoppingBag className="w-3.5 h-3.5" />
+                <span>In Bag (+1)</span>
+              </>
+            ) : (
+              <>
+                <ShoppingBag className="w-3.5 h-3.5" />
+                <span>Quick Add</span>
+              </>
+            )}
           </button>
+          <Link
+            href={`/products/${product.slug}`}
+            className="w-9 h-9 bg-white text-[#111827] hover:bg-[#F3F4F6] rounded flex items-center justify-center shadow-md transition-colors shrink-0"
+            aria-label="View Details"
+          >
+            <Eye className="w-4 h-4" />
+          </Link>
         </div>
-      </Link>
+      </div>
+
+      {/* Product Information */}
+      <div className="p-3 sm:p-4 flex flex-col flex-1 bg-white">
+        {/* Category & Color Swatches */}
+        <div className="flex items-center justify-between mb-1">
+          <span className="text-[10px] font-sans uppercase font-bold tracking-widest text-[#9A84C8]">
+            {product.category || "Abaya"}
+          </span>
+
+          {/* Color swatches */}
+          {colors.length > 1 && (
+            <div className="flex items-center gap-1">
+              {colors.slice(0, 4).map((color) => (
+                <button
+                  key={color.name}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setSelectedColor(color);
+                  }}
+                  title={color.name}
+                  aria-label={`Select color ${color.name}`}
+                  className={`w-2.5 h-2.5 rounded-full border transition-all ${
+                    selectedColor?.name === color.name
+                      ? "border-[#111827] scale-125 shadow-xs"
+                      : "border-transparent opacity-60 hover:opacity-100"
+                  }`}
+                  style={{ backgroundColor: color.hex || "#111827" }}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Product Title */}
+        <Link
+          href={`/products/${product.slug}`}
+          className="font-serif text-sm sm:text-base text-[#111827] font-medium leading-snug line-clamp-1 hover:text-[#9A84C8] transition-colors"
+        >
+          {product.title}
+        </Link>
+
+        {/* Pricing */}
+        <div className="mt-1.5 flex items-baseline gap-2">
+          <span className="font-sans font-bold text-sm sm:text-base text-[#DA3F3F]">
+            {formatPrice(product.price)}
+          </span>
+          {product.originalPrice && product.originalPrice > product.price && (
+            <span className="font-sans text-xs text-[#9CA3AF] line-through">
+              {formatPrice(product.originalPrice)}
+            </span>
+          )}
+        </div>
+
+        {/* Mobile Quick Add Button */}
+        <button
+          onClick={handleQuickAdd}
+          disabled={isAdding}
+          aria-label="Add to bag"
+          className="mt-2.5 sm:hidden w-full py-1.5 bg-[#111827] text-white text-[10px] font-bold uppercase tracking-wider rounded flex items-center justify-center gap-1 active:scale-95 transition-transform"
+        >
+          <ShoppingBag className="w-3 h-3" />
+          <span>{inCart ? "In Bag (+1)" : "Add to Bag"}</span>
+        </button>
+      </div>
     </article>
   );
 }

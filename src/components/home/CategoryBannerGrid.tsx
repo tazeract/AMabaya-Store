@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { ArrowRight, Sparkles } from "lucide-react";
 
@@ -10,7 +11,7 @@ interface SubCategoryCard {
   image: string;
 }
 
-const ABAYA_CATEGORIES: SubCategoryCard[] = [
+const DEFAULT_CATEGORIES: SubCategoryCard[] = [
   {
     title: "Everyday Abayas",
     count: "14+ Designs",
@@ -38,6 +39,44 @@ const ABAYA_CATEGORIES: SubCategoryCard[] = [
 ];
 
 export function CategoryBannerGrid() {
+  const [categoryCards, setCategoryCards] = useState<SubCategoryCard[]>(DEFAULT_CATEGORIES);
+
+  const loadCategories = () => {
+    if (typeof window !== "undefined") {
+      try {
+        const saved = localStorage.getItem("amabaya_categories");
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length >= 2) {
+            setCategoryCards(
+              parsed.slice(0, 4).map((c: any) => ({
+                title: c.name,
+                count: "Curated Styles",
+                href: `/products?category=${encodeURIComponent(c.slug || c.name)}`,
+                image: c.image || "/products/classic-noir-abaya/image-2.jpg",
+              }))
+            );
+            return;
+          }
+        }
+      } catch (e) {
+        console.warn("Could not load categories in grid:", e);
+      }
+    }
+    setCategoryCards(DEFAULT_CATEGORIES);
+  };
+
+  useEffect(() => {
+    loadCategories();
+    const handleUpdate = () => loadCategories();
+    window.addEventListener("amabaya_categories_updated", handleUpdate);
+    window.addEventListener("storage", handleUpdate);
+    return () => {
+      window.removeEventListener("amabaya_categories_updated", handleUpdate);
+      window.removeEventListener("storage", handleUpdate);
+    };
+  }, []);
+
   return (
     <section className="py-12 sm:py-16 bg-[#FAF9F7] border-b border-[#EAE6DF]" aria-label="Abayas Showcase">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8 sm:space-y-10">
@@ -85,7 +124,7 @@ export function CategoryBannerGrid() {
 
         {/* 2x2 Sub-Category Cards (4 Split Tiles) */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-6">
-          {ABAYA_CATEGORIES.map((cat, idx) => (
+          {categoryCards.map((cat, idx) => (
             <Link
               key={idx}
               href={cat.href}

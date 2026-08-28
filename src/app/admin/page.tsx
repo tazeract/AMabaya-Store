@@ -538,6 +538,11 @@ export default function AdminPage() {
   const notifyStoreUpdate = () => {
     if (typeof window !== "undefined") {
       window.dispatchEvent(new Event("amabaya_products_updated"));
+      window.dispatchEvent(new Event("amabaya_slides_updated"));
+      window.dispatchEvent(new Event("amabaya_banners_updated"));
+      window.dispatchEvent(new Event("amabaya_categories_updated"));
+      window.dispatchEvent(new Event("amabaya_brands_updated"));
+      window.dispatchEvent(new Event("amabaya_promocodes_updated"));
       window.dispatchEvent(new Event("storage"));
     }
   };
@@ -780,6 +785,7 @@ export default function AdminPage() {
     }
     setBrands(updated);
     localStorage.setItem("amabaya_brands", JSON.stringify(updated));
+    notifyStoreUpdate();
     setBrandModalOpen(false);
     setEditingBrand(undefined);
   };
@@ -789,6 +795,7 @@ export default function AdminPage() {
     const updated = brands.filter((b) => b.id !== id);
     setBrands(updated);
     localStorage.setItem("amabaya_brands", JSON.stringify(updated));
+    notifyStoreUpdate();
     toast.success("Collection deleted");
   };
 
@@ -796,6 +803,7 @@ export default function AdminPage() {
     const updated = brands.map((b) => (b.id === id ? { ...b, featured: !b.featured } : b));
     setBrands(updated);
     localStorage.setItem("amabaya_brands", JSON.stringify(updated));
+    notifyStoreUpdate();
     toast.success("Featured status updated");
   };
 
@@ -811,6 +819,7 @@ export default function AdminPage() {
     }
     setCategories(updated);
     localStorage.setItem("amabaya_categories", JSON.stringify(updated));
+    notifyStoreUpdate();
     setCategoryModalOpen(false);
     setEditingCategory(undefined);
   };
@@ -820,6 +829,7 @@ export default function AdminPage() {
     const updated = categories.filter((c) => c.id !== id);
     setCategories(updated);
     localStorage.setItem("amabaya_categories", JSON.stringify(updated));
+    notifyStoreUpdate();
     toast.success("Category removed");
   };
 
@@ -828,6 +838,7 @@ export default function AdminPage() {
     const updated = promocodes.map((p) => (p.id === id ? { ...p, active: !p.active } : p));
     setPromocodes(updated);
     localStorage.setItem("amabaya_promocodes", JSON.stringify(updated));
+    notifyStoreUpdate();
     toast.success("Coupon status toggled");
   };
 
@@ -835,6 +846,7 @@ export default function AdminPage() {
     const updated = promocodes.filter((p) => p.id !== id);
     setPromocodes(updated);
     localStorage.setItem("amabaya_promocodes", JSON.stringify(updated));
+    notifyStoreUpdate();
     toast.success("Coupon deleted");
   };
 
@@ -858,6 +870,7 @@ export default function AdminPage() {
     const updated = slides.map((s) => (s.id === id ? { ...s, active: !s.active } : s));
     setSlides(updated);
     localStorage.setItem("amabaya_slides", JSON.stringify(updated));
+    notifyStoreUpdate();
     toast.success("Hero slide visibility updated");
   };
 
@@ -865,6 +878,7 @@ export default function AdminPage() {
     const updated = slides.filter((s) => s.id !== id);
     setSlides(updated);
     localStorage.setItem("amabaya_slides", JSON.stringify(updated));
+    notifyStoreUpdate();
     toast.success("Hero slide deleted");
   };
 
@@ -873,6 +887,7 @@ export default function AdminPage() {
     const updated = banners.map((b) => (b.id === id ? { ...b, active: !b.active } : b));
     setBanners(updated);
     localStorage.setItem("amabaya_banners", JSON.stringify(updated));
+    notifyStoreUpdate();
     toast.success("Banner updated");
   };
 
@@ -2100,6 +2115,7 @@ export default function AdminPage() {
             const updated = [item, ...promocodes];
             setPromocodes(updated);
             localStorage.setItem("amabaya_promocodes", JSON.stringify(updated));
+            notifyStoreUpdate();
             setPromoModalOpen(false);
             toast.success(`Coupon ${item.code} created!`);
           }}
@@ -2113,6 +2129,7 @@ export default function AdminPage() {
             const updated = [...slides, item];
             setSlides(updated);
             localStorage.setItem("amabaya_slides", JSON.stringify(updated));
+            notifyStoreUpdate();
             setSlideModalOpen(false);
             toast.success("Hero slide created!");
           }}
