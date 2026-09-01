@@ -15,6 +15,7 @@ const DEFAULT_FILTERS: FilterState = {
   priceRange: [0, 20000],
   sizes: [],
   colors: [],
+  fabrics: [],
   sortBy: "newest",
   searchQuery: "",
 };
@@ -58,6 +59,11 @@ function ProductsPageContent() {
     if (filters.colors.length > 0) {
       result = result.filter((p) =>
         p.colors.some((c) => filters.colors.includes(c.name))
+      );
+    }
+    if (filters.fabrics.length > 0) {
+      result = result.filter((p) =>
+        filters.fabrics.some((f) => (p.material || "").toLowerCase().includes(f.toLowerCase()))
       );
     }
     result = result.filter(

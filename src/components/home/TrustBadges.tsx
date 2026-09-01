@@ -29,7 +29,7 @@ export function TrustBadges() {
   return (
     <section
       className="py-16 lg:py-20 px-4 sm:px-6 lg:px-8 bg-white border-b border-[#E5E7EB]"
-      aria-label="Why Choose AMabaya"
+      aria-label="Why Choose RIWAYAH"
     >
       <div className="max-w-7xl mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-10">

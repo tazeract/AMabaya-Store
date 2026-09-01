@@ -133,7 +133,7 @@ async function getProductBySlugLocal(slug: string): Promise<Product | null> {
 }
 
 /**
- * Fetch all products merging Supabase, browser localStorage, and static seed JSON.
+ * Fetch all products merging Supabase, /api/admin/products, browser localStorage, and static seed JSON.
  */
 export async function getAllProducts(): Promise<Product[]> {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
@@ -160,8 +160,21 @@ export async function getAllProducts(): Promise<Product[]> {
     }
   }
 
-  // 3. In browser environments, check localStorage for admin-created or updated products
+  // 3. In browser environments, fetch from persistent API route
   if (typeof window !== "undefined") {
+    try {
+      const res = await fetch("/api/admin/products", { cache: "no-store" });
+      if (res.ok) {
+        const json = await res.json();
+        if (json.success && Array.isArray(json.products)) {
+          json.products.map(rowToProduct).forEach((p: Product) => productMap.set(p.slug, p));
+        }
+      }
+    } catch (e) {
+      // API call failed, continue to localStorage
+    }
+
+    // 4. Check browser localStorage
     try {
       const localData = localStorage.getItem("amabaya_local_products");
       if (localData) {
@@ -184,7 +197,7 @@ export async function getAllProducts(): Promise<Product[]> {
 }
 
 /**
- * Fetch a single product by slug from Supabase, localStorage, or local JSON.
+ * Fetch a single product by slug or ID from localStorage, API, Supabase, or local JSON.
  */
 export async function getProductBySlug(slug: string): Promise<Product | null> {
   const cleanSlug = slug.toLowerCase().trim();
@@ -199,7 +212,7 @@ export async function getProductBySlug(slug: string): Promise<Product | null> {
           const match = parsed.find(
             (p: any) =>
               (p.slug && p.slug.toLowerCase() === cleanSlug) ||
-              (p.id && String(p.id) === cleanSlug) ||
+              (p.id && String(p.id).toLowerCase() === cleanSlug) ||
               (p.name && toSlug(p.name) === cleanSlug)
           );
           if (match) {
@@ -207,8 +220,17 @@ export async function getProductBySlug(slug: string): Promise<Product | null> {
           }
         }
       }
+
+      // Try API route
+      const res = await fetch(`/api/admin/products?slug=${encodeURIComponent(cleanSlug)}`, { cache: "no-store" });
+      if (res.ok) {
+        const json = await res.json();
+        if (json.success && json.product) {
+          return rowToProduct(json.product);
+        }
+      }
     } catch (e) {
-      console.warn("Could not load product from localStorage:", e);
+      console.warn("Could not load product from client fetch:", e);
     }
   }
 
@@ -220,7 +242,7 @@ export async function getProductBySlug(slug: string): Promise<Product | null> {
       const { data, error } = await supabase
         .from("products")
         .select("*")
-        .eq("slug", cleanSlug)
+        .or(`slug.eq.${cleanSlug},id.eq.${cleanSlug}`)
         .maybeSingle();
 
       if (!error && data) {

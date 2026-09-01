@@ -130,12 +130,12 @@ export default async function HomePage() {
           </p>
           <div className="pt-4">
             <a
-              href={`https://wa.me/${siteConfig.whatsappNumber}?text=Hi%20AMabaya,%20I%20would%20like%20styling%20advice%20for%20an%20order.`}
+              href={`https://wa.me/${siteConfig.whatsappNumber}?text=Hi%20RIWAYAH,%20I%20would%20like%20styling%20advice%20for%20an%20order.`}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-8 py-3.5 bg-white text-[#111827] hover:bg-[#F3F4F6] text-xs font-semibold uppercase tracking-widest font-sans rounded-md transition-colors"
+              className="inline-flex items-center gap-2 px-8 py-3.5 bg-white text-[#111827] hover:bg-[#F3F4F6] text-xs font-semibold uppercase tracking-widest font-sans rounded-md transition-colors hover:-translate-y-0.5 hover:shadow-md"
             >
-              <span>Chat on WhatsApp (+92 300 1234567)</span>
+              <span>Chat on WhatsApp ({siteConfig.contactPhone})</span>
               <ArrowRight className="w-4 h-4" />
             </a>
           </div>

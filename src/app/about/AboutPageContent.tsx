@@ -110,7 +110,7 @@ export function AboutPageContent() {
             Leadership
           </p>
           <h2 className="font-serif text-3xl sm:text-4xl text-[#111827] font-normal mb-12">
-            The Artisans Behind AMabaya
+            The Artisans Behind RIWAYAH
           </h2>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">

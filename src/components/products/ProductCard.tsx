@@ -71,7 +71,7 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
 
   return (
     <article
-      className="group relative flex flex-col bg-white border border-[#EBE7DF] hover:border-[#D5CEBF] rounded-lg overflow-hidden transition-all duration-300 hover:shadow-lg"
+      className="group relative flex flex-col bg-white border border-[#EBE7DF] hover:border-[#C5A880] rounded-lg overflow-hidden transition-all duration-500 hover:shadow-[0_12px_40px_-8px_rgba(0,0,0,0.12)] hover:-translate-y-1"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
@@ -115,12 +115,27 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
         {/* Product Image Link */}
         <Link href={`/products/${product.slug}`} className="block w-full h-full">
           <img
-            src={isHovered && hoverImage ? hoverImage : mainImage}
+            src={isHovered && hoverImage !== mainImage ? hoverImage : mainImage}
             alt={product.title}
             className="w-full h-full object-cover object-top transition-transform duration-700 ease-out group-hover:scale-105"
             loading={priority ? "eager" : "lazy"}
+            style={{ aspectRatio: "3/4" }}
           />
         </Link>
+
+        {/* Size pills — slide up on hover (desktop) */}
+        {sizes.length > 1 && (
+          <div className="hidden sm:flex absolute inset-x-2 top-2 z-10 gap-1 opacity-0 group-hover:opacity-100 transition-all duration-300 -translate-y-1 group-hover:translate-y-0 justify-center pointer-events-none">
+            {sizes.slice(0, 5).map((s) => (
+              <span
+                key={s.label}
+                className="px-1.5 py-0.5 bg-white/90 backdrop-blur-xs text-[9px] font-bold text-[#111827] rounded shadow-xs border border-white/50"
+              >
+                {s.label}
+              </span>
+            ))}
+          </div>
+        )}
 
         {/* Slide-Up Quick Add Overlay on Desktop Hover */}
         <div className="hidden sm:flex absolute inset-x-2 bottom-2 z-10 gap-1.5 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-2 group-hover:translate-y-0">
@@ -160,9 +175,16 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
       <div className="p-3 sm:p-4 flex flex-col flex-1 bg-white">
         {/* Category & Color Swatches */}
         <div className="flex items-center justify-between mb-1">
-          <span className="text-[10px] font-sans uppercase font-bold tracking-widest text-[#9A84C8]">
-            {product.category || "Abaya"}
-          </span>
+          <div className="flex items-center gap-1.5">
+            <span className="text-[10px] font-sans uppercase font-bold tracking-widest text-[#9A84C8]">
+              {product.category || "Abaya"}
+            </span>
+            {product.material && (
+              <span className="text-[9px] text-[#C5A880] font-sans hidden sm:inline">
+                · {product.material.split(" ").slice(0, 2).join(" ")}
+              </span>
+            )}
+          </div>
 
           {/* Color swatches */}
           {colors.length > 1 && (
@@ -197,8 +219,31 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
           {product.title}
         </Link>
 
+        {/* Size pills inline (compact) */}
+        {sizes.length > 0 && (
+          <div className="mt-1 flex items-center gap-1 flex-wrap">
+            {sizes.slice(0, 4).map((s) => (
+              <button
+                key={s.label}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setSelectedSize(s.label);
+                }}
+                className={`text-[9px] px-1.5 py-0.5 border rounded font-sans font-semibold transition-all ${
+                  selectedSize === s.label
+                    ? "border-[#111827] bg-[#111827] text-white"
+                    : "border-[#E5E7EB] text-[#6B7280] hover:border-[#C5A880] hover:text-[#A3845A]"
+                }`}
+              >
+                {s.label}
+              </button>
+            ))}
+          </div>
+        )}
+
         {/* Pricing */}
-        <div className="mt-1.5 flex items-baseline gap-2">
+        <div className="mt-2 flex items-baseline gap-2">
           <span className="font-sans font-bold text-sm sm:text-base text-[#DA3F3F]">
             {formatPrice(product.price)}
           </span>

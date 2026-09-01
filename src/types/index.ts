@@ -123,6 +123,7 @@ export interface FilterState {
   priceRange: [number, number];
   sizes: string[];
   colors: string[];
+  fabrics: string[];
   sortBy: "newest" | "price_asc" | "price_desc" | "rating" | "bestseller";
   searchQuery: string;
 }
@@ -148,7 +149,8 @@ export interface SiteConfig {
   };
   emailjs: {
     serviceId: string;
-    templateId: string;
+    orderTemplateId: string;
+    contactTemplateId: string;
     publicKey: string;
   };
   recaptchaSiteKey: string;

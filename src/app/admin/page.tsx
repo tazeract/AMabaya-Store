@@ -549,49 +549,105 @@ export default function AdminPage() {
 
   // 1. Authenticate check on mount
   useEffect(() => {
-    const isAuth = sessionStorage.getItem("amabaya_admin") === "1";
+    const isAuth =
+      sessionStorage.getItem("amabaya_admin") === "1" ||
+      localStorage.getItem("amabaya_admin_auth") === "1";
     setAuthenticated(isAuth);
     const savedPw = localStorage.getItem("amabaya_admin_custom_pw");
     if (savedPw) setAdminPassword(savedPw);
   }, []);
 
-  // 2. Fetch or load data from Supabase & localStorage
+  const syncStoreData = async (payload: Record<string, any>) => {
+    try {
+      await fetch("/api/admin/data", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+    } catch (e) {
+      console.warn("API sync notice:", e);
+    }
+  };
+
+  // 2. Fetch or load data from Server API, Supabase & localStorage
   const loadData = async () => {
     setLoading(true);
     try {
-      // 1. Products
-      const { data: prodData } = await supabase
-        .from("products")
-        .select("*")
-        .order("created_at", { ascending: false });
+      // 1. Products - First try persistent server API
+      let loadedProducts: ProductRow[] | null = null;
+      try {
+        const prodRes = await fetch("/api/admin/products", { cache: "no-store" });
+        if (prodRes.ok) {
+          const prodJson = await prodRes.json();
+          if (prodJson.success && Array.isArray(prodJson.products) && prodJson.products.length > 0) {
+            loadedProducts = prodJson.products.map((p: any) => ({
+              id: p.id,
+              slug: p.slug ?? toSlug(p.name),
+              name: p.name,
+              category: p.category,
+              price: p.price,
+              original_price: p.original_price ?? p.originalPrice ?? undefined,
+              description: p.description ?? "",
+              long_description: p.long_description ?? p.longDescription ?? "",
+              images: Array.isArray(p.images) && p.images.length > 0 ? p.images : ["/products/classic-noir-abaya/image-1.jpg"],
+              sizes: Array.isArray(p.sizes_json ?? p.sizes) && (p.sizes_json ?? p.sizes).length > 0
+                ? (p.sizes_json ?? p.sizes)
+                : [{ label: "S", available: true }, { label: "M", available: true }, { label: "L", available: true }, { label: "XL", available: true }],
+              stock: typeof p.stock === "number" ? p.stock : 10,
+              is_new: !!(p.is_new ?? p.isNew),
+              is_bestseller: !!(p.is_bestseller ?? p.isBestseller),
+              featured: !!p.featured,
+              tags: Array.isArray(p.tags) ? p.tags : [],
+              sku: p.sku ?? "",
+              material: p.material ?? "Korean Nida",
+              rating: p.rating ?? 5,
+              review_count: p.review_count ?? p.reviewCount ?? 1,
+              created_at: p.created_at ?? p.createdAt,
+            }));
+          }
+        }
+      } catch (e) {
+        console.warn("API products load:", e);
+      }
 
-      if (prodData && prodData.length > 0) {
-        const formatted: ProductRow[] = prodData.map((p) => ({
-          id: p.id,
-          slug: p.slug ?? toSlug(p.name),
-          name: p.name,
-          category: p.category,
-          price: p.price,
-          original_price: p.original_price ?? undefined,
-          description: p.description ?? "",
-          long_description: p.long_description ?? "",
-          images: Array.isArray(p.images) && p.images.length > 0 ? p.images : ["/products/classic-noir-abaya/image-1.jpg"],
-          sizes: Array.isArray(p.sizes_json) && p.sizes_json.length > 0
-            ? p.sizes_json
-            : [{ label: "S", available: true }, { label: "M", available: true }, { label: "L", available: true }, { label: "XL", available: true }],
-          stock: typeof p.stock === "number" ? p.stock : 10,
-          is_new: !!p.is_new,
-          is_bestseller: !!p.is_bestseller,
-          featured: !!p.featured,
-          tags: Array.isArray(p.tags) ? p.tags : [],
-          sku: p.sku ?? "",
-          material: p.material ?? "Korean Nida",
-          rating: p.rating ?? 5,
-          review_count: p.review_count ?? 1,
-          created_at: p.created_at,
-        }));
-        setProducts(formatted);
-        localStorage.setItem("amabaya_local_products", JSON.stringify(formatted));
+      // If API didn't have products, check Supabase
+      if (!loadedProducts || loadedProducts.length === 0) {
+        const { data: prodData } = await supabase
+          .from("products")
+          .select("*")
+          .order("created_at", { ascending: false });
+
+        if (prodData && prodData.length > 0) {
+          loadedProducts = prodData.map((p) => ({
+            id: p.id,
+            slug: p.slug ?? toSlug(p.name),
+            name: p.name,
+            category: p.category,
+            price: p.price,
+            original_price: p.original_price ?? undefined,
+            description: p.description ?? "",
+            long_description: p.long_description ?? "",
+            images: Array.isArray(p.images) && p.images.length > 0 ? p.images : ["/products/classic-noir-abaya/image-1.jpg"],
+            sizes: Array.isArray(p.sizes_json) && p.sizes_json.length > 0
+              ? p.sizes_json
+              : [{ label: "S", available: true }, { label: "M", available: true }, { label: "L", available: true }, { label: "XL", available: true }],
+            stock: typeof p.stock === "number" ? p.stock : 10,
+            is_new: !!p.is_new,
+            is_bestseller: !!p.is_bestseller,
+            featured: !!p.featured,
+            tags: Array.isArray(p.tags) ? p.tags : [],
+            sku: p.sku ?? "",
+            material: p.material ?? "Korean Nida",
+            rating: p.rating ?? 5,
+            review_count: p.review_count ?? 1,
+            created_at: p.created_at,
+          }));
+        }
+      }
+
+      if (loadedProducts && loadedProducts.length > 0) {
+        setProducts(loadedProducts);
+        localStorage.setItem("amabaya_local_products", JSON.stringify(loadedProducts));
       } else {
         const savedProds = localStorage.getItem("amabaya_local_products");
         if (savedProds) setProducts(JSON.parse(savedProds));
@@ -605,6 +661,7 @@ export default function AdminPage() {
 
       if (orderData && orderData.length > 0) {
         setOrders(orderData as Order[]);
+        localStorage.setItem("amabaya_local_orders", JSON.stringify(orderData));
       } else {
         const savedOrders = localStorage.getItem("amabaya_local_orders");
         if (savedOrders) setOrders(JSON.parse(savedOrders));
@@ -630,7 +687,25 @@ export default function AdminPage() {
         setUsers(userList);
       }
 
-      // 4. Custom modules from localStorage
+      // 4. Custom modules from Server API & localStorage
+      try {
+        const dataRes = await fetch("/api/admin/data", { cache: "no-store" });
+        if (dataRes.ok) {
+          const dataJson = await dataRes.json();
+          if (dataJson.success && dataJson.data) {
+            const d = dataJson.data;
+            if (d.promocodes) { setPromocodes(d.promocodes); localStorage.setItem("amabaya_promocodes", JSON.stringify(d.promocodes)); }
+            if (d.slides) { setSlides(d.slides); localStorage.setItem("amabaya_slides", JSON.stringify(d.slides)); }
+            if (d.banners) { setBanners(d.banners); localStorage.setItem("amabaya_banners", JSON.stringify(d.banners)); }
+            if (d.brands) { setBrands(d.brands); localStorage.setItem("amabaya_brands", JSON.stringify(d.brands)); }
+            if (d.categories) { setCategories(d.categories); localStorage.setItem("amabaya_categories", JSON.stringify(d.categories)); }
+            if (d.orders && (!orderData || orderData.length === 0)) { setOrders(d.orders); localStorage.setItem("amabaya_local_orders", JSON.stringify(d.orders)); }
+          }
+        }
+      } catch (e) {
+        console.warn("API store data load:", e);
+      }
+
       const savedPromo = localStorage.getItem("amabaya_promocodes");
       if (savedPromo) setPromocodes(JSON.parse(savedPromo));
       const savedSlides = localStorage.getItem("amabaya_slides");
@@ -679,19 +754,20 @@ export default function AdminPage() {
         review_count: Number(formData.review_count) || 1,
       };
 
+      let finalProduct: ProductRow;
+
       if (formData.id) {
         // Update in Supabase
         const { error } = await supabase.from("products").update(dbPayload).eq("id", formData.id);
         if (error) {
           console.warn("Supabase update notice:", error.message);
         }
+        finalProduct = { ...formData, ...dbPayload, id: formData.id } as ProductRow;
         const updated = products.map((p) =>
-          p.id === formData.id ? { ...p, ...formData, id: p.id } : p
+          p.id === formData.id ? finalProduct : p
         );
         setProducts(updated);
         localStorage.setItem("amabaya_local_products", JSON.stringify(updated));
-        notifyStoreUpdate();
-        toast.success(`"${formData.name}" updated successfully!`);
       } else {
         // Insert new product
         const newId = generateSafeUUID();
@@ -699,7 +775,7 @@ export default function AdminPage() {
         if (error) {
           console.warn("Supabase insert notice:", error.message);
         }
-        const created: ProductRow = {
+        finalProduct = {
           id: newId,
           slug: formData.slug || toSlug(formData.name),
           name: formData.name,
@@ -721,13 +797,24 @@ export default function AdminPage() {
           review_count: 1,
           created_at: new Date().toISOString(),
         };
-        const updated = [created, ...products];
+        const updated = [finalProduct, ...products];
         setProducts(updated);
         localStorage.setItem("amabaya_local_products", JSON.stringify(updated));
-        notifyStoreUpdate();
-        toast.success(`New design "${formData.name}" published to store!`);
       }
 
+      // Persist to Server API so all mobile and PC browsers immediately see the update
+      try {
+        await fetch("/api/admin/products", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ product: finalProduct }),
+        });
+      } catch (err) {
+        console.warn("API product sync notice:", err);
+      }
+
+      notifyStoreUpdate();
+      toast.success(`"${formData.name}" saved successfully!`);
       setProductModalOpen(false);
       setEditingProduct(undefined);
     } catch (e: any) {
@@ -742,6 +829,13 @@ export default function AdminPage() {
       const updated = products.filter((p) => p.id !== id);
       setProducts(updated);
       localStorage.setItem("amabaya_local_products", JSON.stringify(updated));
+
+      try {
+        await fetch(`/api/admin/products?id=${encodeURIComponent(id)}`, { method: "DELETE" });
+      } catch (err) {
+        console.warn("API delete notice:", err);
+      }
+
       notifyStoreUpdate();
       toast.success("Product removed from storefront");
     } catch (e: any) {
@@ -753,6 +847,16 @@ export default function AdminPage() {
     const updated = products.map((p) => (p.id === id ? { ...p, stock } : p));
     setProducts(updated);
     localStorage.setItem("amabaya_local_products", JSON.stringify(updated));
+    const target = updated.find((p) => p.id === id);
+    if (target) {
+      try {
+        await fetch("/api/admin/products", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ product: target }),
+        });
+      } catch (e) {}
+    }
     notifyStoreUpdate();
     await supabase.from("products").update({ stock }).eq("id", id);
     toast.success("Inventory stock updated");
@@ -766,6 +870,7 @@ export default function AdminPage() {
       );
       setOrders(updated);
       localStorage.setItem("amabaya_local_orders", JSON.stringify(updated));
+      syncStoreData({ orders: updated });
       await supabase.from("orders").update({ status, tracking_code: tracking }).eq("id", id);
       toast.success(`Order #${id.slice(0, 8)} status set to ${status.toUpperCase()}`);
     } catch (e: any) {
@@ -785,6 +890,7 @@ export default function AdminPage() {
     }
     setBrands(updated);
     localStorage.setItem("amabaya_brands", JSON.stringify(updated));
+    syncStoreData({ brands: updated });
     notifyStoreUpdate();
     setBrandModalOpen(false);
     setEditingBrand(undefined);
@@ -795,6 +901,7 @@ export default function AdminPage() {
     const updated = brands.filter((b) => b.id !== id);
     setBrands(updated);
     localStorage.setItem("amabaya_brands", JSON.stringify(updated));
+    syncStoreData({ brands: updated });
     notifyStoreUpdate();
     toast.success("Collection deleted");
   };
@@ -803,6 +910,7 @@ export default function AdminPage() {
     const updated = brands.map((b) => (b.id === id ? { ...b, featured: !b.featured } : b));
     setBrands(updated);
     localStorage.setItem("amabaya_brands", JSON.stringify(updated));
+    syncStoreData({ brands: updated });
     notifyStoreUpdate();
     toast.success("Featured status updated");
   };
@@ -819,6 +927,7 @@ export default function AdminPage() {
     }
     setCategories(updated);
     localStorage.setItem("amabaya_categories", JSON.stringify(updated));
+    syncStoreData({ categories: updated });
     notifyStoreUpdate();
     setCategoryModalOpen(false);
     setEditingCategory(undefined);
@@ -829,6 +938,7 @@ export default function AdminPage() {
     const updated = categories.filter((c) => c.id !== id);
     setCategories(updated);
     localStorage.setItem("amabaya_categories", JSON.stringify(updated));
+    syncStoreData({ categories: updated });
     notifyStoreUpdate();
     toast.success("Category removed");
   };
@@ -838,6 +948,7 @@ export default function AdminPage() {
     const updated = promocodes.map((p) => (p.id === id ? { ...p, active: !p.active } : p));
     setPromocodes(updated);
     localStorage.setItem("amabaya_promocodes", JSON.stringify(updated));
+    syncStoreData({ promocodes: updated });
     notifyStoreUpdate();
     toast.success("Coupon status toggled");
   };
@@ -846,6 +957,7 @@ export default function AdminPage() {
     const updated = promocodes.filter((p) => p.id !== id);
     setPromocodes(updated);
     localStorage.setItem("amabaya_promocodes", JSON.stringify(updated));
+    syncStoreData({ promocodes: updated });
     notifyStoreUpdate();
     toast.success("Coupon deleted");
   };
@@ -870,6 +982,7 @@ export default function AdminPage() {
     const updated = slides.map((s) => (s.id === id ? { ...s, active: !s.active } : s));
     setSlides(updated);
     localStorage.setItem("amabaya_slides", JSON.stringify(updated));
+    syncStoreData({ slides: updated });
     notifyStoreUpdate();
     toast.success("Hero slide visibility updated");
   };
@@ -878,6 +991,7 @@ export default function AdminPage() {
     const updated = slides.filter((s) => s.id !== id);
     setSlides(updated);
     localStorage.setItem("amabaya_slides", JSON.stringify(updated));
+    syncStoreData({ slides: updated });
     notifyStoreUpdate();
     toast.success("Hero slide deleted");
   };
@@ -887,6 +1001,7 @@ export default function AdminPage() {
     const updated = banners.map((b) => (b.id === id ? { ...b, active: !b.active } : b));
     setBanners(updated);
     localStorage.setItem("amabaya_banners", JSON.stringify(updated));
+    syncStoreData({ banners: updated });
     notifyStoreUpdate();
     toast.success("Banner updated");
   };
@@ -1130,6 +1245,7 @@ export default function AdminPage() {
             <button
               onClick={() => {
                 sessionStorage.removeItem("amabaya_admin");
+                localStorage.removeItem("amabaya_admin_auth");
                 setAuthenticated(false);
                 toast.success("Logged out");
               }}
@@ -1190,6 +1306,7 @@ export default function AdminPage() {
                 <button
                   onClick={() => {
                     sessionStorage.removeItem("amabaya_admin");
+                    localStorage.removeItem("amabaya_admin_auth");
                     setAuthenticated(false);
                     setMobileMenuOpen(false);
                     toast.success("Logged out");
@@ -3571,6 +3688,7 @@ function AdminLoginModal({
     e.preventDefault();
     if (pw === adminPassword || pw === DEFAULT_ADMIN_PASSWORD || pw === "amabaya2025") {
       sessionStorage.setItem("amabaya_admin", "1");
+      localStorage.setItem("amabaya_admin_auth", "1");
       onSuccess();
       toast.success("Welcome back, Master Admin!");
     } else {

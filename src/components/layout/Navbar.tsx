@@ -73,7 +73,6 @@ function UserNav() {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
-  // Close on outside click
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
@@ -164,21 +163,26 @@ function UserNav() {
 
 // ─── Navbar ───────────────────────────────────────────────────────────────────
 export function Navbar() {
+  // ── All hooks MUST be declared before any conditional returns ──────────────
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isHidden, setIsHidden] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+  const [mobileAccordion, setMobileAccordion] = useState<string | null>(null);
   const [announcements, setAnnouncements] = useState<string[]>(DEFAULT_ANNOUNCEMENTS);
   const [announcementIdx, setAnnouncementIdx] = useState(0);
   const pathname = usePathname();
-
-  if (pathname?.startsWith("/admin")) {
-    return null;
-  }
   const { itemCount } = useCart();
   const { count: wishlistCount } = useWishlist();
   const { user, logout } = useAuth();
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const lastScrollY = useRef(0);
+
+  // ── Admin route: render nothing, but hooks have already been called ────────
+  if (pathname?.startsWith("/admin")) {
+    return null;
+  }
 
   // Load announcements from localStorage
   const loadBanners = () => {
@@ -224,9 +228,19 @@ export function Navbar() {
     return () => clearInterval(timer);
   }, [announcements.length]);
 
-  // Scroll detection
+  // Scroll detection — track direction for hide/reveal behavior
   useEffect(() => {
-    const onScroll = () => setIsScrolled(window.scrollY > 15);
+    const onScroll = () => {
+      const currentY = window.scrollY;
+      setIsScrolled(currentY > 15);
+      // Hide on scroll down (past 80px), reveal on scroll up
+      if (currentY > 80) {
+        setIsHidden(currentY > lastScrollY.current && currentY > 150);
+      } else {
+        setIsHidden(false);
+      }
+      lastScrollY.current = currentY;
+    };
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
@@ -235,6 +249,7 @@ export function Navbar() {
   useEffect(() => {
     setIsMobileOpen(false);
     setActiveDropdown(null);
+    setMobileAccordion(null);
   }, [pathname]);
 
   // Scroll lock when mobile menu open + close on Escape
@@ -258,7 +273,11 @@ export function Navbar() {
 
   return (
     <>
-      <header className="fixed top-0 left-0 right-0 z-50 bg-white shadow-sm transition-all duration-300">
+      <header
+        className={`fixed top-0 left-0 right-0 z-50 bg-white shadow-sm transition-all duration-300 ${
+          isHidden ? "-translate-y-full" : "translate-y-0"
+        }`}
+      >
         {/* Top Announcement Bar */}
         <div className="bg-[#111827] text-white py-2 px-4 border-b border-white/10 overflow-hidden">
           <div className="max-w-7xl mx-auto flex items-center justify-between text-[11px] font-sans tracking-[0.18em] uppercase">
@@ -312,6 +331,7 @@ export function Navbar() {
               <button
                 onClick={() => setIsMobileOpen(!isMobileOpen)}
                 aria-label="Toggle menu"
+                aria-expanded={isMobileOpen}
                 className="p-2 text-[#111827] hover:text-[var(--color-gold)] transition-colors"
               >
                 {isMobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -416,7 +436,7 @@ export function Navbar() {
               {/* Customer Account / Login */}
               <UserNav />
 
-              {/* Wishlist Link (Hover changes to Blue with Heartbeat animation) */}
+              {/* Wishlist */}
               <Link
                 href="/wishlist"
                 aria-label="Wishlist"
@@ -431,7 +451,7 @@ export function Navbar() {
                 )}
               </Link>
 
-              {/* Cart Drawer Trigger Button (Hover changes to Red with Bag Tilt animation) */}
+              {/* Cart Drawer Trigger */}
               <button
                 onClick={handleOpenCart}
                 aria-label="Shopping Cart"
@@ -517,23 +537,66 @@ export function Navbar() {
                 </div>
               )}
 
-              {/* Nav links */}
-              <div className="flex-1 overflow-y-auto py-4 px-5 divide-y divide-[#F3F4F6]">
-                <div className="pb-4 space-y-1">
-                  {mainNavLinks.map((link) => (
-                    <div key={link.label} className="py-2">
+              {/* Nav links with accordion */}
+              <div className="flex-1 overflow-y-auto py-2 divide-y divide-[#F3F4F6]">
+                {mainNavLinks.map((link) => (
+                  <div key={link.label}>
+                    {link.sub ? (
+                      <div>
+                        <button
+                          onClick={() =>
+                            setMobileAccordion((prev) =>
+                              prev === link.label ? null : link.label
+                            )
+                          }
+                          className="flex items-center justify-between w-full px-5 py-3.5 text-sm font-medium uppercase tracking-wider text-[#111827] hover:text-[var(--color-gold)] hover:bg-[#FBF9F6] transition-colors"
+                        >
+                          <span>{link.label}</span>
+                          <ChevronDown
+                            className={`w-4 h-4 text-[#9CA3AF] transition-transform duration-200 ${
+                              mobileAccordion === link.label ? "rotate-180" : ""
+                            }`}
+                          />
+                        </button>
+                        <AnimatePresence initial={false}>
+                          {mobileAccordion === link.label && (
+                            <motion.div
+                              initial={{ height: 0, opacity: 0 }}
+                              animate={{ height: "auto", opacity: 1 }}
+                              exit={{ height: 0, opacity: 0 }}
+                              transition={{ duration: 0.25, ease: "easeInOut" }}
+                              className="overflow-hidden bg-[#FBF9F6]"
+                            >
+                              {link.sub.map((subItem) => (
+                                <Link
+                                  key={subItem.label}
+                                  href={subItem.href}
+                                  className="flex items-center gap-2 px-8 py-2.5 text-xs text-[#4B5563] hover:text-[var(--color-gold)] transition-colors"
+                                >
+                                  <span className="w-1 h-1 rounded-full bg-[#C5A880] shrink-0" />
+                                  {subItem.label}
+                                </Link>
+                              ))}
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </div>
+                    ) : (
                       <Link
                         href={link.href}
-                        className="flex items-center justify-between text-sm font-medium uppercase tracking-wider text-[#111827] hover:text-[var(--color-gold)]"
+                        className={`flex items-center justify-between px-5 py-3.5 text-sm font-medium uppercase tracking-wider hover:bg-[#FBF9F6] transition-colors ${
+                          link.isHighlight ? "text-[var(--color-gold-dark)]" : "text-[#111827] hover:text-[var(--color-gold)]"
+                        }`}
                       >
                         <span>{link.label}</span>
                         <ArrowRight className="w-3.5 h-3.5 opacity-40" />
                       </Link>
-                    </div>
-                  ))}
-                </div>
+                    )}
+                  </div>
+                ))}
 
-                <div className="py-4 space-y-2 text-xs text-[#4B5563]">
+                {/* Utility links */}
+                <div className="px-5 py-4 space-y-2 text-xs text-[#4B5563]">
                   {user && (
                     <Link href="/account" className="block py-1 hover:text-[#111827] font-medium">
                       My Account
@@ -551,7 +614,7 @@ export function Navbar() {
                     rel="noopener noreferrer"
                     className="block py-1 text-emerald-700 font-medium"
                   >
-                    WhatsApp Helpline (+92 300 1234567)
+                    WhatsApp Helpline ({siteConfig.contactPhone})
                   </a>
                   {user && (
                     <button
@@ -566,7 +629,7 @@ export function Navbar() {
 
               {/* Footer info */}
               <div className="p-4 bg-[#FBF9F6] border-t border-[#E5E7EB] text-center text-xs text-[#6B7280]">
-                <p>Free Delivery over Rs. 5,000</p>
+                <p>Free Delivery over Rs. 5,000 · COD Available Nationwide</p>
               </div>
             </motion.div>
           </>

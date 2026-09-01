@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, ShoppingBag, Trash2, Plus, Minus, ArrowRight, Truck } from "lucide-react";
+import { X, ShoppingBag, Trash2, Plus, Minus, ArrowRight, Truck, MessageCircle } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { formatPrice } from "@/lib/products";
 import siteConfig from "@/lib/siteConfig";
@@ -14,10 +14,7 @@ export function CartDrawer() {
   const [isOpen, setIsOpen] = useState(false);
   const { items, removeItem, updateQuantity, itemCount, subtotal } = useCart();
 
-  if (pathname?.startsWith("/admin")) {
-    return null;
-  }
-
+  // All hooks MUST be before any conditional returns
   // Listen for custom open event from Navbar & ProductCard
   useEffect(() => {
     const handleOpen = () => setIsOpen(true);
@@ -37,6 +34,11 @@ export function CartDrawer() {
     };
   }, [isOpen]);
 
+  // Admin routes: render nothing but hooks have already run
+  if (pathname?.startsWith("/admin")) {
+    return null;
+  }
+
   const shippingCost =
     subtotal >= siteConfig.freeShippingThreshold
       ? 0
@@ -44,6 +46,16 @@ export function CartDrawer() {
 
   const total = subtotal + shippingCost;
   const remainingForFreeShipping = siteConfig.freeShippingThreshold - subtotal;
+  const progressPercent = Math.min((subtotal / siteConfig.freeShippingThreshold) * 100, 100);
+
+  const handleWhatsAppOrder = () => {
+    if (items.length === 0) return;
+    const itemLines = items
+      .map((item) => `• ${item.product.title} (${item.selectedSize}, ${item.selectedColor}) × ${item.quantity} = ${formatPrice(item.product.price * item.quantity)}`)
+      .join("\n");
+    const message = `Salam! I'd like to place an order from RIWAYAH:\n\n${itemLines}\n\nOrder Total: ${formatPrice(total)}\nPayment: Cash on Delivery`;
+    window.open(`https://wa.me/${siteConfig.whatsappNumber}?text=${encodeURIComponent(message)}`, "_blank");
+  };
 
   return (
     <AnimatePresence>
@@ -95,25 +107,23 @@ export function CartDrawer() {
             <div className="bg-[#F3F4F6] px-5 py-3 border-b border-[#E5E7EB] text-xs font-sans">
               {remainingForFreeShipping > 0 ? (
                 <div>
-                  <p className="text-[#374151] flex items-center justify-between mb-1.5">
+                  <p className="text-[#374151] flex items-center justify-between mb-2">
                     <span>
-                      Add <strong className="text-[#111827]">{formatPrice(remainingForFreeShipping)}</strong> for Free Shipping
+                      Add <strong className="text-[#111827]">{formatPrice(remainingForFreeShipping)}</strong> more for Free Shipping
                     </span>
-                    <Truck className="w-4 h-4 text-[#A3845A]" />
+                    <Truck className="w-4 h-4 text-[#A3845A] shrink-0" />
                   </p>
-                  <div className="h-1.5 bg-[#E5E7EB] overflow-hidden">
+                  <div className="h-1.5 bg-[#E5E7EB] rounded-full overflow-hidden">
                     <motion.div
-                      className="h-full bg-[#111827]"
+                      className="h-full bg-gradient-to-r from-[#A3845A] to-[#111827] rounded-full"
                       initial={{ width: 0 }}
-                      animate={{
-                        width: `${Math.min((subtotal / siteConfig.freeShippingThreshold) * 100, 100)}%`,
-                      }}
-                      transition={{ duration: 0.4 }}
+                      animate={{ width: `${progressPercent}%` }}
+                      transition={{ duration: 0.6, ease: "easeOut" }}
                     />
                   </div>
                 </div>
               ) : (
-                <p className="text-emerald-700 font-medium text-center flex items-center justify-center gap-1.5">
+                <p className="text-emerald-700 font-semibold text-center flex items-center justify-center gap-1.5">
                   <span>✦ You unlocked Complimentary Nationwide Shipping!</span>
                 </p>
               )}
@@ -122,22 +132,22 @@ export function CartDrawer() {
             {/* Cart Items List */}
             <div className="flex-1 overflow-y-auto py-4 px-5">
               {items.length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-full gap-4 text-center py-12">
-                  <div className="w-16 h-16 border border-[#D1D5DB] flex items-center justify-center text-[#9CA3AF]">
-                    <ShoppingBag className="w-8 h-8 stroke-[1.2]" />
+                <div className="flex flex-col items-center justify-center h-full gap-5 text-center py-12">
+                  <div className="w-20 h-20 border border-[#D1D5DB] flex items-center justify-center text-[#9CA3AF] bg-[#FBF9F6]">
+                    <ShoppingBag className="w-9 h-9 stroke-[1.2]" />
                   </div>
                   <div>
                     <p className="font-serif text-xl text-[#111827] font-medium">
                       Your Bag Is Empty
                     </p>
-                    <p className="text-xs text-[#6B7280] font-sans mt-1 max-w-xs">
+                    <p className="text-xs text-[#6B7280] font-sans mt-1.5 max-w-[200px] mx-auto leading-relaxed">
                       Explore our handcrafted Pakistani abayas and luxury kaftans.
                     </p>
                   </div>
                   <Link
                     href="/products"
                     onClick={() => setIsOpen(false)}
-                    className="luxury-btn-primary mt-2"
+                    className="luxury-btn-primary mt-1"
                   >
                     Explore Collections
                   </Link>
@@ -159,6 +169,7 @@ export function CartDrawer() {
                             src={item.product.images?.[0] || "/products/classic-noir-abaya/image-1.jpg"}
                             alt={item.product.title}
                             className="w-full h-full object-cover"
+                            loading="lazy"
                           />
                         </div>
 
@@ -172,7 +183,7 @@ export function CartDrawer() {
                               <button
                                 onClick={() => removeItem(item.id)}
                                 aria-label="Remove item"
-                                className="text-[#9CA3AF] hover:text-red-600 transition-colors p-1"
+                                className="text-[#9CA3AF] hover:text-red-600 transition-colors p-1 shrink-0"
                               >
                                 <Trash2 className="w-3.5 h-3.5" />
                               </button>
@@ -249,6 +260,14 @@ export function CartDrawer() {
                     <span>Proceed To Checkout</span>
                     <ArrowRight className="w-4 h-4" />
                   </Link>
+
+                  <button
+                    onClick={handleWhatsAppOrder}
+                    className="w-full flex items-center justify-center gap-2 py-2.5 border border-emerald-700 text-emerald-800 text-xs font-sans font-semibold uppercase tracking-wider hover:bg-emerald-700 hover:text-white transition-colors"
+                  >
+                    <MessageCircle className="w-4 h-4" />
+                    <span>Order via WhatsApp</span>
+                  </button>
 
                   <Link
                     href="/cart"

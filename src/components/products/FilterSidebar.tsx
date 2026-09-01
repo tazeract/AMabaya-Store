@@ -24,6 +24,15 @@ const COLORS = [
   { name: "Pink", hex: "#FFB6C1" },
 ];
 
+const FABRICS = [
+  { label: "Korean Nida", desc: "Premium matte imported fabric" },
+  { label: "Pure Silk", desc: "Banarsi raw & pure silk" },
+  { label: "Organza", desc: "Lightweight French organza" },
+  { label: "Velvet", desc: "Soft crushed velvet" },
+  { label: "Chiffon", desc: "Flowy chiffon georgette" },
+  { label: "Banarsi", desc: "Handwoven Banarsi brocade" },
+];
+
 const SORT_OPTIONS: { value: FilterState["sortBy"]; label: string }[] = [
   { value: "newest", label: "Newest First" },
   { value: "price_asc", label: "Price: Low to High" },
@@ -40,6 +49,7 @@ export function FilterSidebar({ filters, onChange, totalCount }: FilterSidebarPr
     price: true,
     size: true,
     color: true,
+    fabric: true,
     sort: true,
   });
 
@@ -75,10 +85,18 @@ export function FilterSidebar({ filters, onChange, totalCount }: FilterSidebarPr
     update({ colors });
   };
 
+  const toggleFabric = (fabric: string) => {
+    const fabrics = (filters.fabrics || []).includes(fabric)
+      ? (filters.fabrics || []).filter((f) => f !== fabric)
+      : [...(filters.fabrics || []), fabric];
+    update({ fabrics });
+  };
+
   const hasActiveFilters =
     filters.category.length > 0 ||
     filters.sizes.length > 0 ||
     filters.colors.length > 0 ||
+    (filters.fabrics || []).length > 0 ||
     filters.priceRange[1] < MAX_PRICE;
 
   const clearAll = () => {
@@ -87,6 +105,7 @@ export function FilterSidebar({ filters, onChange, totalCount }: FilterSidebarPr
       priceRange: [0, MAX_PRICE],
       sizes: [],
       colors: [],
+      fabrics: [],
       sortBy: "newest",
       searchQuery: "",
     });
@@ -96,24 +115,33 @@ export function FilterSidebar({ filters, onChange, totalCount }: FilterSidebarPr
     title,
     id,
     children,
+    count,
   }: {
     title: string;
     id: keyof typeof openSections;
     children: React.ReactNode;
+    count?: number;
   }) => (
-    <div className="border-b border-[var(--color-border)] py-5">
+    <div className="border-b border-[#E5E7EB] py-4">
       <button
         onClick={() => toggle(id)}
-        className="flex items-center justify-between w-full text-left"
+        className="flex items-center justify-between w-full text-left group"
         aria-expanded={openSections[id]}
       >
-        <span className="text-sm font-semibold text-[var(--color-text-primary)] font-sans uppercase tracking-wider">
-          {title}
-        </span>
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-semibold text-[#111827] font-sans uppercase tracking-[0.12em]">
+            {title}
+          </span>
+          {count !== undefined && count > 0 && (
+            <span className="px-1.5 py-0.5 bg-[#111827] text-white text-[9px] font-bold rounded">
+              {count}
+            </span>
+          )}
+        </div>
         {openSections[id] ? (
-          <ChevronUp className="w-4 h-4 text-[var(--color-text-muted)]" />
+          <ChevronUp className="w-3.5 h-3.5 text-[#9CA3AF] group-hover:text-[#111827] transition-colors" />
         ) : (
-          <ChevronDown className="w-4 h-4 text-[var(--color-text-muted)]" />
+          <ChevronDown className="w-3.5 h-3.5 text-[#9CA3AF] group-hover:text-[#111827] transition-colors" />
         )}
       </button>
       <AnimatePresence initial={false}>
@@ -122,10 +150,10 @@ export function FilterSidebar({ filters, onChange, totalCount }: FilterSidebarPr
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.25 }}
+            transition={{ duration: 0.22, ease: "easeInOut" }}
             className="overflow-hidden"
           >
-            <div className="pt-4">{children}</div>
+            <div className="pt-3">{children}</div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -133,35 +161,30 @@ export function FilterSidebar({ filters, onChange, totalCount }: FilterSidebarPr
   );
 
   return (
-    <aside
-      aria-label="Product filters"
-      className="w-full"
-    >
+    <aside aria-label="Product filters" className="w-full">
       {/* Header */}
-      <div className="flex items-center justify-between mb-2">
+      <div className="flex items-center justify-between mb-1 pb-3 border-b border-[#E5E7EB]">
         <div className="flex items-center gap-2">
-          <SlidersHorizontal className="w-4 h-4 text-[var(--color-gold)]" />
-          <h2 className="font-sans font-semibold text-[var(--color-text-primary)] text-sm">
-            Filters
-          </h2>
-          <span className="text-xs text-[var(--color-text-muted)]">
-            ({totalCount} items)
+          <SlidersHorizontal className="w-4 h-4 text-[#A3845A]" />
+          <span className="font-sans font-semibold text-[#111827] text-sm">
+            Refine Results
           </span>
+          <span className="text-xs text-[#6B7280]">({totalCount})</span>
         </div>
         {hasActiveFilters && (
           <button
             onClick={clearAll}
-            className="flex items-center gap-1 text-xs text-red-500 hover:text-red-600 transition-colors"
+            className="flex items-center gap-1 text-[11px] text-red-500 hover:text-red-700 transition-colors font-medium"
           >
             <X className="w-3 h-3" />
-            Clear all
+            Clear All
           </button>
         )}
       </div>
 
-      {/* Sort */}
+      {/* Sort By */}
       <Section title="Sort By" id="sort">
-        <div className="space-y-1">
+        <div className="space-y-2">
           {SORT_OPTIONS.map((opt) => (
             <label key={opt.value} className="flex items-center gap-2.5 cursor-pointer group">
               <input
@@ -170,9 +193,9 @@ export function FilterSidebar({ filters, onChange, totalCount }: FilterSidebarPr
                 value={opt.value}
                 checked={filters.sortBy === opt.value}
                 onChange={() => update({ sortBy: opt.value })}
-                className="accent-[var(--color-gold)] w-4 h-4"
+                className="accent-[#111827] w-3.5 h-3.5"
               />
-              <span className="text-sm text-[var(--color-text-secondary)] group-hover:text-[var(--color-text-primary)] transition-colors">
+              <span className="text-xs text-[#4B5563] group-hover:text-[#111827] transition-colors font-sans">
                 {opt.label}
               </span>
             </label>
@@ -181,17 +204,17 @@ export function FilterSidebar({ filters, onChange, totalCount }: FilterSidebarPr
       </Section>
 
       {/* Category */}
-      <Section title="Category" id="category">
-        <div className="space-y-1">
+      <Section title="Category" id="category" count={filters.category.length}>
+        <div className="space-y-2">
           {CATEGORIES.map((cat) => (
             <label key={cat} className="flex items-center gap-2.5 cursor-pointer group">
               <input
                 type="checkbox"
                 checked={filters.category.includes(cat)}
                 onChange={() => toggleCategory(cat)}
-                className="accent-[var(--color-gold)] w-4 h-4 rounded"
+                className="accent-[#111827] w-3.5 h-3.5 rounded"
               />
-              <span className="text-sm text-[var(--color-text-secondary)] group-hover:text-[var(--color-text-primary)] transition-colors">
+              <span className="text-xs text-[#4B5563] group-hover:text-[#111827] transition-colors font-sans">
                 {cat}
               </span>
             </label>
@@ -199,14 +222,37 @@ export function FilterSidebar({ filters, onChange, totalCount }: FilterSidebarPr
         </div>
       </Section>
 
+      {/* Fabric Type */}
+      <Section title="Fabric Type" id="fabric" count={(filters.fabrics || []).length}>
+        <div className="space-y-2">
+          {FABRICS.map((fabric) => {
+            const selected = (filters.fabrics || []).includes(fabric.label);
+            return (
+              <label key={fabric.label} className="flex items-start gap-2.5 cursor-pointer group">
+                <input
+                  type="checkbox"
+                  checked={selected}
+                  onChange={() => toggleFabric(fabric.label)}
+                  className="accent-[#111827] w-3.5 h-3.5 rounded mt-0.5 shrink-0"
+                />
+                <div>
+                  <span className="text-xs text-[#4B5563] group-hover:text-[#111827] transition-colors font-sans font-medium">
+                    {fabric.label}
+                  </span>
+                  <p className="text-[10px] text-[#9CA3AF] font-sans leading-tight">{fabric.desc}</p>
+                </div>
+              </label>
+            );
+          })}
+        </div>
+      </Section>
+
       {/* Price Range */}
       <Section title="Price Range" id="price">
-        <div className="space-y-4">
-          <div className="flex items-center justify-between text-sm">
-            <span className="text-[var(--color-text-muted)]">
-              ₨ {filters.priceRange[0].toLocaleString()}
-            </span>
-            <span className="text-[var(--color-gold)] font-medium">
+        <div className="space-y-3">
+          <div className="flex items-center justify-between text-xs font-sans">
+            <span className="text-[#6B7280]">₨ {filters.priceRange[0].toLocaleString()}</span>
+            <span className="text-[#A3845A] font-semibold">
               ₨ {filters.priceRange[1].toLocaleString()}
             </span>
           </div>
@@ -225,21 +271,36 @@ export function FilterSidebar({ filters, onChange, totalCount }: FilterSidebarPr
             } as React.CSSProperties}
             className="w-full"
           />
+          <div className="flex gap-2">
+            {[5000, 10000, 15000, 20000].map((val) => (
+              <button
+                key={val}
+                onClick={() => update({ priceRange: [0, val] })}
+                className={`flex-1 text-[10px] py-1 border rounded font-sans transition-all ${
+                  filters.priceRange[1] === val
+                    ? "bg-[#111827] text-white border-[#111827]"
+                    : "border-[#E5E7EB] text-[#6B7280] hover:border-[#C5A880]"
+                }`}
+              >
+                {val >= 1000 ? `${val / 1000}k` : val}
+              </button>
+            ))}
+          </div>
         </div>
       </Section>
 
       {/* Size */}
-      <Section title="Size" id="size">
-        <div className="flex flex-wrap gap-2">
+      <Section title="Size" id="size" count={filters.sizes.length}>
+        <div className="flex flex-wrap gap-1.5">
           {SIZES.map((size) => (
             <button
               key={size}
               onClick={() => toggleSize(size)}
               aria-pressed={filters.sizes.includes(size)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${
+              className={`px-3 py-1.5 text-[11px] font-medium border transition-all rounded ${
                 filters.sizes.includes(size)
-                  ? "bg-[var(--color-gold)] border-[var(--color-gold)] text-white"
-                  : "border-[var(--color-border)] text-[var(--color-text-secondary)] hover:border-[var(--color-gold)] hover:text-[var(--color-gold)]"
+                  ? "bg-[#111827] border-[#111827] text-white"
+                  : "border-[#D1D5DB] text-[#6B7280] hover:border-[#A3845A] hover:text-[#A3845A]"
               }`}
             >
               {size}
@@ -249,8 +310,8 @@ export function FilterSidebar({ filters, onChange, totalCount }: FilterSidebarPr
       </Section>
 
       {/* Color */}
-      <Section title="Color" id="color">
-        <div className="flex flex-wrap gap-3">
+      <Section title="Colour" id="color" count={filters.colors.length}>
+        <div className="flex flex-wrap gap-2.5">
           {COLORS.map((color) => (
             <button
               key={color.name}
@@ -260,13 +321,13 @@ export function FilterSidebar({ filters, onChange, totalCount }: FilterSidebarPr
               title={color.name}
               className={`relative w-7 h-7 rounded-full border-2 transition-all hover:scale-110 ${
                 filters.colors.includes(color.name)
-                  ? "border-[var(--color-gold)] scale-110 shadow-[var(--shadow-gold)]"
-                  : "border-[var(--color-border)]"
+                  ? "border-[#111827] scale-110 shadow-md ring-2 ring-offset-1 ring-[#111827]/20"
+                  : "border-[#D1D5DB]"
               }`}
               style={{ backgroundColor: color.hex }}
             >
               {color.hex === "#FFFFFF" && (
-                <span className="absolute inset-0 rounded-full border border-[var(--color-border)]" />
+                <span className="absolute inset-0 rounded-full border border-[#D1D5DB]" />
               )}
             </button>
           ))}
