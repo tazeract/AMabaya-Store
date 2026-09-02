@@ -5,7 +5,7 @@ import { ArrowRight, Tag, Gift, RefreshCw, ShieldCheck } from "lucide-react";
 
 export function DealsAndBundles() {
   return (
-    <section className="py-12 sm:py-16 bg-white border-b border-[#F0ECE6]" aria-label="Deals & Essentials">
+    <section className="py-12 sm:py-16 bg-white border-b border-[#F0ECE6] scroll-reveal" aria-label="Deals & Essentials">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6 sm:space-y-8">
         
         {/* Row 1: Split Value Deals (Everything Under 1999 vs Value Bundles) */}

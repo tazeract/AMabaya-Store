@@ -1,5 +1,6 @@
 import { HeroSection } from "@/components/home/HeroSection";
 import { TrendingAbayas } from "@/components/home/TrendingAbayas";
+import { ExploreTypes } from "@/components/home/ExploreTypes";
 import { CategoryBannerGrid } from "@/components/home/CategoryBannerGrid";
 import { HijabCollectionShowcase } from "@/components/home/HijabCollectionShowcase";
 import { LookbookBanners } from "@/components/home/LookbookBanners";
@@ -24,26 +25,29 @@ export default async function HomePage() {
       {/* 2. New In Abayas (2-Col Mobile / 4-Col Desktop Grid with SALE & NEW Badges) */}
       <TrendingAbayas products={products} />
 
-      {/* 3. Category Spotlight Banner + 2x2 Sub-Grid (Everyday, Embroidered, Sets, Khimars) */}
+      {/* 3. Explore All Types — Style Category Cards */}
+      <ExploreTypes />
+
+      {/* 4. Category Spotlight Banner + 2x2 Sub-Grid (Everyday, Embroidered, Sets, Khimars) */}
       <CategoryBannerGrid />
 
-      {/* 4. Hijabs Showcase Banner + 4-Card Fabric Grid (Laser Cut, Crinkle, Silk, Chiffon) */}
+      {/* 5. Hijabs Showcase Banner + 4-Card Fabric Grid (Laser Cut, Crinkle, Silk, Chiffon) */}
       <HijabCollectionShowcase />
 
-      {/* 5. Stacked Lookbook Silhouette Banners (Skirt Sets, Long Dresses, Tops, Co-ords) */}
+      {/* 6. Stacked Lookbook Silhouette Banners (Skirt Sets, Long Dresses, Tops, Co-ords) */}
       <LookbookBanners />
 
-      {/* 6. Deals & Bundles (Everything Under 1999, Value Bundles, Bottoms, Accessories, Guarantees) */}
+      {/* 7. Deals & Bundles (Everything Under 1999, Value Bundles, Bottoms, Accessories, Guarantees) */}
       <DealsAndBundles />
 
-      {/* 7. Watch & Shop Social Video Reels Showcase */}
+      {/* 8. Watch & Shop Social Video Reels Showcase */}
       <VideoReelsShowcase />
 
-      {/* 8. Featured Bestsellers Collection Grid */}
+      {/* 9. Featured Bestsellers Collection Grid */}
       <FeaturedCollection />
 
-      {/* 9. Brand Story / Heritage Banner */}
-      <section className="py-16 lg:py-24 px-4 sm:px-6 lg:px-8 bg-white border-b border-[#E5E7EB]" aria-label="Brand Story">
+      {/* 10. Brand Story / Heritage Banner */}
+      <section className="py-16 lg:py-24 px-4 sm:px-6 lg:px-8 bg-white border-b border-[#E5E7EB] scroll-reveal" aria-label="Brand Story">
         <div className="max-w-7xl mx-auto">
           <div className="grid lg:grid-cols-12 gap-10 lg:gap-16 items-center">
             

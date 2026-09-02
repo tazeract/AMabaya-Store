@@ -3,9 +3,7 @@ import "./globals.css";
 import { CartProvider } from "@/context/CartContext";
 import { WishlistProvider } from "@/context/WishlistContext";
 import { AuthProvider } from "@/context/AuthContext";
-import { Navbar } from "@/components/layout/Navbar";
-import { Footer } from "@/components/layout/Footer";
-import { CartDrawer } from "@/components/layout/CartDrawer";
+import { SiteShell } from "@/components/layout/SiteShell";
 import { Toaster } from "@/components/ui/Toaster";
 import siteConfig from "@/lib/siteConfig";
 
@@ -82,10 +80,7 @@ export default function RootLayout({
         <AuthProvider>
           <WishlistProvider>
             <CartProvider>
-              <Navbar />
-              <CartDrawer />
-              <main className="flex-1">{children}</main>
-              <Footer />
+              <SiteShell>{children}</SiteShell>
               <Toaster />
             </CartProvider>
           </WishlistProvider>

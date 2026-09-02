@@ -213,9 +213,18 @@ export function Navbar() {
     const handleUpdate = () => loadBanners();
     window.addEventListener("amabaya_banners_updated", handleUpdate);
     window.addEventListener("storage", handleUpdate);
+
+    // BroadcastChannel for cross-tab admin updates
+    let bc: BroadcastChannel | null = null;
+    try {
+      bc = new BroadcastChannel("amabaya_store");
+      bc.onmessage = (e) => { if (e.data?.type === "store_updated") handleUpdate(); };
+    } catch {}
+
     return () => {
       window.removeEventListener("amabaya_banners_updated", handleUpdate);
       window.removeEventListener("storage", handleUpdate);
+      bc?.close();
     };
   }, []);
 
@@ -477,42 +486,53 @@ export function Navbar() {
       <AnimatePresence>
         {isMobileOpen && (
           <>
+            {/* Backdrop */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm lg:hidden"
+              transition={{ duration: 0.25 }}
+              className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm lg:hidden"
               onClick={() => setIsMobileOpen(false)}
             />
+
+            {/* Off-canvas Drawer Panel */}
             <motion.div
               initial={{ x: "-100%" }}
               animate={{ x: 0 }}
               exit={{ x: "-100%" }}
-              transition={{ type: "tween", duration: 0.3 }}
-              className="fixed top-0 bottom-0 left-0 w-4/5 max-w-sm bg-white z-50 flex flex-col shadow-2xl lg:hidden"
+              transition={{ type: "spring", damping: 30, stiffness: 300 }}
+              className="fixed top-0 bottom-0 left-0 w-[88vw] max-w-[380px] bg-[#FAF8F5] text-[#111827] z-50 flex flex-col shadow-2xl lg:hidden border-r border-[#EAE6DF]"
             >
-              {/* Header */}
-              <div className="p-5 border-b border-[#E5E7EB] flex items-center justify-between bg-[#FBF9F6]">
-                <div>
-                  <span className="font-serif text-xl font-medium tracking-[0.25em] text-[#111827]">
+              {/* Drawer Top Header */}
+              <div className="px-5 py-4 border-b border-[#EAE6DF] flex items-center justify-between bg-white shrink-0">
+                <Link
+                  href="/"
+                  onClick={() => setIsMobileOpen(false)}
+                  className="inline-flex flex-col"
+                  aria-label="RIWAYAH Home"
+                >
+                  <span className="font-serif text-2xl font-medium tracking-[0.26em] text-[#111827]">
                     RIWAYAH
                   </span>
-                  <p className="text-[9px] text-[#6B7280] tracking-widest uppercase">Luxury Modest Wear</p>
-                </div>
+                  <span className="text-[8.5px] text-[#8B7355] tracking-[0.32em] font-sans uppercase -mt-0.5 font-semibold">
+                    Haute Modesty · Lahore Atelier
+                  </span>
+                </Link>
                 <button
                   onClick={() => setIsMobileOpen(false)}
                   aria-label="Close menu"
-                  className="p-1.5 text-[#111827] hover:text-[var(--color-gold)]"
+                  className="w-9 h-9 rounded-full bg-[#FAF8F5] border border-[#EAE6DF] text-[#111827] hover:bg-[#111827] hover:text-white transition-all flex items-center justify-center cursor-pointer shadow-2xs"
                 >
-                  <X className="w-5 h-5" />
+                  <X className="w-4 h-4" />
                 </button>
               </div>
 
-              {/* Mobile user section */}
+              {/* VIP / Member Account Card */}
               {user ? (
-                <div className="px-5 py-3 bg-[#FFFBF5] border-b border-[#F3F4F6] flex items-center justify-between">
+                <div className="mx-4 mt-3.5 p-3.5 rounded-2xl bg-white border border-[#EAE6DF] shadow-xs flex items-center justify-between shrink-0">
                   <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[var(--color-gold-light)] to-[var(--color-gold-dark)] flex items-center justify-center text-white text-xs font-bold">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#111827] to-[#2B231D] text-[#C5A880] flex items-center justify-center text-xs font-bold tracking-wider border border-[#C5A880]/30 shadow-xs">
                       {user.name
                         .split(" ")
                         .map((w) => w[0])
@@ -521,26 +541,87 @@ export function Navbar() {
                         .toUpperCase()}
                     </div>
                     <div>
-                      <p className="text-sm font-semibold text-[#111827]">{user.name}</p>
-                      <p className="text-[10px] text-[#9CA3AF]">{user.email}</p>
+                      <p className="text-xs font-semibold text-[#111827] truncate max-w-[160px]">{user.name}</p>
+                      <span className="text-[10px] text-[#8B7355] font-medium tracking-wide">Privileged Member</span>
                     </div>
                   </div>
+                  <Link
+                    href="/account"
+                    onClick={() => setIsMobileOpen(false)}
+                    className="px-3 py-1.5 rounded-lg bg-[#FAF8F5] hover:bg-[#111827] hover:text-white text-[#111827] text-[11px] font-semibold tracking-wider transition-colors border border-[#EAE6DF]"
+                  >
+                    Account
+                  </Link>
                 </div>
               ) : (
-                <div className="px-5 py-3 bg-[#FFFBF5] border-b border-[#F3F4F6]">
+                <div className="mx-4 mt-3.5 shrink-0">
                   <Link
                     href="/auth/login"
-                    className="flex items-center gap-2 text-sm font-medium text-[var(--color-gold)]"
+                    onClick={() => setIsMobileOpen(false)}
+                    className="p-3.5 rounded-2xl bg-gradient-to-r from-[#171412] via-[#231E19] to-[#171412] text-white flex items-center justify-between shadow-sm border border-white/10 group"
                   >
-                    <User className="w-4 h-4" /> Sign In / Create Account
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center text-[#C5A880] border border-white/15">
+                        <User className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <p className="text-xs font-semibold text-white tracking-wide">Sign In / Register</p>
+                        <p className="text-[10px] text-white/60 font-sans">Save wishlists & member perks</p>
+                      </div>
+                    </div>
+                    <div className="w-7 h-7 rounded-full bg-white/10 group-hover:bg-[#C5A880] group-hover:text-black transition-all flex items-center justify-center text-white/80">
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </div>
                   </Link>
                 </div>
               )}
 
-              {/* Nav links with accordion */}
-              <div className="flex-1 overflow-y-auto py-2 divide-y divide-[#F3F4F6]">
+              {/* Quick Shopping Pills (Horizontal Strip) */}
+              <div className="px-4 pt-3 pb-1 flex items-center gap-1.5 overflow-x-auto no-scrollbar text-[11px] font-sans font-bold uppercase tracking-wider shrink-0">
+                <Link
+                  href="/products"
+                  onClick={() => setIsMobileOpen(false)}
+                  className="shrink-0 px-3 py-1.5 rounded-full bg-[#111827] text-white shadow-2xs"
+                >
+                  All
+                </Link>
+                <Link
+                  href="/products?category=Abaya"
+                  onClick={() => setIsMobileOpen(false)}
+                  className="shrink-0 px-3 py-1.5 rounded-full bg-white text-[#4B5563] border border-[#EAE6DF] hover:border-[#111827] hover:text-[#111827] transition-colors"
+                >
+                  Abayas
+                </Link>
+                <Link
+                  href="/products?category=Kaftan"
+                  onClick={() => setIsMobileOpen(false)}
+                  className="shrink-0 px-3 py-1.5 rounded-full bg-white text-[#4B5563] border border-[#EAE6DF] hover:border-[#111827] hover:text-[#111827] transition-colors"
+                >
+                  Kaftans
+                </Link>
+                <Link
+                  href="/products?category=Dupatta"
+                  onClick={() => setIsMobileOpen(false)}
+                  className="shrink-0 px-3 py-1.5 rounded-full bg-white text-[#4B5563] border border-[#EAE6DF] hover:border-[#111827] hover:text-[#111827] transition-colors"
+                >
+                  Dupattas
+                </Link>
+                <Link
+                  href="/products?filter=new"
+                  onClick={() => setIsMobileOpen(false)}
+                  className="shrink-0 px-3 py-1.5 rounded-full bg-[#C5A880]/15 text-[#8A6D3B] border border-[#C5A880]/30 font-semibold"
+                >
+                  ★ New In
+                </Link>
+              </div>
+
+              {/* Main Category Accordion List ("3 line category area") */}
+              <div className="flex-1 overflow-y-auto px-4 py-2.5 space-y-2">
                 {mainNavLinks.map((link) => (
-                  <div key={link.label}>
+                  <div
+                    key={link.label}
+                    className="bg-white rounded-xl border border-[#EAE6DF]/80 overflow-hidden shadow-2xs transition-all"
+                  >
                     {link.sub ? (
                       <div>
                         <button
@@ -549,34 +630,62 @@ export function Navbar() {
                               prev === link.label ? null : link.label
                             )
                           }
-                          className="flex items-center justify-between w-full px-5 py-3.5 text-sm font-medium uppercase tracking-wider text-[#111827] hover:text-[var(--color-gold)] hover:bg-[#FBF9F6] transition-colors"
+                          className="flex items-center justify-between w-full px-4 py-3 text-left transition-colors hover:bg-[#FAF8F5] cursor-pointer"
                         >
-                          <span>{link.label}</span>
-                          <ChevronDown
-                            className={`w-4 h-4 text-[#9CA3AF] transition-transform duration-200 ${
-                              mobileAccordion === link.label ? "rotate-180" : ""
+                          <div>
+                            <span className="font-serif text-[17px] tracking-wide text-[#111827] font-medium block">
+                              {link.label}
+                            </span>
+                            {link.featured && (
+                              <span className="text-[10px] text-[#8B7355] font-sans tracking-wider uppercase font-semibold">
+                                {link.featured}
+                              </span>
+                            )}
+                          </div>
+                          <div
+                            className={`w-7 h-7 rounded-full flex items-center justify-center transition-all duration-200 ${
+                              mobileAccordion === link.label
+                                ? "bg-[#111827] text-white rotate-180"
+                                : "bg-[#FAF8F5] text-[#6B7280] border border-[#EAE6DF]"
                             }`}
-                          />
+                          >
+                            <ChevronDown className="w-3.5 h-3.5" />
+                          </div>
                         </button>
+
                         <AnimatePresence initial={false}>
                           {mobileAccordion === link.label && (
                             <motion.div
                               initial={{ height: 0, opacity: 0 }}
                               animate={{ height: "auto", opacity: 1 }}
                               exit={{ height: 0, opacity: 0 }}
-                              transition={{ duration: 0.25, ease: "easeInOut" }}
-                              className="overflow-hidden bg-[#FBF9F6]"
+                              transition={{ duration: 0.22, ease: "easeInOut" }}
+                              className="overflow-hidden bg-[#FAF8F5] border-t border-[#EAE6DF]/70 p-2 space-y-1"
                             >
                               {link.sub.map((subItem) => (
                                 <Link
                                   key={subItem.label}
                                   href={subItem.href}
-                                  className="flex items-center gap-2 px-8 py-2.5 text-xs text-[#4B5563] hover:text-[var(--color-gold)] transition-colors"
+                                  onClick={() => setIsMobileOpen(false)}
+                                  className="flex items-center justify-between px-3 py-2 text-xs font-sans font-medium text-[#4B5563] hover:text-[#111827] hover:bg-white rounded-lg transition-all"
                                 >
-                                  <span className="w-1 h-1 rounded-full bg-[#C5A880] shrink-0" />
-                                  {subItem.label}
+                                  <span className="flex items-center gap-2">
+                                    <span className="text-[#C5A880] text-[10px]">✦</span>
+                                    {subItem.label}
+                                  </span>
+                                  <ArrowRight className="w-3 h-3 text-[#9CA3AF] opacity-50" />
                                 </Link>
                               ))}
+
+                              <div className="pt-1 px-1">
+                                <Link
+                                  href={link.href}
+                                  onClick={() => setIsMobileOpen(false)}
+                                  className="block w-full text-center py-2 text-[11px] font-sans font-bold uppercase tracking-wider text-[#111827] bg-white rounded-lg border border-[#EAE6DF] hover:bg-[#111827] hover:text-white transition-all shadow-2xs"
+                                >
+                                  Explore All {link.label} →
+                                </Link>
+                              </div>
                             </motion.div>
                           )}
                         </AnimatePresence>
@@ -584,52 +693,93 @@ export function Navbar() {
                     ) : (
                       <Link
                         href={link.href}
-                        className={`flex items-center justify-between px-5 py-3.5 text-sm font-medium uppercase tracking-wider hover:bg-[#FBF9F6] transition-colors ${
-                          link.isHighlight ? "text-[var(--color-gold-dark)]" : "text-[#111827] hover:text-[var(--color-gold)]"
-                        }`}
+                        onClick={() => setIsMobileOpen(false)}
+                        className="flex items-center justify-between px-4 py-3 text-left transition-colors hover:bg-[#FAF8F5]"
                       >
-                        <span>{link.label}</span>
-                        <ArrowRight className="w-3.5 h-3.5 opacity-40" />
+                        <div className="flex items-center gap-2">
+                          <span className="font-serif text-[17px] tracking-wide text-[#111827] font-medium">
+                            {link.label}
+                          </span>
+                          {link.isHighlight && (
+                            <span className="text-[9px] font-sans font-bold uppercase tracking-widest bg-[#C5A880]/20 text-[#8B6B38] px-2 py-0.5 rounded-full border border-[#C5A880]/30">
+                              New
+                            </span>
+                          )}
+                        </div>
+                        <ArrowRight className="w-3.5 h-3.5 text-[#9CA3AF]" />
                       </Link>
                     )}
                   </div>
                 ))}
 
-                {/* Utility links */}
-                <div className="px-5 py-4 space-y-2 text-xs text-[#4B5563]">
-                  {user && (
-                    <Link href="/account" className="block py-1 hover:text-[#111827] font-medium">
-                      My Account
-                    </Link>
-                  )}
-                  <Link href="/order-tracking" className="block py-1 hover:text-[#111827]">
-                    Track Your Order
-                  </Link>
-                  <Link href="/contact" className="block py-1 hover:text-[#111827]">
-                    Customer Helpline
-                  </Link>
+                {/* Direct WhatsApp Concierge Card */}
+                <div className="pt-1.5">
                   <a
-                    href={`https://wa.me/${siteConfig.whatsappNumber}`}
+                    href={`https://wa.me/${siteConfig.whatsappNumber}?text=Hello%20RIWAYAH,%20I%20would%20like%20assistance%20with%20an%20order`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="block py-1 text-emerald-700 font-medium"
+                    className="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-between group transition-all hover:bg-emerald-100/80 shadow-2xs"
                   >
-                    WhatsApp Helpline ({siteConfig.contactPhone})
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-full bg-emerald-600 text-white flex items-center justify-center shadow-xs">
+                        <Phone className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <p className="text-xs font-bold text-emerald-950 font-sans tracking-wide">
+                          WhatsApp Styling Helpline
+                        </p>
+                        <p className="text-[11px] text-emerald-700 font-sans">
+                          {siteConfig.contactPhone} · Instant Reply
+                        </p>
+                      </div>
+                    </div>
+                    <span className="text-[10px] uppercase tracking-wider font-bold text-emerald-800 bg-white px-2.5 py-1 rounded-md border border-emerald-200 shadow-2xs">
+                      Chat
+                    </span>
                   </a>
-                  {user && (
-                    <button
-                      onClick={() => logout()}
-                      className="block py-1 text-red-500 hover:text-red-700 font-medium text-left"
-                    >
-                      Sign Out
-                    </button>
-                  )}
                 </div>
+
+                {/* Quick Utility Links (2-Column Grid) */}
+                <div className="grid grid-cols-2 gap-2 pt-0.5">
+                  <Link
+                    href="/order-tracking"
+                    onClick={() => setIsMobileOpen(false)}
+                    className="p-2.5 rounded-xl bg-white border border-[#EAE6DF] text-center text-xs font-medium text-[#374151] hover:text-[#111827] hover:border-[#111827] transition-all shadow-2xs"
+                  >
+                    📦 Track Order
+                  </Link>
+                  <Link
+                    href="/contact"
+                    onClick={() => setIsMobileOpen(false)}
+                    className="p-2.5 rounded-xl bg-white border border-[#EAE6DF] text-center text-xs font-medium text-[#374151] hover:text-[#111827] hover:border-[#111827] transition-all shadow-2xs"
+                  >
+                    💬 Customer Care
+                  </Link>
+                </div>
+
+                {user && (
+                  <button
+                    onClick={() => {
+                      logout();
+                      setIsMobileOpen(false);
+                    }}
+                    className="w-full text-center py-2 text-xs text-red-600 hover:text-red-700 font-medium transition-colors cursor-pointer"
+                  >
+                    Sign Out
+                  </button>
+                )}
               </div>
 
-              {/* Footer info */}
-              <div className="p-4 bg-[#FBF9F6] border-t border-[#E5E7EB] text-center text-xs text-[#6B7280]">
-                <p>Free Delivery over Rs. 5,000 · COD Available Nationwide</p>
+              {/* Drawer Footer */}
+              <div className="p-4 bg-white border-t border-[#EAE6DF] text-center shrink-0 space-y-1">
+                <div className="flex items-center justify-center gap-2 text-[11px] font-sans font-semibold text-[#111827]">
+                  <span>🇵🇰 Pakistan (PKR ₨)</span>
+                  <span className="text-[#D1D5DB]">·</span>
+                  <span>Lahore Atelier</span>
+                </div>
+                <p className="text-[10px] text-[#6B7280] font-sans">
+                  Complimentary Express Shipping Over Rs. 5,000 · Cash on Delivery
+                </p>
               </div>
             </motion.div>
           </>

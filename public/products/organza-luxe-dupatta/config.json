@@ -7,17 +7,37 @@
   "price": 3200,
   "originalPrice": 4000,
   "category": "Dupatta",
-  "tags": ["organza", "scallop", "pearls", "bestseller"],
+  "tags": [
+    "organza",
+    "scallop",
+    "pearls",
+    "bestseller"
+  ],
   "sizes": [
-    { "label": "Free Size", "measurements": "Length: 2.75 Yards | Width: 42\"" }
+    {
+      "label": "Free Size",
+      "measurements": "Length: 2.75 Yards | Width: 42\""
+    }
   ],
   "colors": [
-    { "name": "Pearl White", "hex": "#FFFFFF" },
-    { "name": "Midnight Black", "hex": "#111111" },
-    { "name": "Soft Sage", "hex": "#B2C2B2" }
+    {
+      "name": "Pearl White",
+      "hex": "#FFFFFF"
+    },
+    {
+      "name": "Midnight Black",
+      "hex": "#111111"
+    },
+    {
+      "name": "Soft Sage",
+      "hex": "#B2C2B2"
+    }
   ],
   "images": [
-    "/products/pearl-embroidered-dupatta/image-1.jpg"
+    "/products/organza-luxe-dupatta/image-1.jpg",
+    "/products/organza-luxe-dupatta/image-2.jpg",
+    "/products/organza-luxe-dupatta/image-3.jpg",
+    "/products/organza-luxe-dupatta/image-4.jpg"
   ],
   "sku": "AMA-006-ORG",
   "featured": true,

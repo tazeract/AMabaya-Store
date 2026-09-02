@@ -534,16 +534,24 @@ export default function AdminPage() {
   // Supabase client instance
   const supabase = useRef(createClient()).current;
 
-  // Broadcast changes across the browser
+  // Broadcast changes across the browser (same tab + all other tabs)
   const notifyStoreUpdate = () => {
     if (typeof window !== "undefined") {
+      // Same-tab events
       window.dispatchEvent(new Event("amabaya_products_updated"));
       window.dispatchEvent(new Event("amabaya_slides_updated"));
       window.dispatchEvent(new Event("amabaya_banners_updated"));
       window.dispatchEvent(new Event("amabaya_categories_updated"));
       window.dispatchEvent(new Event("amabaya_brands_updated"));
       window.dispatchEvent(new Event("amabaya_promocodes_updated"));
-      window.dispatchEvent(new Event("storage"));
+      // Cross-tab: writing to localStorage triggers "storage" event on OTHER tabs
+      localStorage.setItem("amabaya_last_update", Date.now().toString());
+      // Cross-tab: BroadcastChannel for instant same-origin updates
+      try {
+        const bc = new BroadcastChannel("amabaya_store");
+        bc.postMessage({ type: "store_updated", ts: Date.now() });
+        bc.close();
+      } catch {}
     }
   };
 

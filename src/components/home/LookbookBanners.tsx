@@ -59,7 +59,7 @@ const LOOKBOOK_BANNERS: LookbookItem[] = [
 
 export function LookbookBanners() {
   return (
-    <section className="py-12 sm:py-16 bg-[#FAF9F7] border-b border-[#EAE6DF]" aria-label="Curated Silhouettes">
+    <section className="py-12 sm:py-16 bg-[#FAF9F7] border-b border-[#EAE6DF] scroll-reveal" aria-label="Curated Silhouettes">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6 sm:space-y-8">
         
         {/* Section Heading */}

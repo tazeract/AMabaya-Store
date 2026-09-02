@@ -28,9 +28,18 @@ export function FeaturedCollection() {
 
     window.addEventListener("amabaya_products_updated", fetchProds);
     window.addEventListener("storage", fetchProds);
+
+    // BroadcastChannel for cross-tab admin updates
+    let bc: BroadcastChannel | null = null;
+    try {
+      bc = new BroadcastChannel("amabaya_store");
+      bc.onmessage = (e) => { if (e.data?.type === "store_updated") fetchProds(); };
+    } catch {}
+
     return () => {
       window.removeEventListener("amabaya_products_updated", fetchProds);
       window.removeEventListener("storage", fetchProds);
+      bc?.close();
     };
   }, []);
 
@@ -41,7 +50,7 @@ export function FeaturedCollection() {
   });
 
   return (
-    <section className="py-16 sm:py-24 px-4 sm:px-6 lg:px-8 bg-[#FAF9F7] border-b border-[#EAE6DF]" aria-label="Featured Collection">
+    <section className="py-16 sm:py-24 px-4 sm:px-6 lg:px-8 bg-[#FAF9F7] border-b border-[#EAE6DF] scroll-reveal" aria-label="Featured Collection">
       <div className="max-w-7xl mx-auto">
         
         {/* Header */}

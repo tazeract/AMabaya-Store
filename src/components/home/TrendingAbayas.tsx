@@ -32,9 +32,17 @@ export function TrendingAbayas({ products: initialProducts }: TrendingAbayasProp
     window.addEventListener("amabaya_products_updated", handleUpdate);
     window.addEventListener("storage", handleUpdate);
 
+    // BroadcastChannel for cross-tab admin updates
+    let bc: BroadcastChannel | null = null;
+    try {
+      bc = new BroadcastChannel("amabaya_store");
+      bc.onmessage = (e) => { if (e.data?.type === "store_updated") handleUpdate(); };
+    } catch {}
+
     return () => {
       window.removeEventListener("amabaya_products_updated", handleUpdate);
       window.removeEventListener("storage", handleUpdate);
+      bc?.close();
     };
   }, []);
 
@@ -45,7 +53,7 @@ export function TrendingAbayas({ products: initialProducts }: TrendingAbayasProp
   const displayList = (abayas.length > 0 ? abayas : products).slice(0, 4);
 
   return (
-    <section className="py-12 sm:py-16 bg-white border-b border-[#EAE6DF]" aria-label="New In Abayas">
+    <section className="py-12 sm:py-16 bg-white border-b border-[#EAE6DF] scroll-reveal" aria-label="New In Abayas">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Section Header */}

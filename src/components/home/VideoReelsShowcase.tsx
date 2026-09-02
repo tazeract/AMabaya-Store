@@ -67,7 +67,7 @@ export function VideoReelsShowcase() {
   };
 
   return (
-    <section className="py-12 sm:py-16 bg-[#161319] text-white border-b border-[#2A2330]" aria-label="Social Lookbook">
+    <section className="py-12 sm:py-16 bg-[#161319] text-white border-b border-[#2A2330] scroll-reveal" aria-label="Social Lookbook">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8 sm:space-y-10">
         
         {/* Header */}

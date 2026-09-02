@@ -7,20 +7,50 @@
   "price": 7950,
   "originalPrice": 9500,
   "category": "Abaya",
-  "tags": ["velvet", "festive", "winter", "luxury", "bestseller"],
+  "tags": [
+    "velvet",
+    "festive",
+    "winter",
+    "luxury",
+    "bestseller"
+  ],
   "sizes": [
-    { "label": "S", "measurements": "Bust: 34-36\" | Length: 56\"" },
-    { "label": "M", "measurements": "Bust: 36-38\" | Length: 57\"" },
-    { "label": "L", "measurements": "Bust: 38-40\" | Length: 58\"" },
-    { "label": "XL", "measurements": "Bust: 40-42\" | Length: 59\"" }
+    {
+      "label": "S",
+      "measurements": "Bust: 34-36\" | Length: 56\""
+    },
+    {
+      "label": "M",
+      "measurements": "Bust: 36-38\" | Length: 57\""
+    },
+    {
+      "label": "L",
+      "measurements": "Bust: 38-40\" | Length: 58\""
+    },
+    {
+      "label": "XL",
+      "measurements": "Bust: 40-42\" | Length: 59\""
+    }
   ],
   "colors": [
-    { "name": "Emerald Green", "hex": "#0F4D3A" },
-    { "name": "Midnight Noir", "hex": "#0D0D0D" },
-    { "name": "Royal Maroon", "hex": "#4A0E17" }
+    {
+      "name": "Emerald Green",
+      "hex": "#0F4D3A"
+    },
+    {
+      "name": "Midnight Noir",
+      "hex": "#0D0D0D"
+    },
+    {
+      "name": "Royal Maroon",
+      "hex": "#4A0E17"
+    }
   ],
   "images": [
-    "/products/classic-noir-abaya/image-1.jpg"
+    "/products/emerald-velvet-abaya/image-1.jpg",
+    "/products/emerald-velvet-abaya/image-2.jpg",
+    "/products/emerald-velvet-abaya/image-3.jpg",
+    "/products/emerald-velvet-abaya/image-4.jpg"
   ],
   "sku": "AMA-004-EMR",
   "featured": true,
@@ -38,7 +68,7 @@
     "Steam iron inside out",
     "Keep away from direct sunlight"
   ],
-  "rating": 5.0,
+  "rating": 5,
   "reviewCount": 189,
   "createdAt": "2024-02-10"
 }

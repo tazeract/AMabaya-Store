@@ -31,6 +31,19 @@ function ProductsPageContent() {
   });
   const [showMobileFilters, setShowMobileFilters] = useState(false);
 
+  // ── Sync filters when URL search params change (e.g., clicking different category links) ──
+  useEffect(() => {
+    const category = searchParams.get("category");
+    const q = searchParams.get("q") ?? "";
+    const filter = searchParams.get("filter") ?? "newest";
+    setFilters((prev) => ({
+      ...prev,
+      category: category ? [category] : [],
+      searchQuery: q,
+      sortBy: filter as FilterState["sortBy"],
+    }));
+  }, [searchParams]);
+
   useEffect(() => {
     const fetchProds = () => {
       getAllProducts().then(setAllProducts);
@@ -39,9 +52,18 @@ function ProductsPageContent() {
 
     window.addEventListener("amabaya_products_updated", fetchProds);
     window.addEventListener("storage", fetchProds);
+
+    // BroadcastChannel for cross-tab admin updates
+    let bc: BroadcastChannel | null = null;
+    try {
+      bc = new BroadcastChannel("amabaya_store");
+      bc.onmessage = (e) => { if (e.data?.type === "store_updated") fetchProds(); };
+    } catch {}
+
     return () => {
       window.removeEventListener("amabaya_products_updated", fetchProds);
       window.removeEventListener("storage", fetchProds);
+      bc?.close();
     };
   }, []);
 

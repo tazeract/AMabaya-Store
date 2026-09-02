@@ -7,23 +7,53 @@
   "price": 4500,
   "originalPrice": 5500,
   "category": "Abaya",
-  "tags": ["bestseller", "eid", "formal", "gold-embroidery"],
+  "tags": [
+    "bestseller",
+    "eid",
+    "formal",
+    "gold-embroidery"
+  ],
   "sizes": [
-    { "label": "S", "measurements": "Bust: 34-36\" | Length: 56\"" },
-    { "label": "M", "measurements": "Bust: 36-38\" | Length: 57\"" },
-    { "label": "L", "measurements": "Bust: 38-40\" | Length: 58\"" },
-    { "label": "XL", "measurements": "Bust: 40-42\" | Length: 59\"" },
-    { "label": "XXL", "measurements": "Bust: 42-44\" | Length: 60\"" }
+    {
+      "label": "S",
+      "measurements": "Bust: 34-36\" | Length: 56\""
+    },
+    {
+      "label": "M",
+      "measurements": "Bust: 36-38\" | Length: 57\""
+    },
+    {
+      "label": "L",
+      "measurements": "Bust: 38-40\" | Length: 58\""
+    },
+    {
+      "label": "XL",
+      "measurements": "Bust: 40-42\" | Length: 59\""
+    },
+    {
+      "label": "XXL",
+      "measurements": "Bust: 42-44\" | Length: 60\""
+    }
   ],
   "colors": [
-    { "name": "Midnight Black", "hex": "#0A0A0A" },
-    { "name": "Charcoal Grey", "hex": "#36454F" },
-    { "name": "Deep Navy", "hex": "#1B2A4A" }
+    {
+      "name": "Midnight Black",
+      "hex": "#0A0A0A"
+    },
+    {
+      "name": "Charcoal Grey",
+      "hex": "#36454F"
+    },
+    {
+      "name": "Deep Navy",
+      "hex": "#1B2A4A"
+    }
   ],
   "images": [
     "/products/classic-noir-abaya/image-1.jpg",
     "/products/classic-noir-abaya/image-2.jpg",
-    "/products/classic-noir-abaya/image-3.jpg"
+    "/products/classic-noir-abaya/image-3.jpg",
+    "/products/classic-noir-abaya/image-4.jpg"
   ],
   "modelPath": "/products/classic-noir-abaya/model.glb",
   "sku": "AMA-001-BLK",

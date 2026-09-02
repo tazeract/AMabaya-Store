@@ -1,0 +1,437 @@
+[
+  {
+    "id": "cd92cdf1-04b5-4910-acf1-0402315022ee",
+    "name": "Royal Zahra Kaftan",
+    "category": "Kaftan",
+    "price": 7200,
+    "original_price": 9000,
+    "description": "An opulent full-length kaftan in rich burgundy with hand-embroidered zardozi borders and a flowing bell silhouette.",
+    "images": [
+      "/products/royal-zahra-kaftan/image-1.jpg",
+      "/products/royal-zahra-kaftan/image-2.jpg",
+      "/products/royal-zahra-kaftan/image-3.jpg",
+      "/products/royal-zahra-kaftan/image-4.jpg"
+    ],
+    "is_new": true,
+    "is_bestseller": false,
+    "slug": "royal-zahra-kaftan",
+    "sku": "AMA-002-BRG",
+    "material": "Chiffon-Silk Blend with Zardozi Embroidery",
+    "rating": 4.8,
+    "review_count": 89,
+    "created_at": "2024-03-01T00:00:00+00:00",
+    "subtitle": "Heritage Craft Meets Modern Grace",
+    "long_description": "The Royal Zahra Kaftan is a masterpiece of traditional Pakistani craftsmanship modernized for the contemporary woman. Hand-embroidered zardozi gold and silver threadwork frames the neckline, sleeves, and hem in intricate floral motifs.",
+    "tags": [
+      "new-arrival",
+      "wedding",
+      "zardozi",
+      "premium"
+    ],
+    "colors": [
+      {
+        "hex": "#6D1A36",
+        "name": "Royal Burgundy"
+      },
+      {
+        "hex": "#1B4332",
+        "name": "Emerald Green"
+      },
+      {
+        "hex": "#C9A84C",
+        "name": "Champagne Gold"
+      }
+    ],
+    "care_instructions": [
+      "Dry clean only",
+      "Handle embroidery with extreme care",
+      "Store flat or hanging in garment bag"
+    ],
+    "featured": true,
+    "model_path": null,
+    "sizes": [
+      {
+        "label": "S",
+        "measurements": "Bust: 34-36\" | Length: 58\""
+      },
+      {
+        "label": "M",
+        "measurements": "Bust: 36-38\" | Length: 59\""
+      },
+      {
+        "label": "L",
+        "measurements": "Bust: 38-40\" | Length: 60\""
+      },
+      {
+        "label": "XL",
+        "measurements": "Bust: 40-42\" | Length: 61\""
+      },
+      {
+        "label": "Free Size",
+        "measurements": "Fits Bust: 34-44\" | Length: 60\""
+      }
+    ],
+    "stock": {
+      "L-Royal Burgundy": 4,
+      "M-Royal Burgundy": 5,
+      "S-Royal Burgundy": 3,
+      "Free Size-Emerald Green": 6,
+      "Free Size-Royal Burgundy": 8
+    },
+    "sizes_json": []
+  },
+  {
+    "id": "a783e5b3-7f31-4bd7-92f5-c2d380d18fc7",
+    "name": "Ivory Zari Silk Kaftan",
+    "category": "Kaftan",
+    "price": 6800,
+    "original_price": 8200,
+    "description": "Flowing raw silk kaftan in pure ivory with shimmering antique gold tilla border and delicate pearl tassel neckline.",
+    "images": [
+      "/products/ivory-zari-kaftan/image-1.jpg",
+      "/products/ivory-zari-kaftan/image-2.jpg",
+      "/products/ivory-zari-kaftan/image-3.jpg",
+      "/products/ivory-zari-kaftan/image-4.jpg"
+    ],
+    "is_new": true,
+    "is_bestseller": false,
+    "slug": "ivory-zari-kaftan",
+    "sku": "AMA-005-IVR",
+    "material": "Pure Korean Raw Silk with Zari Border",
+    "rating": 4.85,
+    "review_count": 112,
+    "created_at": "2024-02-18T00:00:00+00:00",
+    "subtitle": "Ethereal Raw Silk with Antique Gold Zari",
+    "long_description": "Designed for effortless elegance, the Ivory Zari Silk Kaftan combines comfortable airy drapes with royal Pakistani formal aesthetics.",
+    "tags": [
+      "silk",
+      "zari",
+      "ivory",
+      "festive",
+      "new"
+    ],
+    "colors": [
+      {
+        "hex": "#F9F6EE",
+        "name": "Pure Ivory"
+      },
+      {
+        "hex": "#E5D3B3",
+        "name": "Champagne Gold"
+      },
+      {
+        "hex": "#D8A499",
+        "name": "Rose Dust"
+      }
+    ],
+    "care_instructions": [
+      "Dry clean only",
+      "Do not spray perfume directly on embroidery",
+      "Iron on silk setting"
+    ],
+    "featured": true,
+    "model_path": null,
+    "sizes": [
+      {
+        "label": "Free Size",
+        "measurements": "Bust: Up to 48\" | Length: 56\""
+      }
+    ],
+    "stock": {
+      "Free Size-Rose Dust": 4,
+      "Free Size-Pure Ivory": 9,
+      "Free Size-Champagne Gold": 5
+    },
+    "sizes_json": []
+  },
+  {
+    "id": "f1f593dd-fe94-4739-a06d-6885c7c32ed5",
+    "name": "Pearl Embroidered Dupatta",
+    "category": "Dupatta",
+    "price": 2800,
+    "original_price": 3500,
+    "description": "Delicate hand-stitched pearl and sequin embroidery adorns this ethereal chiffon dupatta — the perfect finishing touch for any Pakistani outfit.",
+    "images": [
+      "/products/pearl-embroidered-dupatta/image-1.jpg",
+      "/products/pearl-embroidered-dupatta/image-2.jpg",
+      "/products/pearl-embroidered-dupatta/image-3.jpg",
+      "/products/pearl-embroidered-dupatta/image-4.jpg"
+    ],
+    "is_new": true,
+    "is_bestseller": false,
+    "slug": "pearl-embroidered-dupatta",
+    "sku": "AMA-003-IVR",
+    "material": "Imported Chiffon with Hand-applied Pearl & Sequin Embroidery",
+    "rating": 4.7,
+    "review_count": 156,
+    "created_at": "2024-02-10T00:00:00+00:00",
+    "subtitle": "The Crown of Every Ensemble",
+    "long_description": "The Pearl Embroidered Dupatta features thousands of hand-applied freshwater pearl beads and gold sequins in a cascading floral pattern.",
+    "tags": [
+      "bridal",
+      "pearl",
+      "chiffon",
+      "accessory"
+    ],
+    "colors": [
+      {
+        "hex": "#FFFFF0",
+        "name": "Ivory White"
+      },
+      {
+        "hex": "#FFB6C1",
+        "name": "Blush Pink"
+      },
+      {
+        "hex": "#B2C9B2",
+        "name": "Soft Sage"
+      },
+      {
+        "hex": "#87CEEB",
+        "name": "Sky Blue"
+      }
+    ],
+    "care_instructions": [
+      "Hand wash gently in cold water",
+      "Do not scrub embroidery",
+      "Dry flat in shade"
+    ],
+    "featured": true,
+    "model_path": null,
+    "sizes": [
+      {
+        "label": "Free Size",
+        "measurements": "Width: 42\" | Length: 108\""
+      }
+    ],
+    "stock": {
+      "Free Size-Sky Blue": 7,
+      "Free Size-Soft Sage": 8,
+      "Free Size-Blush Pink": 12,
+      "Free Size-Ivory White": 15
+    },
+    "sizes_json": []
+  },
+  {
+    "id": "d59052c3-8ee3-40db-b63f-8c44a754a521",
+    "name": "Emerald Velvet Abaya",
+    "category": "Abaya",
+    "price": 5800,
+    "original_price": 7200,
+    "description": "A breathtaking micro-velvet abaya in rich emerald green with a silk lining and subtle self-embossed pattern.",
+    "images": [
+      "/products/emerald-velvet-abaya/image-1.jpg",
+      "/products/emerald-velvet-abaya/image-2.jpg",
+      "/products/emerald-velvet-abaya/image-3.jpg",
+      "/products/emerald-velvet-abaya/image-4.jpg"
+    ],
+    "is_new": true,
+    "is_bestseller": true,
+    "slug": "emerald-velvet-abaya",
+    "sku": "AMA-004-EMR",
+    "material": "Imported Micro-Velvet with Pure Silk Lining",
+    "rating": 5,
+    "review_count": 189,
+    "created_at": "2024-02-10T00:00:00+00:00",
+    "subtitle": "Statement Luxury for Winter Celebrations",
+    "long_description": "Designed for cooler celebrations and winter weddings, the Emerald Velvet Abaya features premium imported micro-velvet fabric with a luxuriously smooth silk inner lining.",
+    "tags": [
+      "velvet",
+      "winter",
+      "festive",
+      "new"
+    ],
+    "colors": [
+      {
+        "hex": "#0F4D3A",
+        "name": "Emerald Green"
+      },
+      {
+        "hex": "#0D0D0D",
+        "name": "Midnight Noir"
+      },
+      {
+        "hex": "#4A0E17",
+        "name": "Royal Maroon"
+      }
+    ],
+    "care_instructions": [
+      "Dry clean only",
+      "Steam iron inside out",
+      "Keep away from direct sunlight"
+    ],
+    "featured": true,
+    "model_path": null,
+    "sizes": [
+      {
+        "label": "S",
+        "measurements": "Bust: 34-36\" | Length: 56\""
+      },
+      {
+        "label": "M",
+        "measurements": "Bust: 36-38\" | Length: 57\""
+      },
+      {
+        "label": "L",
+        "measurements": "Bust: 38-40\" | Length: 58\""
+      },
+      {
+        "label": "XL",
+        "measurements": "Bust: 40-42\" | Length: 59\""
+      }
+    ],
+    "stock": {
+      "L-Emerald Green": 5,
+      "M-Emerald Green": 7,
+      "S-Emerald Green": 4,
+      "XL-Emerald Green": 2
+    },
+    "sizes_json": []
+  },
+  {
+    "id": "dbda923d-e4c7-455e-8d89-ac4731f0c18e",
+    "name": "Regal Organza Scalloped Dupatta",
+    "category": "Dupatta",
+    "price": 3200,
+    "original_price": 4000,
+    "description": "Ultra-light crystalline organza dupatta featuring intricate 4-sided cutwork scalloped borders and hand-applied pearl spray.",
+    "images": [
+      "/products/organza-luxe-dupatta/image-1.jpg",
+      "/products/organza-luxe-dupatta/image-2.jpg",
+      "/products/organza-luxe-dupatta/image-3.jpg",
+      "/products/organza-luxe-dupatta/image-4.jpg"
+    ],
+    "is_new": false,
+    "is_bestseller": true,
+    "slug": "organza-luxe-dupatta",
+    "sku": "AMA-006-ORG",
+    "material": "100% Crystalline Organza Silk",
+    "rating": 4.95,
+    "review_count": 164,
+    "created_at": "2024-01-28T00:00:00+00:00",
+    "subtitle": "Cutwork Scallop Border with Gota & Pearls",
+    "long_description": "The perfect crowning statement for your luxury abayas and formal kaftans. Made from feather-light Pakistani organza.",
+    "tags": [
+      "organza",
+      "scallop",
+      "pearls",
+      "bestseller"
+    ],
+    "colors": [
+      {
+        "hex": "#FFFFFF",
+        "name": "Pearl White"
+      },
+      {
+        "hex": "#111111",
+        "name": "Midnight Black"
+      },
+      {
+        "hex": "#B2C2B2",
+        "name": "Soft Sage"
+      }
+    ],
+    "care_instructions": [
+      "Dry clean recommended",
+      "Gentle handwash in cold water",
+      "Iron with press cloth"
+    ],
+    "featured": true,
+    "model_path": null,
+    "sizes": [
+      {
+        "label": "Free Size",
+        "measurements": "Length: 2.75 Yards | Width: 42\""
+      }
+    ],
+    "stock": {
+      "Free Size-Soft Sage": 8,
+      "Free Size-Pearl White": 15,
+      "Free Size-Midnight Black": 12
+    },
+    "sizes_json": []
+  },
+  {
+    "id": "b3c57a8b-3a86-4224-8003-d3537a40921d",
+    "name": "Classic Noir Abaya",
+    "category": "Abaya",
+    "price": 4500,
+    "original_price": 5500,
+    "description": "A stunning full-length abaya in the deepest shade of midnight black, tailored to perfection with subtle gold thread embroidery at the cuffs.",
+    "images": [
+      "/products/classic-noir-abaya/image-1.jpg",
+      "/products/classic-noir-abaya/image-2.jpg",
+      "/products/classic-noir-abaya/image-3.jpg",
+      "/products/classic-noir-abaya/image-4.jpg"
+    ],
+    "is_new": false,
+    "is_bestseller": true,
+    "slug": "classic-noir-abaya",
+    "sku": "AMA-001-BLK",
+    "material": "100% Premium Korean Nida Fabric",
+    "rating": 4.9,
+    "review_count": 247,
+    "created_at": "2024-01-15T00:00:00+00:00",
+    "subtitle": "Timeless Elegance Redefined",
+    "long_description": "The Classic Noir Abaya is AMabaya's signature piece — a full-length, flowing silhouette crafted from premium Korean Nida fabric.",
+    "tags": [
+      "bestseller",
+      "eid",
+      "formal",
+      "gold-embroidery"
+    ],
+    "colors": [
+      {
+        "hex": "#0A0A0A",
+        "name": "Midnight Black"
+      },
+      {
+        "hex": "#36454F",
+        "name": "Charcoal Grey"
+      },
+      {
+        "hex": "#1B2A4A",
+        "name": "Deep Navy"
+      }
+    ],
+    "care_instructions": [
+      "Dry clean only",
+      "Do not bleach",
+      "Store hanging to preserve shape",
+      "Iron on low heat with cloth barrier"
+    ],
+    "featured": true,
+    "model_path": null,
+    "sizes": [
+      {
+        "label": "S",
+        "measurements": "Bust: 34-36\" | Length: 56\""
+      },
+      {
+        "label": "M",
+        "measurements": "Bust: 36-38\" | Length: 57\""
+      },
+      {
+        "label": "L",
+        "measurements": "Bust: 38-40\" | Length: 58\""
+      },
+      {
+        "label": "XL",
+        "measurements": "Bust: 40-42\" | Length: 59\""
+      },
+      {
+        "label": "XXL",
+        "measurements": "Bust: 42-44\" | Length: 60\""
+      }
+    ],
+    "stock": {
+      "M-Charcoal Grey": 6,
+      "S-Charcoal Grey": 4,
+      "L-Midnight Black": 3,
+      "M-Midnight Black": 8,
+      "S-Midnight Black": 5,
+      "XL-Midnight Black": 2
+    },
+    "sizes_json": []
+  }
+]

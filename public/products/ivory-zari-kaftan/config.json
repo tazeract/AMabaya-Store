@@ -7,17 +7,38 @@
   "price": 6800,
   "originalPrice": 8200,
   "category": "Kaftan",
-  "tags": ["silk", "zari", "ivory", "festive", "new"],
+  "tags": [
+    "silk",
+    "zari",
+    "ivory",
+    "festive",
+    "new"
+  ],
   "sizes": [
-    { "label": "Free Size", "measurements": "Bust: Up to 48\" | Length: 56\"" }
+    {
+      "label": "Free Size",
+      "measurements": "Bust: Up to 48\" | Length: 56\""
+    }
   ],
   "colors": [
-    { "name": "Pure Ivory", "hex": "#F9F6EE" },
-    { "name": "Champagne Gold", "hex": "#E5D3B3" },
-    { "name": "Rose Dust", "hex": "#D8A499" }
+    {
+      "name": "Pure Ivory",
+      "hex": "#F9F6EE"
+    },
+    {
+      "name": "Champagne Gold",
+      "hex": "#E5D3B3"
+    },
+    {
+      "name": "Rose Dust",
+      "hex": "#D8A499"
+    }
   ],
   "images": [
-    "/products/royal-zahra-kaftan/image-1.jpg"
+    "/products/ivory-zari-kaftan/image-1.jpg",
+    "/products/ivory-zari-kaftan/image-2.jpg",
+    "/products/ivory-zari-kaftan/image-3.jpg",
+    "/products/ivory-zari-kaftan/image-4.jpg"
   ],
   "sku": "AMA-005-IVR",
   "featured": true,

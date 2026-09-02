@@ -7,20 +7,41 @@
   "price": 2800,
   "originalPrice": 3500,
   "category": "Dupatta",
-  "tags": ["bridal", "pearl", "chiffon", "accessory"],
+  "tags": [
+    "bridal",
+    "pearl",
+    "chiffon",
+    "accessory"
+  ],
   "sizes": [
-    { "label": "Free Size", "measurements": "Width: 42\" | Length: 108\"" }
+    {
+      "label": "Free Size",
+      "measurements": "Width: 42\" | Length: 108\""
+    }
   ],
   "colors": [
-    { "name": "Ivory White", "hex": "#FFFFF0" },
-    { "name": "Blush Pink", "hex": "#FFB6C1" },
-    { "name": "Soft Sage", "hex": "#B2C9B2" },
-    { "name": "Sky Blue", "hex": "#87CEEB" }
+    {
+      "name": "Ivory White",
+      "hex": "#FFFFF0"
+    },
+    {
+      "name": "Blush Pink",
+      "hex": "#FFB6C1"
+    },
+    {
+      "name": "Soft Sage",
+      "hex": "#B2C9B2"
+    },
+    {
+      "name": "Sky Blue",
+      "hex": "#87CEEB"
+    }
   ],
   "images": [
     "/products/pearl-embroidered-dupatta/image-1.jpg",
     "/products/pearl-embroidered-dupatta/image-2.jpg",
-    "/products/pearl-embroidered-dupatta/image-3.jpg"
+    "/products/pearl-embroidered-dupatta/image-3.jpg",
+    "/products/pearl-embroidered-dupatta/image-4.jpg"
   ],
   "modelPath": null,
   "sku": "AMA-003-IVR",

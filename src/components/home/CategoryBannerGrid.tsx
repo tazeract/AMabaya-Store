@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { ArrowRight, Sparkles } from "lucide-react";
+import { getAllProducts } from "@/lib/products";
 
 interface SubCategoryCard {
   title: string;
@@ -14,56 +15,105 @@ interface SubCategoryCard {
 const DEFAULT_CATEGORIES: SubCategoryCard[] = [
   {
     title: "Everyday Abayas",
-    count: "14+ Designs",
+    count: "2 Designs",
     href: "/products?category=Abaya",
     image: "/products/classic-noir-abaya/image-2.jpg",
   },
   {
     title: "Embroidered Luxury",
-    count: "22+ Designs",
-    href: "/products?category=Abaya&filter=new",
+    count: "2 Designs",
+    href: "/products?category=Abaya",
+    image: "/products/emerald-velvet-abaya/image-1.jpg",
+  },
+  {
+    title: "Khimars & Kaftans",
+    count: "2 Designs",
+    href: "/products?category=Kaftan",
     image: "/products/royal-zahra-kaftan/image-2.jpg",
   },
   {
-    title: "Abaya Sets & Inner Slips",
-    count: "8+ Sets",
-    href: "/products?category=Set",
-    image: "/products/classic-noir-abaya/image-1.jpg",
-  },
-  {
-    title: "Khimars & Flowing Kaftans",
-    count: "12+ Styles",
-    href: "/products?category=Kaftan",
-    image: "/products/royal-zahra-kaftan/image-1.jpg",
+    title: "Couture Dupattas",
+    count: "2 Designs",
+    href: "/products?category=Dupatta",
+    image: "/products/pearl-embroidered-dupatta/image-3.jpg",
   },
 ];
 
 export function CategoryBannerGrid() {
   const [categoryCards, setCategoryCards] = useState<SubCategoryCard[]>(DEFAULT_CATEGORIES);
 
-  const loadCategories = () => {
-    if (typeof window !== "undefined") {
-      try {
+  const loadCategories = async () => {
+    try {
+      const allProds = await getAllProducts();
+      const abayaCount = allProds.filter(
+        (p) => p.category?.toLowerCase() === "abaya"
+      ).length;
+      const kaftanCount = allProds.filter(
+        (p) => p.category?.toLowerCase() === "kaftan"
+      ).length;
+      const dupattaCount = allProds.filter(
+        (p) => p.category?.toLowerCase() === "dupatta"
+      ).length;
+
+      // Check if admin customized categories exist in localStorage
+      let custom: any[] | null = null;
+      if (typeof window !== "undefined") {
         const saved = localStorage.getItem("amabaya_categories");
         if (saved) {
           const parsed = JSON.parse(saved);
           if (Array.isArray(parsed) && parsed.length >= 2) {
-            setCategoryCards(
-              parsed.slice(0, 4).map((c: any) => ({
-                title: c.name,
-                count: "Curated Styles",
-                href: `/products?category=${encodeURIComponent(c.slug || c.name)}`,
-                image: c.image || "/products/classic-noir-abaya/image-2.jpg",
-              }))
-            );
-            return;
+            custom = parsed;
           }
         }
-      } catch (e) {
-        console.warn("Could not load categories in grid:", e);
       }
+
+      if (custom && custom.length >= 2) {
+        setCategoryCards(
+          custom.slice(0, 4).map((c: any) => {
+            const catName = c.name || c.slug || "";
+            const catLower = catName.toLowerCase();
+            const count = allProds.filter(
+              (p) => p.category?.toLowerCase() === catLower
+            ).length;
+            return {
+              title: catName,
+              count: count > 0 ? `${count} ${count === 1 ? "Design" : "Designs"}` : "Curated Styles",
+              href: `/products?category=${encodeURIComponent(c.slug || c.name)}`,
+              image: c.image || "/products/classic-noir-abaya/image-2.jpg",
+            };
+          })
+        );
+      } else {
+        setCategoryCards([
+          {
+            title: "Everyday Abayas",
+            count: `${abayaCount} ${abayaCount === 1 ? "Design" : "Designs"}`,
+            href: "/products?category=Abaya",
+            image: "/products/classic-noir-abaya/image-2.jpg",
+          },
+          {
+            title: "Embroidered Luxury",
+            count: `${abayaCount} ${abayaCount === 1 ? "Design" : "Designs"}`,
+            href: "/products?category=Abaya",
+            image: "/products/emerald-velvet-abaya/image-1.jpg",
+          },
+          {
+            title: "Khimars & Kaftans",
+            count: `${kaftanCount} ${kaftanCount === 1 ? "Design" : "Designs"}`,
+            href: "/products?category=Kaftan",
+            image: "/products/royal-zahra-kaftan/image-2.jpg",
+          },
+          {
+            title: "Couture Dupattas",
+            count: `${dupattaCount} ${dupattaCount === 1 ? "Design" : "Designs"}`,
+            href: "/products?category=Dupatta",
+            image: "/products/pearl-embroidered-dupatta/image-3.jpg",
+          },
+        ]);
+      }
+    } catch (e) {
+      console.warn("Could not load category counts:", e);
     }
-    setCategoryCards(DEFAULT_CATEGORIES);
   };
 
   useEffect(() => {
@@ -71,14 +121,25 @@ export function CategoryBannerGrid() {
     const handleUpdate = () => loadCategories();
     window.addEventListener("amabaya_categories_updated", handleUpdate);
     window.addEventListener("storage", handleUpdate);
+
+    // BroadcastChannel for cross-tab admin updates
+    let bc: BroadcastChannel | null = null;
+    try {
+      bc = new BroadcastChannel("amabaya_store");
+      bc.onmessage = (e) => {
+        if (e.data?.type === "store_updated") handleUpdate();
+      };
+    } catch {}
+
     return () => {
       window.removeEventListener("amabaya_categories_updated", handleUpdate);
       window.removeEventListener("storage", handleUpdate);
+      bc?.close();
     };
   }, []);
 
   return (
-    <section className="py-12 sm:py-16 bg-[#FAF9F7] border-b border-[#EAE6DF]" aria-label="Abayas Showcase">
+    <section className="py-12 sm:py-16 bg-[#FAF9F7] border-b border-[#EAE6DF] scroll-reveal" aria-label="Abayas Showcase">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8 sm:space-y-10">
         
         {/* Full-width Abayas Spotlight Banner with Editorial Overlay */}

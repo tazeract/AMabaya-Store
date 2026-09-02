@@ -44,7 +44,7 @@ const HIJAB_TYPES: HijabType[] = [
 
 export function HijabCollectionShowcase() {
   return (
-    <section className="py-12 sm:py-16 bg-white border-b border-[#F0ECE6]" aria-label="Hijabs Collection">
+    <section className="py-12 sm:py-16 bg-white border-b border-[#F0ECE6] scroll-reveal" aria-label="Hijabs Collection">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8 sm:space-y-10">
         
         {/* Full-width Hijabs Spotlight Banner */}
